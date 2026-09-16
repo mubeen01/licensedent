@@ -92,3 +92,31 @@ If you're Claude Code specifically: this project also has persistent
 cross-session memory (separate from this file) that gets loaded
 automatically — check it for anything not written down here, especially
 *why* past decisions were made, not just *what* the current state is.
+
+## Working discipline for PRD-01 (and future PRDs)
+
+Go phase-by-phase, one task/page at a time: implement, test against a
+running `wasp start` (typecheck + actual HTTP/DOM check, not just "it
+compiles"), commit locally, then move to the next task. Don't batch
+unrelated tasks into one commit. Whenever a task changes what's `done` vs
+`todo` in a PRD's status table, update that table in the same commit — the
+status table is the source of truth for "what's already done, don't
+redo it," so a stale one wastes the next session's time. Add a line to
+this changelog for anything a future session needs to know that isn't
+obvious from the diff itself (a decision made, a gotcha hit, scope
+deliberately deferred).
+
+**Session changelog** (newest first — keep entries short, link the PRD for detail):
+
+- **2026-09-16**: PRD-01 Phase S0 finished (except S0.3, blocked on Q1 —
+  real domain). Wired `SeoHead` (title/description/canonical) into the 3
+  remaining candidate pages (`LegalPage.tsx`, `DemoExamPage.tsx` intro
+  phase, `AllExamsPage.tsx`), completing S0.1/S0.2 at 15/15 pages. Ran
+  S0.5's prerender audit: all 13 prerender candidates (landing, legal,
+  demo-exam intro, pricing, 10 exam guides) are clean — every
+  `window`/`document`/`Math.random()` use is confined to `useEffect` or
+  click handlers, never the render body, so S1.1 (`prerender: true`) can
+  be flipped on with no further code changes. See
+  `docs/07-seo-geo-blog-strategy-PRD-01.md` §7 for the full evidence
+  table. Next up: Phase S1 (crawlability — robots.txt, sitemap.xml,
+  prerender flags, llms.txt).

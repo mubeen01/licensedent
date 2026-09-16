@@ -4,6 +4,7 @@ import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { getPublicExams, useQuery } from 'wasp/client/operations';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import { Button } from '../components/ui/button';
+import SeoHead from '../client/components/SeoHead';
 import Footer from '../landing-page/components/Footer';
 import ScrollToTop from '../landing-page/components/ScrollToTop';
 import SectionTitle from '../landing-page/components/SectionTitle';
@@ -37,6 +38,11 @@ const quickChipsByCode: Record<string, [string, string]> = {
 export default function AllExamsPage() {
   return (
     <div className='bg-background text-foreground'>
+      <SeoHead
+        title='All Exams — DHA, HAAD, MOH, SMLE, OMSB, QCHP, KMLE, NHRA, SHA, IDC | LicenseDent'
+        description='Compare Gulf and Ireland dental licensing exams side by side, then jump into a dedicated guide with structure, pathway and rules for the one you need.'
+        path='/exams'
+      />
       <main className='isolate'>
         <Hero />
         <ExamsIndexGrid />

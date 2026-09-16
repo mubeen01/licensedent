@@ -2,6 +2,7 @@ import { AlertCircle, CheckCircle2, Clock, Trophy, XCircle } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Button } from '../components/ui/button';
+import SeoHead from '../client/components/SeoHead';
 import { cn } from '../lib/utils';
 import { demoExamQuestions, type DemoExamQuestion } from './demoExamQuestions';
 
@@ -81,6 +82,11 @@ export default function DemoExamPage() {
   if (phase === 'intro') {
     return (
       <div className='mx-auto max-w-2xl px-6 py-16 sm:py-24'>
+        <SeoHead
+          title='Free DHA-Style Demo Exam — 20 Questions, 15 Minutes | LicenseDent'
+          description='Take a free, no-login DHA-style demo exam: 20 shuffled questions, a 15-minute timer, and instant scoring with explanations.'
+          path='/demo-exam'
+        />
         <div className='rounded-3xl border border-border bg-card p-8 text-center shadow-xs sm:p-12'>
           <div className='mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl shadow-lg'>
             <img src='/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />

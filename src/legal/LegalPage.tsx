@@ -1,5 +1,6 @@
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Button } from '../components/ui/button';
+import SeoHead from '../client/components/SeoHead';
 
 /**
  * Terms of service, refund policy, and disclaimers in one place.
@@ -43,6 +44,11 @@ const sections = [
 export default function LegalPage() {
   return (
     <div className='bg-background text-foreground'>
+      <SeoHead
+        title='Terms, Refunds & Disclaimers | LicenseDent'
+        description='LicenseDent terms of service, 7-day no-questions-asked refund policy, and disclaimers for Gulf and Ireland dental licensing exam prep.'
+        path='/legal'
+      />
       <div className='mx-auto max-w-3xl px-6 py-16 sm:py-20'>
         <h1 className='text-3xl font-bold tracking-tight sm:text-4xl'>Terms, Refunds &amp; Disclaimers</h1>
         <p className='mt-3 text-sm text-muted-foreground'>
