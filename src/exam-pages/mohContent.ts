@@ -17,6 +17,13 @@ export const mohExamGuide: ExamGuideConfig = {
   accent: 'cyan',
   backLinkLabel: 'All Gulf exams',
 
+  seo: {
+    title: 'MOH Exam Guide — UAE Federal Dental Licensing | LicenseDent',
+    description:
+      "How the UAE's federal MOH dental licensing exam works: the DataFlow/PQR framework, coverage beyond Dubai and Abu Dhabi, and how to prepare.",
+    path: '/exams/moh',
+  },
+
   badgeFlagEmoji: '🇦🇪',
   badgeLabel: 'MOH · Ministry of Health & Prevention',
   heroTitleLead: 'The complete guide to the',

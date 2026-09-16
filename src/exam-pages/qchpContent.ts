@@ -20,6 +20,13 @@ export const qchpExamGuide: ExamGuideConfig = {
   accent: 'rose',
   backLinkLabel: 'All Gulf exams',
 
+  seo: {
+    title: 'QCHP Qatar Exam Guide — Dental Licensing | LicenseDent',
+    description:
+      "Qatar's QCHP dental licensing exam explained: 150 questions, three and a half hours, Prometric delivery, and mandatory DataFlow verification as of 2026.",
+    path: '/exams/qchp',
+  },
+
   badgeFlagEmoji: '🇶🇦',
   badgeLabel: 'QCHP · Department of Healthcare Professions (Qatar)',
   heroTitleLead: 'The complete guide to the',

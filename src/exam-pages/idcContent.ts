@@ -13,6 +13,13 @@ export const idcExamGuide: ExamGuideConfig = {
   accent: 'emerald',
   backLinkLabel: 'All exams',
 
+  seo: {
+    title: 'IDC Ireland Exam Guide — Dental Council Statutory Exam | LicenseDent',
+    description:
+      "Guide to Ireland's Dental Council statutory exam for BDS graduates: Part 1 SAQ + bench, Part 2 OSCE, the January lottery, fees, and a 6-month prep plan.",
+    path: '/exams/idc-ireland',
+  },
+
   badgeFlagEmoji: '🇮🇪',
   badgeLabel: 'IDC · Dental Council of Ireland · s.27(2)(d)',
   heroTitleLead: 'The complete guide to the',

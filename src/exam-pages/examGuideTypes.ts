@@ -62,10 +62,21 @@ export interface ExamSubject {
   weight?: string;
 }
 
+export interface ExamGuideSeo {
+  /** Kept under ~60 chars so it doesn't truncate in search results. */
+  title: string;
+  /** Kept under ~160 chars for the same reason. */
+  description: string;
+  /** The route's own path, e.g. '/exams/dha' -- used for the canonical URL. */
+  path: string;
+}
+
 /** Everything one exam guide page needs -- content only, no JSX. */
 export interface ExamGuideConfig {
   accent: AccentId;
   backLinkLabel: string;
+
+  seo: ExamGuideSeo;
 
   badgeFlagEmoji: string;
   badgeLabel: string;

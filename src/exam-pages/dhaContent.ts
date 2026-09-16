@@ -26,6 +26,13 @@ export const dhaExamGuide: ExamGuideConfig = {
   accent: 'amber',
   backLinkLabel: 'All Gulf exams',
 
+  seo: {
+    title: 'DHA Exam Guide 2026 — Dubai Dental Licensing | LicenseDent',
+    description:
+      'Complete DHA dental licensing exam guide: exam code GEN5301, DataFlow verification, attempt rules and subject coverage — plus free practice questions.',
+    path: '/exams/dha',
+  },
+
   badgeFlagEmoji: '🇦🇪',
   badgeLabel: 'DHA · Dubai Health Authority',
   heroTitleLead: 'The complete guide to the',

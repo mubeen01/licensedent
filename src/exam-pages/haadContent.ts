@@ -19,6 +19,13 @@ export const haadExamGuide: ExamGuideConfig = {
   accent: 'teal',
   backLinkLabel: 'All Gulf exams',
 
+  seo: {
+    title: 'HAAD (DOH) Exam Guide — Abu Dhabi Dental Licensing | LicenseDent',
+    description:
+      'How the Abu Dhabi dental licensing exam (still called HAAD, now run by DOH) actually works — PQR, DataFlow, shared-attempt rules with DHA and MOH, plus free practice.',
+    path: '/exams/haad',
+  },
+
   badgeFlagEmoji: '🇦🇪',
   badgeLabel: 'HAAD · Abu Dhabi (now DOH)',
   heroTitleLead: 'The complete guide to the',

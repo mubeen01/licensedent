@@ -18,6 +18,13 @@ export const smleExamGuide: ExamGuideConfig = {
   accent: 'emerald',
   backLinkLabel: 'All Gulf exams',
 
+  seo: {
+    title: 'SMLE (SDLE) Exam Guide — Saudi Dental Licensing | LicenseDent',
+    description:
+      "SCFHS's Saudi Dental Licensure Examination (SDLE) explained: scaled scoring, Prometric delivery, and early eligibility for final-year students.",
+    path: '/exams/smle',
+  },
+
   badgeFlagEmoji: '🇸🇦',
   badgeLabel: 'SMLE · Saudi Dental Licensure Examination (SDLE)',
   heroTitleLead: 'The complete guide to the',

@@ -25,6 +25,7 @@ import {
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../components/ui/accordion';
 import { Button } from '../../components/ui/button';
+import SeoHead from '../../client/components/SeoHead';
 import Footer from '../../landing-page/components/Footer';
 import ScrollToTop from '../../landing-page/components/ScrollToTop';
 import SectionTitle from '../../landing-page/components/SectionTitle';
@@ -59,6 +60,12 @@ export default function ExamGuidePage({ config }: { config: ExamGuideConfig }) {
 
   return (
     <div className='bg-background text-foreground'>
+      <SeoHead
+        title={config.seo.title}
+        description={config.seo.description}
+        path={config.seo.path}
+        faqs={config.faqs}
+      />
       <main className='isolate'>
         <Hero config={config} accentClasses={accent} />
         <QuickFactsStrip config={config} accentClasses={accent} />

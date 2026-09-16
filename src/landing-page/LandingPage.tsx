@@ -17,6 +17,7 @@ import SubjectsStrip from './components/SubjectsStrip';
 import TrustSection from './components/TrustSection';
 import TryItDemo from './components/TryItDemo';
 import Clients from './components/Clients';
+import SeoHead from '../client/components/SeoHead';
 
 import {
   buildStats,
@@ -53,6 +54,12 @@ export default function LandingPage() {
   const { stats: bankStats } = useBankStats();
   return (
     <div className="bg-background text-foreground">
+      <SeoHead
+        title="LicenseDent - Gulf + Ireland Dental Licensing Exam Prep"
+        description="Human-verified practice questions, timed mock tests and subject-wise revision for Gulf and Ireland dental licensing exams. Never AI-guessed."
+        path="/"
+        faqs={faqs}
+      />
       <main className="isolate">
         {/* 1 · Hook — the signature moment (dark, cinematic) */}
         <Hero questionCount={bankStats?.publishedQuestionCount} examCount={bankStats?.examCount} />

@@ -18,6 +18,13 @@ export const nhraExamGuide: ExamGuideConfig = {
   accent: 'orange',
   backLinkLabel: 'All Gulf exams',
 
+  seo: {
+    title: 'NHRA Bahrain Exam Guide — Dental Licensing | LicenseDent',
+    description:
+      "Bahrain's NHRA dental licensing exam explained: the Mehan portal application, 150-question Prometric exam, instant results, and the four-attempt rule.",
+    path: '/exams/nhra',
+  },
+
   badgeFlagEmoji: '🇧🇭',
   badgeLabel: 'NHRA · National Health Regulatory Authority (Bahrain)',
   heroTitleLead: 'The complete guide to the',

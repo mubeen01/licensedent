@@ -20,6 +20,13 @@ export const kmleExamGuide: ExamGuideConfig = {
   accent: 'indigo',
   backLinkLabel: 'All Gulf exams',
 
+  seo: {
+    title: 'Kuwait KDLE Exam Guide — Dental Licensure (KMLE) | LicenseDent',
+    description:
+      "How Kuwait's KDLE dental licensure exam works: the mandatory in-person viva, two-part format, sponsor rules, and what changed after September 2023.",
+    path: '/exams/kmle',
+  },
+
   badgeFlagEmoji: '🇰🇼',
   badgeLabel: 'KMLE · Kuwait Ministry of Health (KDLE for dentists)',
   heroTitleLead: 'The complete guide to the',

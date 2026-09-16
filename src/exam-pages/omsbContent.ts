@@ -15,6 +15,13 @@ export const omsbExamGuide: ExamGuideConfig = {
   accent: 'blue',
   backLinkLabel: 'All Gulf exams',
 
+  seo: {
+    title: 'OMSB Oman Exam Guide — Dental Licensing | LicenseDent',
+    description:
+      "How Oman's OMSB dental licensing exam works: Pearson VUE delivery, the Muscat in-person viva, and how it differs from the UAE and Saudi exams.",
+    path: '/exams/omsb',
+  },
+
   badgeFlagEmoji: '🇴🇲',
   badgeLabel: 'OMSB · Oman Medical Specialty Board',
   heroTitleLead: 'The complete guide to the',

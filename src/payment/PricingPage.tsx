@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { cn } from '../lib/utils';
 import { pricingTeaserPlans } from '../landing-page/contentSections';
 import { PaymentPlanId, getPlanPrice, paymentPlans, prettyPaymentPlanName, SubscriptionStatus } from './plans';
+import SeoHead from '../client/components/SeoHead';
 
 const bestDealPaymentPlanId: PaymentPlanId = PaymentPlanId.Standard;
 
@@ -135,6 +136,11 @@ const PricingPage = () => {
 
   return (
     <div className='relative overflow-hidden py-10 lg:mt-10'>
+      <SeoHead
+        title='Pricing — Plans for Gulf & Ireland Dental Exam Prep | LicenseDent'
+        description='Fast Track, Standard and Extended plans for DHA, HAAD, MOH, SMLE, OMSB, QCHP, KMLE, NHRA, SHA and IDC Ireland exam prep. Human-verified content, no ads.'
+        path='/pricing'
+      />
       <div className='pointer-events-none absolute inset-0 -z-10' aria-hidden='true'>
         <div className='absolute -top-24 left-1/4 h-96 w-96 rounded-full bg-primary/15 blur-3xl' />
         <div className='absolute top-10 right-1/4 h-96 w-96 rounded-full bg-secondary/10 blur-3xl' />

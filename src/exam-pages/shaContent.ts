@@ -19,6 +19,13 @@ export const shaExamGuide: ExamGuideConfig = {
   accent: 'violet',
   backLinkLabel: 'All Gulf exams',
 
+  seo: {
+    title: 'SHA Sharjah Exam Guide — Dental Licensing | LicenseDent',
+    description:
+      "How Sharjah's own dental licensing exam (SHA) works: the two-stage license, supervised-practice period, and DataFlow verification.",
+    path: '/exams/sha',
+  },
+
   badgeFlagEmoji: '🇦🇪',
   badgeLabel: 'SHA · Sharjah Health Authority',
   heroTitleLead: 'The complete guide to the',
