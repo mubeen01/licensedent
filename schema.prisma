@@ -158,6 +158,7 @@ enum SubscriptionPlanType {
   fast_track
   standard
   extended
+  ireland_pathway // display name "IDC Pathway" -- enum value stays internal/technical, decoupled from display name
 }
 
 model Exam {
@@ -177,6 +178,11 @@ model Exam {
   authorityLabel            String?         // e.g. "Dubai Health Authority"
   description               String?
   colorGradient             String?         // Tailwind gradient classes, e.g. "from-amber-500 to-amber-400"
+
+  // true = never included in an allExamsAccess:true (Extended-tier) grant,
+  // regardless of future all-exams plans. Ireland is the first case;
+  // designed so a second "its own pack" exam doesn't need a new field.
+  standalonePackOnly        Boolean         @default(false)
 
   subjects                  Subject[]
   questions                 Question[]
