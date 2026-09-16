@@ -2,7 +2,7 @@ import * as z from 'zod';
 import type {
   GenerateCheckoutSession,
   GetCustomerPortalUrl,
-  GetEffectiveAccess,
+  GetMyEffectiveAccess,
   GetMySubscription,
   GetMySubscriptionHistory,
 } from 'wasp/server/operations';
@@ -123,7 +123,7 @@ export const getMySubscriptionHistory: GetMySubscriptionHistory<void, Subscripti
 // upsell cards and the "X free questions left today" readout so the UI matches
 // what the gated operations will actually allow. Never the source of truth by
 // itself -- the server gates on getEffectiveAccess directly.
-export const getMyEffectiveAccess: GetEffectiveAccess<void, EffectiveAccess> = async (_args, context) => {
+export const getMyEffectiveAccess: GetMyEffectiveAccess<void, EffectiveAccess> = async (_args, context) => {
   if (!context.user) {
     throw new HttpError(401, 'Only authenticated users are allowed to perform this operation');
   }
