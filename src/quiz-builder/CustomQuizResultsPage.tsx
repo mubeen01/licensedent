@@ -1,6 +1,6 @@
 import { CheckCircle2, Flag, Trophy, XCircle } from 'lucide-react';
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { type AuthUser } from 'wasp/auth';
 import { getCustomQuizResults, useQuery } from 'wasp/client/operations';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';

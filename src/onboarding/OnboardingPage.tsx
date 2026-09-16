@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { type AuthUser } from 'wasp/auth';
 import { completeOnboarding, getPublicExams, useQuery } from 'wasp/client/operations';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { routes } from 'wasp/client/router';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';

@@ -14,7 +14,7 @@ import {
   Wand2,
   X,
 } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { useAuth, logout } from 'wasp/client/auth';
 import { getDueReviewCount, getMySubscription, useQuery } from 'wasp/client/operations';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';

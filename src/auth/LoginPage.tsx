@@ -1,7 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { login } from 'wasp/client/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Lock, Mail } from 'lucide-react';
 import { AuthPageLayout } from './AuthPageLayout';
 import { sanitizeInput, validateEmail } from './authValidation';

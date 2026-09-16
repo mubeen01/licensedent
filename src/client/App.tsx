@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router';
 import { useAuth } from 'wasp/client/auth';
 import { getMyOnboardingProfile, useQuery } from 'wasp/client/operations';
 import { routes } from 'wasp/client/router';

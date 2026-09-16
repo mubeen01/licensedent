@@ -1,6 +1,6 @@
 import { CheckCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuth } from 'wasp/client/auth';
 import { routes } from 'wasp/client/router';
 import { generateCheckoutSession, getCustomerPortalUrl, getPublicExams, useQuery } from 'wasp/client/operations';

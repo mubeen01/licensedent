@@ -1,5 +1,5 @@
 import { ClipboardCheck, GraduationCap, History, type LucideIcon, MessageCircleMore, Tags, Upload, Users } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { getAdminOverviewStats, getSubjectsForReview, useQuery } from 'wasp/client/operations';
 import { Card } from '../../../components/ui/card';
 import { cn } from '../../../lib/utils';

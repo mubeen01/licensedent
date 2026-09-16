@@ -1,6 +1,6 @@
 import { Award, Clock, ListChecks, PlayCircle, Trophy, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { type AuthUser } from 'wasp/auth';
 import { getExamReadiness, getMockExams, useQuery } from 'wasp/client/operations';
 import { Button } from '../components/ui/button';

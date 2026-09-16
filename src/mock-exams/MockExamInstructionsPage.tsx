@@ -1,6 +1,6 @@
 import { AlertTriangle, CheckCircle2, Clock, ListChecks, ShieldAlert } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { type AuthUser } from 'wasp/auth';
 import { getMockTestMeta, startMockExamAttempt, useQuery } from 'wasp/client/operations';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';

@@ -12,7 +12,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router';
 import { type AuthUser } from 'wasp/auth';
 import {
   getAdminAuditLog,

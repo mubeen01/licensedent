@@ -1,5 +1,5 @@
 import { type LucideIcon, Minus, TrendingDown, TrendingUp } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Card, CardContent, CardHeader } from '../../../components/ui/card';
 import { cn } from '../../../lib/utils';
 

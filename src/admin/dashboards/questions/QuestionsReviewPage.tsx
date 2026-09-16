@@ -12,7 +12,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { type AuthUser } from 'wasp/auth';
 import {

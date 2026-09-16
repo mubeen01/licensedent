@@ -1,6 +1,6 @@
 import { BookOpen, Bookmark, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router';
 import { getDueReviewCount, getPracticeSubjects, useQuery } from 'wasp/client/operations';
 import { Button } from '../components/ui/button';
 import { cn } from '../lib/utils';

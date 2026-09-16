@@ -1,5 +1,5 @@
 import { CreditCard, History, MessageCircle, UserPlus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { getAdminRecentActivity, useQuery } from 'wasp/client/operations';
 import { Card } from '../../../components/ui/card';
 import { cn } from '../../../lib/utils';

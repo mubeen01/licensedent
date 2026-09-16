@@ -9,7 +9,7 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router';
 import { routes } from 'wasp/client/router';
 import { cn } from '../../lib/utils';
 

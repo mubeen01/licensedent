@@ -1,6 +1,6 @@
 import { Ban, ChevronLeft, ChevronRight, CircleCheck, Download, Search, Settings2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAuth } from 'wasp/client/auth';
 import { getPaginatedUsers, toggleUserDisabled, updateIsUserAdminById, useQuery } from 'wasp/client/operations';
 import { type User } from 'wasp/entities';

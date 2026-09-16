@@ -1,7 +1,7 @@
 import { type ApexOptions } from 'apexcharts';
 import { useMemo } from 'react';
 import ReactApexChart from 'react-apexcharts';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { getSubjectsForReview, useQuery } from 'wasp/client/operations';
 import useColorMode from '../../../client/hooks/useColorMode';
 import LoadingSpinner from '../../layout/LoadingSpinner';

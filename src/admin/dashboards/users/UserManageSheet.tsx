@@ -1,6 +1,6 @@
 import { Clock, ExternalLink, Mail, Target, Timer, Zap } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { getUserActivitySummary, sendUserPasswordReset, useQuery } from 'wasp/client/operations';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '../../../components/ui/sheet';
 import { formatRelativeTime } from '../../../lib/utils';
