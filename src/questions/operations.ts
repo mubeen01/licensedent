@@ -494,7 +494,7 @@ export const getCustomQuizMatchCount: GetCustomQuizMatchCount<GetCustomQuizMatch
   context
 ) => {
   const user = ensureUser(context.user);
-  ensureExtendedPlanAccess(user);
+  await ensureExtendedPlanAccess(user.id, context);
   const args = ensureArgsSchemaOrThrowHttpError(getCustomQuizMatchCountInputSchema, rawArgs);
   return context.entities.Question.count({ where: buildCustomQuizWhere(args.filters, user.id) });
 };
@@ -510,7 +510,7 @@ export const getCustomQuizQuestions: GetCustomQuizQuestions<GetCustomQuizQuestio
   context
 ) => {
   const user = ensureUser(context.user);
-  ensureExtendedPlanAccess(user);
+  await ensureExtendedPlanAccess(user.id, context);
   const args = ensureArgsSchemaOrThrowHttpError(getCustomQuizQuestionsInputSchema, rawArgs);
 
   const matchingIds = await resolveCustomQuizQuestionIds(args.filters, user.id, context);

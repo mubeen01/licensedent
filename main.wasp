@@ -1,6 +1,6 @@
 app OpenSaaS {
   wasp: {
-    version: "^0.18.0"
+    version: "^0.19.0"
   },
 
   title: "LicenseDent - Gulf + Ireland Dental Licensing Exam Prep",
@@ -594,12 +594,12 @@ query getPracticeSubjects {
 
 query getPracticeQuestions {
   fn: import { getPracticeQuestions } from "@src/questions/operations",
-  entities: [Question, QuestionNote]
+  entities: [Question, QuestionNote, Subscription, UserAttempt]
 }
 
 action submitAnswer {
   fn: import { submitAnswer } from "@src/questions/operations",
-  entities: [Question, UserAttempt, ReviewSchedule]
+  entities: [Question, UserAttempt, ReviewSchedule, Subscription]
 }
 
 route ReviewRoute { path: "/practice/review", to: ReviewPage }
@@ -615,7 +615,7 @@ action saveQuestionNote {
 
 query getMyMarkedQuestions {
   fn: import { getMyMarkedQuestions } from "@src/questions/operations",
-  entities: [QuestionNote]
+  entities: [QuestionNote, Subscription, UserAttempt]
 }
 
 route SmartReviewRoute { path: "/practice/smart-review", to: SmartReviewPage }
@@ -626,12 +626,12 @@ page SmartReviewPage {
 
 query getDueReviewQuestions {
   fn: import { getDueReviewQuestions } from "@src/questions/operations",
-  entities: [ReviewSchedule, Question, QuestionNote]
+  entities: [ReviewSchedule, Question, QuestionNote, Subscription, UserAttempt]
 }
 
 query getDueReviewCount {
   fn: import { getDueReviewCount } from "@src/questions/operations",
-  entities: [ReviewSchedule]
+  entities: [ReviewSchedule, Subscription, UserAttempt]
 }
 //#endregion
 
@@ -644,12 +644,12 @@ page QuizBuilderPage {
 
 query getCustomQuizMatchCount {
   fn: import { getCustomQuizMatchCount } from "@src/questions/operations",
-  entities: [Question, UserAttempt, QuestionNote]
+  entities: [Question, UserAttempt, QuestionNote, Subscription]
 }
 
 query getCustomQuizQuestions {
   fn: import { getCustomQuizQuestions } from "@src/questions/operations",
-  entities: [Question, UserAttempt, QuestionNote]
+  entities: [Question, UserAttempt, QuestionNote, Subscription]
 }
 
 route CustomQuizAttemptRoute { path: "/quiz-builder/:attemptId", to: CustomQuizAttemptPage }
@@ -666,7 +666,7 @@ page CustomQuizResultsPage {
 
 action startCustomQuizAttempt {
   fn: import { startCustomQuizAttempt } from "@src/quiz-builder/operations",
-  entities: [CustomQuizAttempt, CustomQuizAttemptItem, Question, UserAttempt, QuestionNote]
+  entities: [CustomQuizAttempt, CustomQuizAttemptItem, Question, UserAttempt, QuestionNote, Subscription]
 }
 
 query getCustomQuizAttempt {

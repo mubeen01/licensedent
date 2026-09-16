@@ -42,7 +42,7 @@ export const startCustomQuizAttempt: StartCustomQuizAttempt<StartCustomQuizAttem
   context
 ) => {
   const user = ensureUser(context.user);
-  ensureExtendedPlanAccess(user);
+  await ensureExtendedPlanAccess(user.id, context);
   const args = ensureArgsSchemaOrThrowHttpError(startCustomQuizAttemptInputSchema, rawArgs);
 
   const matchingIds = await resolveCustomQuizQuestionIds(args.filters, user.id, context);

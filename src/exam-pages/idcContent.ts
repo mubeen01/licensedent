@@ -274,4 +274,4 @@ export const idcExamGuide: ExamGuideConfig = {
   closingTitle: 'Prepare the Irish way — SAQ + bench + OSCE together',
   closingDescription:
     '600-Q endo bank + Restorative/Surgery/Paedo tracks, bench checklists, 12-station OSCE bank, timed mocks — every answer dentist-verified with why-correct + why-distractor-wrong + guideline + safety-net. Start with Jan lottery docs, not just books.',
-},
+};
