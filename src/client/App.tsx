@@ -7,6 +7,7 @@ import './Main.css';
 import NavBar from './components/NavBar/NavBar';
 import { demoNavigationitems, marketingNavigationItems } from './components/NavBar/constants';
 import CookieConsentBanner from './components/cookie-consent/Banner';
+import OrganizationJsonLd from './components/OrganizationJsonLd';
 
 /**
  * use this component to wrap all child components
@@ -89,6 +90,7 @@ export default function App() {
 
   return (
     <>
+      <OrganizationJsonLd />
       <div className='min-h-screen bg-background text-foreground'>
         {isCheckingOnboardingGate ? null : needsOnboarding ? (
           <Navigate to={routes.OnboardingRoute.to} replace />

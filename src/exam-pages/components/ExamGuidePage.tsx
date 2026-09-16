@@ -25,7 +25,7 @@ import {
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../components/ui/accordion';
 import { Button } from '../../components/ui/button';
-import SeoHead from '../../client/components/SeoHead';
+import SeoHead, { SITE_ORIGIN } from '../../client/components/SeoHead';
 import Footer from '../../landing-page/components/Footer';
 import ScrollToTop from '../../landing-page/components/ScrollToTop';
 import SectionTitle from '../../landing-page/components/SectionTitle';
@@ -58,6 +58,36 @@ const ruleIcons: Record<RuleIcon, typeof Shield> = {
 export default function ExamGuidePage({ config }: { config: ExamGuideConfig }) {
   const accent = accentPalettes[config.accent];
 
+  // PRD-01 S2.2/S2.3 -- both built from config that's already static/
+  // human-verified (nothing fetched, nothing invented), so they're present
+  // in the build-time prerendered HTML, not just after client hydration.
+  const canonicalUrl = `${SITE_ORIGIN}${config.seo.path}`;
+  // Every SEO title in this codebase follows "<short name> Exam Guide ... -- <subtitle> | LicenseDent" -- the part before the em dash is a clean, short label for breadcrumbs/Course names.
+  const shortName = config.seo.title.split('—')[0].trim();
+
+  const courseJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Course',
+    name: shortName,
+    description: config.seo.description,
+    url: canonicalUrl,
+    provider: { '@type': 'EducationalOrganization', name: 'LicenseDent', url: SITE_ORIGIN },
+    // The exam's own official subject/domain blueprint (sourced from that
+    // authority's guideline, see this exam's *Content.ts file header) --
+    // not LicenseDent's internal question-bank taxonomy.
+    teaches: config.examSubjects.map((s) => s.name),
+  };
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_ORIGIN}/` },
+      { '@type': 'ListItem', position: 2, name: 'All Exams', item: `${SITE_ORIGIN}/exams` },
+      { '@type': 'ListItem', position: 3, name: shortName, item: canonicalUrl },
+    ],
+  };
+
   return (
     <div className='bg-background text-foreground'>
       <SeoHead
@@ -65,6 +95,7 @@ export default function ExamGuidePage({ config }: { config: ExamGuideConfig }) {
         description={config.seo.description}
         path={config.seo.path}
         faqs={config.faqs}
+        extraJsonLd={[courseJsonLd, breadcrumbJsonLd]}
       />
       <main className='isolate'>
         <Hero config={config} accentClasses={accent} />

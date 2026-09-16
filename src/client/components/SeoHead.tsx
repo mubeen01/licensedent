@@ -14,12 +14,16 @@ interface SeoHeadProps {
   path: string;
   /** FAQPage JSON-LD, when the page has FAQ content to expose to search/AI crawlers. */
   faqs?: { question: string; answer: string }[];
+  /** Any other JSON-LD objects for this page (Course, BreadcrumbList, etc. -- PRD-01 Phase S2). Each renders as its own <script> tag, per schema.org's own recommendation of one type per block over an @graph. */
+  extraJsonLd?: Record<string, unknown>[];
 }
 
 // TODO(PRD-01 Q1): replace with the real production domain once decided.
-const SITE_ORIGIN = 'https://licensedent.example.com';
+// Exported so other JSON-LD builders (OrganizationJsonLd, breadcrumbs, Course)
+// stay in sync with SeoHead's own canonical URLs -- one place to update.
+export const SITE_ORIGIN = 'https://licensedent.example.com';
 
-export default function SeoHead({ title, description, path, faqs }: SeoHeadProps) {
+export default function SeoHead({ title, description, path, faqs, extraJsonLd }: SeoHeadProps) {
   const canonicalUrl = `${SITE_ORIGIN}${path}`;
 
   const faqJsonLd =
@@ -45,6 +49,9 @@ export default function SeoHead({ title, description, path, faqs }: SeoHeadProps
         // no hoisting needed for this one, unlike title/meta/link above.
         <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       )}
+      {extraJsonLd?.map((obj, i) => (
+        <script key={i} type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(obj) }} />
+      ))}
     </>
   );
 }
