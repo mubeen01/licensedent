@@ -14,6 +14,7 @@ import {
 import * as z from 'zod';
 import { computeStreak } from '../dashboard/streak';
 import { resolveOptionalImageUrl } from '../file-upload/s3Utils';
+import { getEffectiveAccessForExam, requireActivePlan } from '../payment/access';
 import { PaymentPlanId, SubscriptionStatus } from '../payment/plans';
 import { ensureArgsSchemaOrThrowHttpError } from '../server/validation';
 
@@ -205,6 +206,16 @@ export const startMockExamAttempt: StartMockExamAttempt<StartMockExamAttemptInpu
   if (!mockTest || !mockTest.isActive) {
     throw new HttpError(404, 'Mock exam not found');
   }
+
+  // PRD-002 Phase I3: the attempt-count cap below has always applied, but
+  // nothing ever checked that the user's plan actually covers *this* mock
+  // exam's exam -- a Fast Track pass scoped to one exam could silently start
+  // attempts for any other exam's mocks too. Real per-exam enforcement, not
+  // just a client-side hide.
+  requireActivePlan(
+    await getEffectiveAccessForExam(user.id, mockTest.examId, context.entities),
+    'This mock exam'
+  );
 
   const siblingMockTests = await context.entities.MockTest.findMany({
     where: { isActive: true, examId: mockTest.examId },

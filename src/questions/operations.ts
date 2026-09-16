@@ -13,7 +13,14 @@ import {
 } from 'wasp/server/operations';
 import * as z from 'zod';
 import { resolveOptionalImageUrl } from '../file-upload/s3Utils';
-import { getEffectiveAccess, requireActivePlan, requireExtendedPlan, requirePracticeSlotToday } from '../payment/access';
+import {
+  type AccessEntities,
+  getAccessibleExamIds,
+  getEffectiveAccess,
+  requireActivePlan,
+  requireExtendedPlan,
+  requirePracticeSlotToday,
+} from '../payment/access';
 import { ensureArgsSchemaOrThrowHttpError } from '../server/validation';
 
 function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<T> {
@@ -87,14 +94,43 @@ type PracticeQuestion = Pick<Question, 'id' | 'stem' | 'options' | 'imageUrl' | 
   markedImportant: boolean;
 };
 
-// Shared by getPracticeQuestions (subject-based draw) and getDueReviewQuestions
-// (spaced-repetition draw) -- both just need to turn a fixed, already-chosen
-// list of question ids into the same answer-blind shape, with the student's
-// own notes/star and a freshly signed image URL attached.
+// Minimal entity surface for buildPracticeQuestions -- deliberately NOT pinned
+// to any one operation's generated context type (it used to be pinned to
+// GetPracticeQuestions's, which meant adding an entity to THAT operation's
+// main.wasp.ts registration silently forced the same entity onto every OTHER
+// caller of this shared helper, including unrelated ones like Quiz Builder's
+// getCustomQuizQuestions -- PRD-002 Phase I3 hit exactly this).
+type PracticeQuestionEntities = {
+  Question: {
+    findMany(args: {
+      where: { id: { in: string[] } };
+      select: {
+        id: true;
+        stem: true;
+        options: true;
+        imageUrl: true;
+        subjectId: true;
+        subject: { select: { name: true } };
+      };
+    }): Promise<Array<Pick<Question, 'id' | 'stem' | 'options' | 'imageUrl' | 'subjectId'> & { subject: { name: string } }>>;
+  };
+  QuestionNote: {
+    findMany(args: {
+      where: { userId: string; questionId: { in: string[] } };
+      select: { questionId: true; note: true; markedImportant: true };
+    }): Promise<Array<{ questionId: string; note: string | null; markedImportant: boolean }>>;
+  };
+};
+
+// Shared by getPracticeQuestions (subject-based draw), getDueReviewQuestions
+// (spaced-repetition draw), and getCustomQuizQuestions (Quiz Builder draw) --
+// all three just need to turn a fixed, already-chosen list of question ids
+// into the same answer-blind shape, with the student's own notes/star and a
+// freshly signed image URL attached.
 async function buildPracticeQuestions(
   idsInOrder: string[],
   userId: string,
-  context: Parameters<GetPracticeQuestions<GetPracticeQuestionsInput, PracticeQuestion[]>>[1]
+  context: { entities: PracticeQuestionEntities }
 ): Promise<PracticeQuestion[]> {
   const [questions, notes] = await Promise.all([
     context.entities.Question.findMany({
@@ -149,11 +185,22 @@ export const getPracticeQuestions: GetPracticeQuestions<GetPracticeQuestionsInpu
   requirePracticeSlotToday(access);
   const args = ensureArgsSchemaOrThrowHttpError(getPracticeQuestionsInputSchema, rawArgs);
 
+  // PRD-002 Phase I3: paid users only ever draw from exams their plan(s)
+  // actually cover (e.g. a Fast Track pass for one exam no longer silently
+  // unlocks every other exam's content) -- free users are unrestricted by
+  // exam, same as before, since there's no purchased exam to scope them to.
+  const accessibleExamIds = access.active ? await getAccessibleExamIds(user.id, context.entities) : null;
+
   // Fetching matching IDs and shuffling in-app (rather than ORDER BY RANDOM()
   // in SQL) so this stays cheap as the published question count grows --
   // see build-plan's Step 5 note on random-at-scale.
   const matchingIds = await context.entities.Question.findMany({
-    where: { status: 'published', subjectId: { in: args.subjectIds }, subject: { isActive: true } },
+    where: {
+      status: 'published',
+      subjectId: { in: args.subjectIds },
+      subject: { isActive: true },
+      ...(accessibleExamIds ? { exams: { some: { id: { in: accessibleExamIds } } } } : {}),
+    },
     select: { id: true },
   });
 
@@ -320,9 +367,17 @@ export const getMyMarkedQuestions: GetMyMarkedQuestions<void, MarkedQuestion[]> 
   // D1: My Reviews is an active-plan feature (1.3). Marks/notes written during
   // free practice are preserved and become visible with any plan.
   requireActivePlan(await getEffectiveAccess(user.id, context.entities), 'My Reviews');
+  // PRD-002 Phase I3: a mark/note from a since-lapsed or other-exam plan stays
+  // saved (per the comment above) but only surfaces here while it's within an
+  // exam the user's CURRENT plan(s) actually cover.
+  const accessibleExamIds = await getAccessibleExamIds(user.id, context.entities);
 
   const notes = await context.entities.QuestionNote.findMany({
-    where: { userId: user.id, OR: [{ markedImportant: true }, { NOT: { note: null } }] },
+    where: {
+      userId: user.id,
+      OR: [{ markedImportant: true }, { NOT: { note: null } }],
+      question: { exams: { some: { id: { in: accessibleExamIds } } } },
+    },
     orderBy: { updatedAt: 'desc' },
     include: { question: { include: { subject: { select: { name: true } } } } },
   });
@@ -359,9 +414,16 @@ export const getDueReviewQuestions: GetDueReviewQuestions<GetDueReviewQuestionsI
   // D1: Smart Review is an active-plan feature.
   requireActivePlan(await getEffectiveAccess(user.id, context.entities), 'Smart Review');
   const args = ensureArgsSchemaOrThrowHttpError(getDueReviewQuestionsInputSchema, rawArgs);
+  // PRD-002 Phase I3: only resurface reviews for exams the user's current
+  // plan(s) actually cover.
+  const accessibleExamIds = await getAccessibleExamIds(user.id, context.entities);
 
   const due = await context.entities.ReviewSchedule.findMany({
-    where: { userId: user.id, dueAt: { lte: new Date() }, question: { status: 'published' } },
+    where: {
+      userId: user.id,
+      dueAt: { lte: new Date() },
+      question: { status: 'published', exams: { some: { id: { in: accessibleExamIds } } } },
+    },
     orderBy: { dueAt: 'asc' },
     take: args.count,
     select: { questionId: true },
@@ -377,8 +439,15 @@ export const getDueReviewCount: GetDueReviewCount<void, number> = async (_args, 
   // Review access (the page itself upsells; getDueReviewQuestions 403s).
   const access = await getEffectiveAccess(user.id, context.entities);
   if (!access.active) return 0;
+  // PRD-002 Phase I3: same exam scoping as getDueReviewQuestions, so the
+  // dashboard badge count matches what that query would actually return.
+  const accessibleExamIds = await getAccessibleExamIds(user.id, context.entities);
   return context.entities.ReviewSchedule.count({
-    where: { userId: user.id, dueAt: { lte: new Date() }, question: { status: 'published' } },
+    where: {
+      userId: user.id,
+      dueAt: { lte: new Date() },
+      question: { status: 'published', exams: { some: { id: { in: accessibleExamIds } } } },
+    },
   });
 };
 
@@ -398,10 +467,13 @@ export const getDueReviewCount: GetDueReviewCount<void, number> = async (_args, 
 // server-side enforcement (now through the shared 1.2/1.3 helper, so a
 // REVOKED/EXPIRED Extended plan also stops working immediately) stops a free
 // or lapsed account from calling these operations directly for real content.
-export async function ensureExtendedPlanAccess(
-  userId: string,
-  context: Parameters<GetCustomQuizQuestions<GetCustomQuizQuestionsInput, PracticeQuestion[]>>[1]
-) {
+// `context` is deliberately typed against the minimal AccessEntities surface,
+// not pinned to any one operation's generated context type -- this is shared
+// by getCustomQuizMatchCount/getCustomQuizQuestions here AND by
+// startCustomQuizAttempt in quiz-builder/operations.ts, each with their own
+// separate main.wasp.ts entity list (see PracticeQuestionEntities above for
+// why pinning to one operation's type is a trap for a shared helper).
+export async function ensureExtendedPlanAccess(userId: string, context: { entities: AccessEntities }) {
   requireExtendedPlan(await getEffectiveAccess(userId, context.entities));
 }
 

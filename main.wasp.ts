@@ -443,16 +443,16 @@ export default app({
     // Practice mode (student-facing MCQ engine)
     route('PracticeRoute', '/practice', page(PracticePage, { authRequired: true })),
     query(getPracticeSubjects, { entities: ['Subject', 'Exam'] }),
-    query(getPracticeQuestions, { entities: ['Question', 'QuestionNote', 'Subscription', 'UserAttempt'] }),
+    query(getPracticeQuestions, { entities: ['Question', 'QuestionNote', 'Subscription', 'UserAttempt', 'Exam'] }),
     action(submitAnswer, { entities: ['Question', 'UserAttempt', 'ReviewSchedule', 'Subscription'] }),
     route('ReviewRoute', '/practice/review', page(ReviewPage, { authRequired: true })),
     action(saveQuestionNote, { entities: ['QuestionNote'] }),
-    query(getMyMarkedQuestions, { entities: ['QuestionNote', 'Subscription', 'UserAttempt'] }),
+    query(getMyMarkedQuestions, { entities: ['QuestionNote', 'Subscription', 'UserAttempt', 'Exam'] }),
     route('SmartReviewRoute', '/practice/smart-review', page(SmartReviewPage, { authRequired: true })),
     query(getDueReviewQuestions, {
-      entities: ['ReviewSchedule', 'Question', 'QuestionNote', 'Subscription', 'UserAttempt'],
+      entities: ['ReviewSchedule', 'Question', 'QuestionNote', 'Subscription', 'UserAttempt', 'Exam'],
     }),
-    query(getDueReviewCount, { entities: ['ReviewSchedule', 'Subscription', 'UserAttempt'] }),
+    query(getDueReviewCount, { entities: ['ReviewSchedule', 'Subscription', 'UserAttempt', 'Exam'] }),
 
     // Quiz Builder (Extended-plan perk -- Phase 1: practice-mode filters, Phase 2: timed/exam mode)
     route('QuizBuilderRoute', '/quiz-builder', page(QuizBuilderPage, { authRequired: true })),
@@ -479,7 +479,9 @@ export default app({
     query(getExamReadiness, { entities: ['MockTest', 'MockExamAttempt', 'Exam'] }),
     query(getReadinessScore, { entities: ['MockExamAttempt', 'UserAttempt', 'Subject'] }),
     query(getMockTestMeta, { entities: ['MockTest'] }),
-    action(startMockExamAttempt, { entities: ['MockTest', 'MockExamAttempt', 'Question'] }),
+    action(startMockExamAttempt, {
+      entities: ['MockTest', 'MockExamAttempt', 'Question', 'Subscription', 'Exam', 'UserAttempt'],
+    }),
     action(saveMockExamAnswer, { entities: ['MockExamAttempt', 'MockExamAttemptItem'] }),
     action(submitMockExamAttempt, { entities: ['MockExamAttempt', 'MockExamAttemptItem', 'Question'] }),
 

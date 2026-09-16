@@ -14,6 +14,19 @@ import { PaymentPlanId } from './plans';
 //    mockTestId=null). Smart Review, Mock Exams, Progress, Quiz Builder and
 //    Video Lectures require an active plan.
 //  - Hard lockout at expiresAt: no grace period, in-progress included.
+//
+// PRD-002 Phase I3: `getEffectiveAccess` above answers "does this user have
+// ANY active plan" -- exam-blind by design, kept for gates that genuinely
+// aren't about a specific exam (the free daily cap, billing display).
+// `getEffectiveAccessForExam`/`getAccessibleExamIds` below answer "does this
+// user's plan cover THIS exam", reading `Subscription.examAccessId`/
+// `allExamsAccess` for the first time anywhere in the app (previously present
+// in the schema, set correctly at checkout/grant, but never read by any
+// access-gating code -- see PRD-002 §1/§2). `allExamsAccess: true` means "every
+// exam where `Exam.standalonePackOnly` is false", computed at check-time by
+// joining Exam, not a literal "every exam" -- so Extended covers all Gulf
+// exams but not Ireland, without another schema change if a future exam also
+// needs to be its own pack.
 
 export const FREE_DAILY_PRACTICE_LIMIT = 15;
 
@@ -45,29 +58,62 @@ export type EffectiveAccess = {
 };
 
 // Minimal entity surface -- only what the helper touches. Keeps it unit-testable
-// with fakes and decoupled from the full Wasp context type.
+// with fakes and decoupled from the full Wasp context type. getEffectiveAccess
+// doesn't touch Exam at all, so it deliberately does NOT require callers to
+// register/pass it -- only the exam-aware functions below (ExamAwareAccessEntities)
+// need it, so main.wasp.ts entity lists (and this type) catch at compile time
+// if a call site forgets to register Exam for those.
 export type AccessEntities = {
   Subscription: {
     findMany(args: {
       where: { userId: string };
       orderBy: { createdAt: 'desc' };
-    }): Promise<Array<{ planType: string; durationDays: number; createdAt: Date; expiresAt: Date | null }>>;
+    }): Promise<
+      Array<{
+        planType: string;
+        durationDays: number;
+        createdAt: Date;
+        expiresAt: Date | null;
+        allExamsAccess: boolean;
+        examAccessId: string | null;
+      }>
+    >;
   };
   UserAttempt: {
     count(args: { where: { userId: string; mockTestId: null; createdAt: { gte: Date } } }): Promise<number>;
   };
 };
 
-export async function getEffectiveAccess(
+export type ExamAwareAccessEntities = AccessEntities & {
+  Exam: {
+    findUnique(args: {
+      where: { id: string };
+      select: { standalonePackOnly: true };
+    }): Promise<{ standalonePackOnly: boolean } | null>;
+    findMany(args: { where: { standalonePackOnly: boolean }; select: { id: true } }): Promise<Array<{ id: string }>>;
+  };
+};
+
+type LiveSub = Awaited<ReturnType<AccessEntities['Subscription']['findMany']>>[number];
+
+// Shared by getEffectiveAccess/getEffectiveAccessForExam -- an optional
+// `coversExam` predicate narrows which subscriptions are even eligible before
+// picking the best (longest-live) one, so both exam-blind and exam-scoped
+// entitlement share one "pick the best live row" implementation.
+async function computeAccess(
   userId: string,
   entities: AccessEntities,
-  now: Date = new Date()
+  now: Date,
+  coversExam?: (sub: LiveSub) => boolean
 ): Promise<EffectiveAccess> {
   const subs = await entities.Subscription.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
+  const eligible = coversExam ? subs.filter(coversExam) : subs;
 
-  // Latest row that is still unexpired. A user can hold several passes (history
-  // keeps them all); entitlement follows the best (latest) live one.
-  const live = subs
+  // Latest eligible row that is still unexpired. A user can hold several
+  // passes (history keeps them all, possibly for different exams); entitlement
+  // follows the best (latest) live one among those that actually cover what's
+  // being asked for.
+  const live = eligible
     .map((s) => ({ sub: s, expiresAt: effectiveExpiryOf(s) }))
     .filter(({ expiresAt }) => expiresAt > now)
     .sort((a, b) => b.expiresAt.getTime() - a.expiresAt.getTime())[0];
@@ -90,6 +136,58 @@ export async function getEffectiveAccess(
     expiresAt: live.expiresAt,
     freePracticeRemainingToday: null,
   };
+}
+
+export async function getEffectiveAccess(
+  userId: string,
+  entities: AccessEntities,
+  now: Date = new Date()
+): Promise<EffectiveAccess> {
+  return computeAccess(userId, entities, now);
+}
+
+// Exam-scoped entitlement: "does this user's plan cover THIS exam right now."
+// An allExamsAccess sub covers it unless the exam is standalonePackOnly; a
+// single-exam sub covers it only if examAccessId matches. An exam that can't
+// be found covers nothing (fail closed, not open).
+export async function getEffectiveAccessForExam(
+  userId: string,
+  examId: string,
+  entities: ExamAwareAccessEntities,
+  now: Date = new Date()
+): Promise<EffectiveAccess> {
+  const targetExam = await entities.Exam.findUnique({ where: { id: examId }, select: { standalonePackOnly: true } });
+  const coversExam = (sub: LiveSub) =>
+    sub.allExamsAccess ? !(targetExam?.standalonePackOnly ?? true) : sub.examAccessId === examId;
+  return computeAccess(userId, entities, now, coversExam);
+}
+
+// Every exam id the user currently has live access to, across all of their
+// (possibly several, possibly different-exam) live Subscription rows -- for
+// content queries that select from a pool rather than checking one target
+// exam (practice draw, Smart Review, My Reviews). Empty array, not an
+// exception, when the user has no live coverage of anything.
+export async function getAccessibleExamIds(
+  userId: string,
+  entities: ExamAwareAccessEntities,
+  now: Date = new Date()
+): Promise<string[]> {
+  const subs = await entities.Subscription.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
+  const live = subs.filter((s) => effectiveExpiryOf(s) > now);
+
+  const singleExamIds = live
+    .filter((s): s is LiveSub & { examAccessId: string } => !s.allExamsAccess && !!s.examAccessId)
+    .map((s) => s.examAccessId);
+
+  if (!live.some((s) => s.allExamsAccess)) {
+    return Array.from(new Set(singleExamIds));
+  }
+
+  const nonStandaloneExams = await entities.Exam.findMany({
+    where: { standalonePackOnly: false },
+    select: { id: true },
+  });
+  return Array.from(new Set([...singleExamIds, ...nonStandaloneExams.map((e) => e.id)]));
 }
 
 /* -------------------------------------------------------------------------- */
