@@ -51,13 +51,13 @@
   "devDependencies": {
     "@faker-js/faker": "8.3.1",
     "@types/express": "^5.0.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^24.0.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.31",
     "prisma": "5.19.1",
-    "typescript": "5.8.2",
+    "typescript": "5.9.3",
     "vite": "^7.0.6"
   },
   "allowScripts": {
