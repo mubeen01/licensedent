@@ -44,7 +44,7 @@ export default function Footer({
     >
       {/* Thin gradient accent along the very top */}
       <div
-        className='pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent'
+        className='pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/50 to-transparent'
         aria-hidden='true'
       />
 
@@ -53,7 +53,7 @@ export default function Footer({
           {/* Brand */}
           <div className='col-span-2 md:col-span-5 md:pr-8'>
             <WaspRouterLink to={routes.LandingPageRoute.to} className='flex items-center gap-2'>
-              <span className='flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-sm'>
+              <span className='flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-xs'>
                 <img src='/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
               </span>
               <span className='text-lg font-bold text-foreground'>LicenseDent</span>

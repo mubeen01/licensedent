@@ -78,9 +78,9 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
   return (
     <div className='h-full flex flex-col bg-card border-r border-border overflow-hidden'>
       {/* Brand header */}
-      <div className='flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0'>
+      <div className='flex items-center justify-between px-5 py-4 border-b border-border shrink-0'>
         <WaspRouterLink to='/' className='flex items-center space-x-2.5'>
-          <div className='w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0 shadow-sm'>
+          <div className='w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0 shadow-xs'>
             <img src='/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
           </div>
           <div>
@@ -116,7 +116,7 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
                 {active && (
                   <span className='absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-primary' />
                 )}
-                <item.icon className='mr-3 h-4 w-4 flex-shrink-0' />
+                <item.icon className='mr-3 h-4 w-4 shrink-0' />
                 <span className='flex-1 text-left truncate'>{item.label}</span>
                 {'badge' in item && item.badge && !active && (
                   <span className='ml-2 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground'>
@@ -130,7 +130,7 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       </nav>
 
       {/* Exam access widget (real data, not fabricated) */}
-      <div className='p-3 border-t border-border flex-shrink-0'>
+      <div className='p-3 border-t border-border shrink-0'>
         <div className='rounded-lg border border-border bg-muted/40 p-3'>
           <div className='flex items-center justify-between mb-2'>
             <span className='font-medium text-xs text-foreground'>Exam Access</span>
@@ -165,23 +165,23 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
 
       {/* User profile + quick actions */}
       {user?.email && (
-        <div className='p-3 border-t border-border flex-shrink-0'>
+        <div className='p-3 border-t border-border shrink-0'>
           <div className='flex items-center space-x-2 p-2 rounded-lg'>
-            <div className='w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-medium text-xs flex-shrink-0'>
+            <div className='w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-medium text-xs shrink-0'>
               {user.email[0].toUpperCase()}
             </div>
             <div className='flex-1 min-w-0'>
               <p className='font-medium text-xs text-foreground truncate'>{user.username || user.email.split('@')[0]}</p>
               <p className='text-xs text-muted-foreground truncate'>{user.email}</p>
             </div>
-            <ChevronDown className='w-3 h-3 text-muted-foreground flex-shrink-0' />
+            <ChevronDown className='w-3 h-3 text-muted-foreground shrink-0' />
           </div>
 
           <div className='mt-2 pt-2 border-t border-border'>
             <div className='grid grid-cols-2 gap-1'>
               <WaspRouterLink to={routes.AccountRoute.to}>
                 <Button variant='ghost' size='sm' className='w-full justify-start text-xs h-7 font-medium'>
-                  <Settings className='w-3 h-3 mr-1 flex-shrink-0' />
+                  <Settings className='w-3 h-3 mr-1 shrink-0' />
                   <span className='truncate'>Settings</span>
                 </Button>
               </WaspRouterLink>
@@ -191,7 +191,7 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
                 onClick={handleLogout}
                 className='justify-start text-xs h-7 font-medium hover:text-destructive'
               >
-                <LogOut className='w-3 h-3 mr-1 flex-shrink-0' />
+                <LogOut className='w-3 h-3 mr-1 shrink-0' />
                 <span className='truncate'>Logout</span>
               </Button>
             </div>

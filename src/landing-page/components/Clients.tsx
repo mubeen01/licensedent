@@ -31,7 +31,7 @@ const destinations: Destination[] = [
 
 function DestinationChip({ flag, country, exams }: Destination) {
   return (
-    <div className='group flex items-center gap-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md'>
+    <div className='group flex items-center gap-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md'>
       <span className='flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-muted text-xl leading-none transition-transform duration-300 group-hover:scale-110' aria-hidden='true'>
         {flag}
       </span>
@@ -56,8 +56,8 @@ export default function Clients() {
       {/* Marquee */}
       <div className='relative overflow-hidden'>
         {/* edge fades */}
-        <div className='pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-background to-transparent sm:w-28' />
-        <div className='pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-background to-transparent sm:w-28' />
+        <div className='pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-linear-to-r from-background to-transparent sm:w-28' />
+        <div className='pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-linear-to-l from-background to-transparent sm:w-28' />
 
         <div className='dp-marquee-track flex w-max items-center gap-4 px-4'>
           {track.map((d, i) => (

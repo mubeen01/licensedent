@@ -126,7 +126,7 @@ function MockExamAttemptPage({ user }: { user: AuthUser }) {
   return (
     <div className='min-h-screen bg-background flex flex-col'>
       {/* Header */}
-      <div className='sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur px-4 py-3 flex items-center justify-between gap-4'>
+      <div className='sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur-sm px-4 py-3 flex items-center justify-between gap-4'>
         <div>
           <p className='text-sm font-bold text-foreground'>{fetched?.mockTestTitle}</p>
           <p className='text-xs text-muted-foreground'>
@@ -147,7 +147,7 @@ function MockExamAttemptPage({ user }: { user: AuthUser }) {
       <div className='flex-1 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full p-4 md:p-6'>
         {/* Question */}
         <ProtectedContent>
-        <div className='flex-1 min-w-0 rounded-sm border border-border bg-card shadow p-5 md:p-8 flex flex-col gap-6'>
+        <div className='flex-1 min-w-0 rounded-sm border border-border bg-card shadow-sm p-5 md:p-8 flex flex-col gap-6'>
           <div className='flex items-center justify-between text-xs text-muted-foreground'>
             <span className='rounded-full bg-accent px-2.5 py-0.5 font-medium text-accent-foreground'>
               {current.subjectName}
@@ -206,7 +206,7 @@ function MockExamAttemptPage({ user }: { user: AuthUser }) {
         </ProtectedContent>
 
         {/* Question palette */}
-        <div className='lg:w-72 flex-none rounded-sm border border-border bg-card shadow p-4 h-fit lg:sticky lg:top-20'>
+        <div className='lg:w-72 flex-none rounded-sm border border-border bg-card shadow-sm p-4 h-fit lg:sticky lg:top-20'>
           <p className='text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3'>Questions</p>
           <div className='grid grid-cols-8 lg:grid-cols-6 gap-1.5'>
             {items.map((item, i) => {

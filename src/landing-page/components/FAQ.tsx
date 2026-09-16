@@ -24,7 +24,7 @@ export default function FAQ({ faqs }: { faqs: FAQ[] }) {
             answers verified.
           </p>
 
-          <div className='mt-8 rounded-2xl border border-border bg-gradient-to-br from-primary/[0.06] to-secondary/[0.04] p-6'>
+          <div className='mt-8 rounded-2xl border border-border bg-linear-to-br from-primary/6 to-secondary/4 p-6'>
             <p className='text-sm font-semibold text-foreground'>Still have a question?</p>
             <p className='mt-1 text-sm text-muted-foreground'>
               Send us a message and we’ll help you pick the right plan before you buy.
@@ -45,7 +45,7 @@ export default function FAQ({ faqs }: { faqs: FAQ[] }) {
               <AccordionItem
                 key={faq.id}
                 value={`faq-${faq.id}`}
-                className='rounded-2xl border border-border bg-card px-6 transition-colors duration-200 hover:border-primary/30 data-[state=open]:border-primary/40 data-[state=open]:bg-primary/[0.04]'
+                className='rounded-2xl border border-border bg-card px-6 transition-colors duration-200 hover:border-primary/30 data-[state=open]:border-primary/40 data-[state=open]:bg-primary/4'
               >
                 <AccordionTrigger className='py-5 text-left text-base font-semibold leading-7 text-foreground transition-colors duration-200 hover:text-primary hover:no-underline data-[state=open]:text-primary'>
                   {faq.question}

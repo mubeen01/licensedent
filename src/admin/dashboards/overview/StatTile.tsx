@@ -46,7 +46,7 @@ export default function StatTile({
   const card = (
     <Card
       className={cn(
-        'rounded-2xl border-border/80 shadow-sm transition-all duration-200',
+        'rounded-2xl border-border/80 shadow-xs transition-all duration-200',
         href && 'hover:-translate-y-1 hover:shadow-lg cursor-pointer'
       )}
     >

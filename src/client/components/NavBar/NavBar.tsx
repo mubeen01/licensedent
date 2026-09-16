@@ -212,7 +212,7 @@ function renderNavigationItems(
 
 const NavLogo = ({ isScrolled }: { isScrolled: boolean }) => (
   <span
-    className={cn('flex items-center justify-center overflow-hidden rounded-xl shadow-sm transition-all duration-500', {
+    className={cn('flex items-center justify-center overflow-hidden rounded-xl shadow-xs transition-all duration-500', {
       'size-9': !isScrolled,
       'size-8': isScrolled,
     })}

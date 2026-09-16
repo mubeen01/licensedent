@@ -61,7 +61,7 @@ function UserAvatar({ email, username }: { email: string | null; username: strin
   const source = username || email || '?';
   const initials = source.slice(0, 2).toUpperCase();
   return (
-    <span className='flex h-10 w-10 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-xs font-bold text-white shadow-sm'>
+    <span className='flex h-10 w-10 flex-none items-center justify-center rounded-full bg-linear-to-br from-primary to-secondary text-xs font-bold text-white shadow-xs'>
       {initials}
     </span>
   );
@@ -214,7 +214,7 @@ const UsersTable = () => {
         <InviteUserSheet onInvited={refetch} />
       </div>
 
-      <div className='rounded-2xl border border-border bg-card shadow-sm overflow-hidden'>
+      <div className='rounded-2xl border border-border bg-card shadow-xs overflow-hidden'>
         <div className='flex flex-col gap-3 w-full p-5 bg-muted/40 border-b border-border'>
           <div className='flex flex-wrap items-center gap-2.5'>
             <div className='relative flex-1 min-w-[220px]'>

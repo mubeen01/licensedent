@@ -31,7 +31,7 @@ export default function RecentActivityFeed() {
   const { data: events, isLoading } = useQuery(getAdminRecentActivity);
 
   return (
-    <Card className='rounded-2xl border-border/80 shadow-sm p-5 md:p-6 h-full flex flex-col'>
+    <Card className='rounded-2xl border-border/80 shadow-xs p-5 md:p-6 h-full flex flex-col'>
       <div className='flex items-center justify-between mb-4'>
         <h3 className='text-sm font-bold text-foreground'>Recent activity</h3>
       </div>
@@ -54,7 +54,7 @@ export default function RecentActivityFeed() {
             return (
               <li key={event.id}>
                 <Link to={style.href} className='flex items-start gap-3 py-3 group'>
-                  <span className={cn('flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl', style.bg, style.text)}>
+                  <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-xl', style.bg, style.text)}>
                     <Icon className='size-4' />
                   </span>
                   <span className='min-w-0 flex-1'>
@@ -65,7 +65,7 @@ export default function RecentActivityFeed() {
                       <span className='block text-xs text-muted-foreground truncate'>{event.subtitle}</span>
                     )}
                   </span>
-                  <span className='flex-shrink-0 text-xs text-muted-foreground whitespace-nowrap'>
+                  <span className='shrink-0 text-xs text-muted-foreground whitespace-nowrap'>
                     {timeAgo(event.createdAt)}
                   </span>
                 </Link>

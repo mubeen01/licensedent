@@ -37,9 +37,9 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
     <div className='relative w-full overflow-hidden bg-background pt-14'>
       {/* Dot-grid + gradient mesh background */}
       <div className='pointer-events-none absolute inset-0 -z-10' aria-hidden='true'>
-        <div className='absolute inset-0 [background-image:radial-gradient(circle_at_1px_1px,hsl(var(--foreground)/0.09)_1px,transparent_0)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_65%_55%_at_50%_0%,black_35%,transparent_100%)]' />
-        <div className='absolute -top-32 -left-32 h-[32rem] w-[32rem] rounded-full bg-primary/20 blur-[100px]' />
-        <div className='absolute top-0 -right-32 h-[32rem] w-[32rem] rounded-full bg-secondary/15 blur-[100px]' />
+        <div className='absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,hsl(var(--foreground)/0.09)_1px,transparent_0)] bg-size-[28px_28px] mask-[radial-gradient(ellipse_65%_55%_at_50%_0%,black_35%,transparent_100%)]' />
+        <div className='absolute -top-32 -left-32 h-128 w-lg rounded-full bg-primary/20 blur-[100px]' />
+        <div className='absolute top-0 -right-32 h-128 w-lg rounded-full bg-secondary/15 blur-[100px]' />
       </div>
 
       <div className='mx-auto max-w-7xl px-6 py-20 sm:py-24 md:py-32 lg:px-8'>
@@ -51,7 +51,7 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
             }`}
           >
             <div className='flex justify-center lg:justify-start'>
-              <div className='inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary backdrop-blur-sm'>
+              <div className='inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary backdrop-blur-xs'>
                 <span className='relative flex h-2 w-2'>
                   <span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75' />
                   <span className='relative inline-flex h-2 w-2 rounded-full bg-primary' />
@@ -63,7 +63,7 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
 
             <h1 className='text-5xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-6xl lg:text-[4.5rem]'>
               Clear DHA, MOH &{' '}
-              <span className='animate-gradient-x bg-gradient-to-r from-primary via-primary-muted to-secondary bg-[length:200%_100%] bg-clip-text text-transparent'>
+              <span className='animate-gradient-x bg-linear-to-r from-primary via-primary-muted to-secondary bg-size-[200%_100%] bg-clip-text text-transparent'>
                 IDC Ireland
               </span>{' '}
               with confidence
@@ -81,7 +81,7 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
               <Button
                 size='lg'
                 asChild
-                className='group w-full border-0 bg-gradient-to-r from-primary to-secondary px-8 font-semibold text-white shadow-[0_8px_30px_-6px_hsl(var(--primary)/0.45)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_45px_-8px_hsl(var(--primary)/0.55)] sm:w-auto'
+                className='group w-full border-0 bg-linear-to-r from-primary to-secondary px-8 font-semibold text-white shadow-[0_8px_30px_-6px_hsl(var(--primary)/0.45)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_45px_-8px_hsl(var(--primary)/0.55)] sm:w-auto'
               >
                 <WaspRouterLink to={routes.SignupRoute.to}>
                   Start Free — Try 20 Questions
@@ -94,7 +94,7 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
                 size='lg'
                 variant='outline'
                 asChild
-                className='w-full border-border/80 bg-background/60 px-8 font-semibold backdrop-blur-sm hover:bg-muted sm:w-auto'
+                className='w-full border-border/80 bg-background/60 px-8 font-semibold backdrop-blur-xs hover:bg-muted sm:w-auto'
               >
                 <WaspRouterLink to={routes.PricingPageRoute.to}>See Plans & Pricing</WaspRouterLink>
               </Button>
@@ -112,7 +112,7 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
               </span>
             </div>
 
-            <div className='mx-auto flex max-w-md items-stretch divide-x divide-border rounded-2xl border border-border bg-card/60 py-4 backdrop-blur-sm lg:mx-0'>
+            <div className='mx-auto flex max-w-md items-stretch divide-x divide-border rounded-2xl border border-border bg-card/60 py-4 backdrop-blur-xs lg:mx-0'>
               {heroStats.map((stat) => (
                 <div
                   key={stat.label}
@@ -133,7 +133,7 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
             }`}
           >
             <div
-              className='absolute inset-0 -z-10 scale-95 rounded-[2rem] bg-gradient-to-br from-primary/25 via-secondary/15 to-gold/20 blur-3xl'
+              className='absolute inset-0 -z-10 scale-95 rounded-4xl bg-linear-to-br from-primary/25 via-secondary/15 to-gold/20 blur-3xl'
               aria-hidden='true'
             />
             {/* Inner wrapper owns the mouse-tilt transform, separate from the entrance transform above */}
@@ -149,7 +149,7 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
             <div className='absolute -top-4 right-6 rounded-full bg-gold px-3 py-1 text-xs font-medium text-gold-foreground shadow-lg animate-float'>
               ✨ Live preview
             </div>
-            <div className='absolute -bottom-3 -left-3 rounded-full bg-gradient-to-r from-primary to-primary-muted px-3 py-1 text-xs font-medium text-primary-foreground shadow-lg animate-pulse'>
+            <div className='absolute -bottom-3 -left-3 rounded-full bg-linear-to-r from-primary to-primary-muted px-3 py-1 text-xs font-medium text-primary-foreground shadow-lg animate-pulse'>
               🦷 Dentist-verified
             </div>
           </div>

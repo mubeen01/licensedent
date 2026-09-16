@@ -58,7 +58,7 @@ function loadDraft(): { formData: FormData; currentStep: number } {
 const STEP_LABELS = ['Your exam goal', 'Your background', 'Where you’re from'];
 
 const inputClassName =
-  'block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary';
+  'block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary';
 
 function RequiredMark() {
   return <span className='text-destructive'>*</span>;
@@ -135,7 +135,7 @@ function OnboardingPage({ user }: { user: AuthUser }) {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-primary/5 via-secondary/5 to-gold/5 flex items-center justify-center p-4 md:p-8'>
+    <div className='min-h-screen bg-linear-to-br from-primary/5 via-secondary/5 to-gold/5 flex items-center justify-center p-4 md:p-8'>
       <div className='w-full max-w-2xl'>
         <p className='text-center text-sm font-semibold text-muted-foreground mb-6'>LicenseDent</p>
 
@@ -164,7 +164,7 @@ function OnboardingPage({ user }: { user: AuthUser }) {
                 </div>
                 <span
                   className={cn(
-                    'text-xs font-medium text-center max-w-[6.5rem]',
+                    'text-xs font-medium text-center max-w-26',
                     isCurrent ? 'text-foreground' : 'text-muted-foreground'
                   )}
                 >

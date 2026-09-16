@@ -121,7 +121,7 @@ export default function CTABanner({
       aria-labelledby='cta-heading'
     >
       {/* Base gradient — matches the Hero so the two dark ends bookend the page */}
-      <div className='absolute inset-0 bg-gradient-to-br from-[#111318] via-[#191d24] to-[#151a17]' aria-hidden='true' />
+      <div className='absolute inset-0 bg-linear-to-br from-[#111318] via-[#191d24] to-[#151a17]' aria-hidden='true' />
 
       {/* Faint tech grid, faded out toward the edges */}
       <div className='dp-cta-grid absolute inset-0' aria-hidden='true' />
@@ -156,10 +156,10 @@ export default function CTABanner({
 
       {/* Card with an animated gradient border */}
       <div className='relative mx-auto max-w-3xl px-6'>
-        <div className='animate-gradient-x rounded-3xl bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_auto] p-px shadow-2xl'>
+        <div className='animate-gradient-x rounded-3xl bg-linear-to-r from-primary via-secondary to-primary bg-size-[200%_auto] p-px shadow-2xl'>
           <div className='rounded-3xl bg-[#0f1218]/85 px-6 py-12 text-center backdrop-blur-xl sm:px-12'>
             <div className='mb-6 flex justify-center'>
-              <span className='inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary-muted backdrop-blur-sm'>
+              <span className='inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary-muted backdrop-blur-xs'>
                 <span className='relative flex h-2 w-2'>
                   <span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75' />
                   <span className='relative inline-flex h-2 w-2 rounded-full bg-primary' />
@@ -170,7 +170,7 @@ export default function CTABanner({
 
             <h2 id='cta-heading' className='text-3xl font-bold text-white sm:text-4xl lg:text-5xl'>
               Your license is closer
-              <span className='block animate-gradient-x bg-gradient-to-r from-primary-muted via-primary to-secondary bg-[length:200%_100%] bg-clip-text text-transparent'>
+              <span className='block animate-gradient-x bg-linear-to-r from-primary-muted via-primary to-secondary bg-size-[200%_100%] bg-clip-text text-transparent'>
                 than you think
               </span>
             </h2>
@@ -191,7 +191,7 @@ export default function CTABanner({
               <Button
                 size='lg'
                 asChild
-                className='w-full border-0 bg-gradient-to-r from-primary to-secondary px-8 font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-110 sm:w-auto'
+                className='w-full border-0 bg-linear-to-r from-primary to-secondary px-8 font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-110 sm:w-auto'
               >
                 <WaspRouterLink to={routes.SignupRoute.to}>Create free account</WaspRouterLink>
               </Button>

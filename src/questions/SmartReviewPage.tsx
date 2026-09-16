@@ -18,7 +18,7 @@ function SmartReviewPage({ user }: { user: AuthUser }) {
       <div className='max-w-4xl mx-auto p-6'>
         {stage.name === 'intro' && (
           <div className='overflow-hidden rounded-2xl border border-border bg-card shadow-lg text-center'>
-            <div className='bg-gradient-to-r from-primary via-primary to-secondary p-8 md:p-10 text-primary-foreground flex flex-col items-center gap-3'>
+            <div className='bg-linear-to-r from-primary via-primary to-secondary p-8 md:p-10 text-primary-foreground flex flex-col items-center gap-3'>
               <RotateCcw className='h-8 w-8' />
               <h2 className='text-xl font-black'>Smart Review</h2>
               <p className='text-sm opacity-90 max-w-md'>
@@ -40,7 +40,7 @@ function SmartReviewPage({ user }: { user: AuthUser }) {
                   <Button
                     size='lg'
                     onClick={() => setStage({ name: 'session', count: dueCount })}
-                    className='bg-gradient-to-r from-primary to-secondary font-bold text-white'
+                    className='bg-linear-to-r from-primary to-secondary font-bold text-white'
                   >
                     <Sparkles className='w-4 h-4 mr-2' />
                     Start Smart Review
@@ -61,7 +61,7 @@ function SmartReviewPage({ user }: { user: AuthUser }) {
 
         {stage.name === 'complete' && (
           <div className='overflow-hidden rounded-2xl border border-border bg-card shadow-lg text-center'>
-            <div className='bg-gradient-to-r from-primary via-primary to-secondary p-8 md:p-10 text-primary-foreground flex flex-col items-center gap-3'>
+            <div className='bg-linear-to-r from-primary via-primary to-secondary p-8 md:p-10 text-primary-foreground flex flex-col items-center gap-3'>
               <PartyPopper className='h-8 w-8' />
               <h2 className='text-xl font-black'>Review complete</h2>
               <p className='text-4xl font-black'>
@@ -74,7 +74,7 @@ function SmartReviewPage({ user }: { user: AuthUser }) {
             <div className='p-6'>
               <Button
                 onClick={() => setStage({ name: 'intro' })}
-                className='bg-gradient-to-r from-primary to-secondary text-white font-semibold'
+                className='bg-linear-to-r from-primary to-secondary text-white font-semibold'
               >
                 Back to Smart Review
               </Button>

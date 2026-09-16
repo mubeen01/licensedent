@@ -114,10 +114,10 @@ function UserHeader({ detail, onChanged }: { detail: UserDetail; onChanged: () =
   }
 
   return (
-    <div className='rounded-2xl border border-border bg-card p-5 shadow-sm'>
+    <div className='rounded-2xl border border-border bg-card p-5 shadow-xs'>
       <div className='flex flex-wrap items-start justify-between gap-4'>
         <div className='flex items-center gap-4'>
-          <span className='flex h-14 w-14 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-lg font-bold text-white shadow-sm'>
+          <span className='flex h-14 w-14 flex-none items-center justify-center rounded-full bg-linear-to-br from-primary to-secondary text-lg font-bold text-white shadow-xs'>
             {initials}
           </span>
           <div className='min-w-0'>
@@ -342,7 +342,7 @@ function UserAuditLogTab({ userId }: { userId: string }) {
   });
 
   return (
-    <div className='rounded-2xl border border-border bg-card shadow-sm'>
+    <div className='rounded-2xl border border-border bg-card shadow-xs'>
       {isLoading && (
         <div className='p-6'>
           <LoadingSpinner />

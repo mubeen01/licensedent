@@ -172,7 +172,7 @@ export default function PracticeSession({
 
   if (!questions || questions.length === 0) {
     return (
-      <div className='rounded-2xl border border-border bg-card shadow p-8 text-center text-sm text-muted-foreground'>
+      <div className='rounded-2xl border border-border bg-card shadow-sm p-8 text-center text-sm text-muted-foreground'>
         No questions matched your selection.
       </div>
     );
@@ -183,7 +183,7 @@ export default function PracticeSession({
   return (
     <ProtectedContent>
     <div className='overflow-hidden rounded-2xl border border-border bg-card shadow-lg'>
-      <div className='bg-gradient-to-r from-primary/10 via-secondary/10 to-gold/10 px-5 py-4 md:px-8 md:py-5 border-b border-border'>
+      <div className='bg-linear-to-r from-primary/10 via-secondary/10 to-gold/10 px-5 py-4 md:px-8 md:py-5 border-b border-border'>
         <div className='flex items-center justify-between text-xs text-muted-foreground mb-2.5'>
           <span className='inline-flex items-center gap-2'>
             <span className='rounded-full bg-primary/15 px-2.5 py-0.5 font-semibold text-primary'>
@@ -277,7 +277,7 @@ export default function PracticeSession({
                 onBlur={() => persistNote({})}
                 placeholder='Jot anything you want to remember -- it will be waiting for you on the Review page.'
                 rows={2}
-                className='select-text w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+                className='select-text w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring'
               />
               {isSavingNote && <p className='text-[11px] text-muted-foreground'>Saving…</p>}
             </div>

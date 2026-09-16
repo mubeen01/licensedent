@@ -148,7 +148,7 @@ const PricingPage = () => {
             </span>
           </div>
           <h2 className='mt-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl'>
-            One payment. <span className='bg-gradient-to-r from-primary via-primary-muted to-secondary bg-clip-text text-transparent'>Full prep until exam day.</span>
+            One payment. <span className='bg-linear-to-r from-primary via-primary-muted to-secondary bg-clip-text text-transparent'>Full prep until exam day.</span>
           </h2>
         </div>
         <p className='mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-muted-foreground'>
@@ -190,7 +190,7 @@ const PricingPage = () => {
               className={cn(
                 'relative flex flex-col grow justify-between overflow-hidden transition-all duration-300 hover:shadow-lg',
                 {
-                  'ring-2 ring-primary !bg-transparent': planId === bestDealPaymentPlanId,
+                  'ring-2 ring-primary bg-transparent!': planId === bestDealPaymentPlanId,
                   'ring-1 ring-border lg:my-8': planId !== bestDealPaymentPlanId,
                 }
               )}
@@ -201,7 +201,7 @@ const PricingPage = () => {
                   aria-hidden='true'
                 >
                   <div
-                    className='absolute w-full h-full bg-gradient-to-br from-primary/40 via-primary/20 to-gold/20 opacity-30'
+                    className='absolute w-full h-full bg-linear-to-br from-primary/40 via-primary/20 to-gold/20 opacity-30'
                     style={{
                       clipPath: 'circle(670% at 50% 50%)',
                     }}

@@ -91,7 +91,7 @@ function AddExamCard({ onCreated }: { onCreated: () => void }) {
   }
 
   return (
-    <div className='mb-4 rounded-2xl border border-primary/30 bg-card shadow-sm p-5 md:p-6 flex flex-col gap-4'>
+    <div className='mb-4 rounded-2xl border border-primary/30 bg-card shadow-xs p-5 md:p-6 flex flex-col gap-4'>
       <p className='font-semibold text-foreground'>New exam</p>
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         <div>
@@ -181,10 +181,10 @@ function ExamRow({ exam, onSaved }: { exam: Exam; onSaved: () => void }) {
   }
 
   return (
-    <div className='rounded-2xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow p-5 md:p-6 flex flex-col gap-4'>
+    <div className='rounded-2xl border border-border bg-card shadow-xs hover:shadow-md transition-shadow p-5 md:p-6 flex flex-col gap-4'>
       <div className='flex items-center justify-between gap-4'>
         <div className='flex items-center gap-3'>
-          <span className='flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/10 text-2xl shadow-sm'>
+          <span className='flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-linear-to-br from-primary/10 to-secondary/10 text-2xl shadow-xs'>
             {flagEmoji || <GraduationCap className='h-5 w-5 text-muted-foreground' />}
           </span>
           <div>

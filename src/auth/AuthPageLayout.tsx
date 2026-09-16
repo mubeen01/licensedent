@@ -19,7 +19,7 @@ export function AuthPageLayout({ children }: { children: ReactNode }) {
   ];
   return (
     <div className='flex min-h-screen'>
-      <div className='hidden lg:flex lg:w-1/2 relative flex-col justify-between bg-gradient-to-br from-primary via-primary to-secondary p-12 text-primary-foreground overflow-hidden'>
+      <div className='hidden lg:flex lg:w-1/2 relative flex-col justify-between bg-linear-to-br from-primary via-primary to-secondary p-12 text-primary-foreground overflow-hidden'>
         <div
           className='absolute inset-0 opacity-10'
           style={{
@@ -30,7 +30,7 @@ export function AuthPageLayout({ children }: { children: ReactNode }) {
           aria-hidden='true'
         />
         <div className='relative flex items-center gap-3'>
-          <img src='/licensedent-icon.svg' alt='LicenseDent' className='h-10 w-10 rounded-xl shadow-sm' />
+          <img src='/licensedent-icon.svg' alt='LicenseDent' className='h-10 w-10 rounded-xl shadow-xs' />
           <span className='text-2xl font-bold'>LicenseDent</span>
         </div>
         <div className='relative max-w-md'>
@@ -44,7 +44,7 @@ export function AuthPageLayout({ children }: { children: ReactNode }) {
           <ul className='space-y-4'>
             {pitchFeatures.map(({ icon: Icon, text }) => (
               <li key={text} className='flex items-center gap-3'>
-                <Icon className='h-5 w-5 flex-shrink-0 text-gold' aria-hidden='true' />
+                <Icon className='h-5 w-5 shrink-0 text-gold' aria-hidden='true' />
                 <span className='text-sm text-primary-foreground/90'>{text}</span>
               </li>
             ))}

@@ -44,7 +44,7 @@ export default function PracticeSetup({
 
   if (!subjects || subjects.length === 0) {
     return (
-      <div className='rounded-2xl border border-border bg-card shadow p-8 text-center text-sm text-muted-foreground'>
+      <div className='rounded-2xl border border-border bg-card shadow-sm p-8 text-center text-sm text-muted-foreground'>
         No published questions available yet. Check back soon.
       </div>
     );
@@ -52,7 +52,7 @@ export default function PracticeSetup({
 
   return (
     <div className='flex flex-col gap-8'>
-      <div className='overflow-hidden rounded-2xl bg-gradient-to-r from-primary via-primary to-secondary p-6 md:p-8 text-primary-foreground shadow-lg'>
+      <div className='overflow-hidden rounded-2xl bg-linear-to-r from-primary via-primary to-secondary p-6 md:p-8 text-primary-foreground shadow-lg'>
         <div className='flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] opacity-80'>
           <Sparkles className='h-3.5 w-3.5' />
           General Dentist Practice
@@ -69,7 +69,7 @@ export default function PracticeSetup({
           className='flex items-center justify-between gap-3 rounded-2xl border-2 border-primary/30 bg-primary/5 p-4 hover:border-primary/50 transition-colors'
         >
           <span className='flex items-center gap-3'>
-            <span className='flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary text-white shadow'>
+            <span className='flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-linear-to-br from-primary to-secondary text-white shadow-sm'>
               <RotateCcw className='h-5 w-5' />
             </span>
             <span>
@@ -107,12 +107,12 @@ export default function PracticeSetup({
                   'group relative flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-all duration-200',
                   isSelected
                     ? 'border-primary bg-primary/5 shadow-md'
-                    : 'border-border bg-card hover:border-primary/30 hover:shadow-sm'
+                    : 'border-border bg-card hover:border-primary/30 hover:shadow-xs'
                 )}
               >
                 <span
                   className={cn(
-                    'flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-gradient-to-br text-white shadow',
+                    'flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-linear-to-br text-white shadow-sm',
                     gradient
                   )}
                 >
@@ -128,7 +128,7 @@ export default function PracticeSetup({
         </div>
       </div>
 
-      <div className='rounded-2xl border border-border bg-card shadow p-6 flex flex-col gap-5'>
+      <div className='rounded-2xl border border-border bg-card shadow-sm p-6 flex flex-col gap-5'>
         <div>
           <p className='text-sm font-bold uppercase tracking-wide text-muted-foreground mb-3'>
             Number of questions
@@ -141,7 +141,7 @@ export default function PracticeSetup({
                 className={cn(
                   'flex-1 rounded-xl border-2 py-3 text-center font-bold transition-colors',
                   count === n
-                    ? 'border-transparent bg-gradient-to-r from-primary to-secondary text-white shadow'
+                    ? 'border-transparent bg-linear-to-r from-primary to-secondary text-white shadow-sm'
                     : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground'
                 )}
               >
@@ -155,7 +155,7 @@ export default function PracticeSetup({
           size='lg'
           disabled={selectedIds.length === 0}
           onClick={() => onStart(selectedIds, count)}
-          className='bg-gradient-to-r from-primary to-secondary font-bold text-white'
+          className='bg-linear-to-r from-primary to-secondary font-bold text-white'
         >
           Start practice{selectedIds.length > 0 ? ` — ${count} questions` : ''}
         </Button>

@@ -75,7 +75,7 @@ function FeaturesGridItem({
       {/* Hover gradient wash */}
       <div
         className={cn(
-          'pointer-events-none absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-[0.06]',
+          'pointer-events-none absolute inset-0 bg-linear-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-[0.06]',
           gradient
         )}
         aria-hidden='true'
@@ -85,7 +85,7 @@ function FeaturesGridItem({
       {isLarge && (
         <div
           className={cn(
-            'pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-gradient-to-br opacity-[0.18] blur-2xl',
+            'pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-linear-to-br opacity-[0.18] blur-2xl',
             gradient
           )}
           aria-hidden='true'
@@ -95,7 +95,7 @@ function FeaturesGridItem({
       <div className='relative z-10 flex h-full flex-col'>
         <div
           className={cn(
-            'flex flex-none items-center justify-center rounded-xl bg-gradient-to-br shadow-sm transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-110',
+            'flex flex-none items-center justify-center rounded-xl bg-linear-to-br shadow-xs transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-110',
             gradient,
             isLarge ? 'h-14 w-14' : 'h-11 w-11'
           )}

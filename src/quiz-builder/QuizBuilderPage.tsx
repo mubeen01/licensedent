@@ -137,7 +137,7 @@ function QuizBuilderSetup({ onStartPractice }: { onStartPractice: (filters: Cust
 
   if (!subjects || subjects.length === 0) {
     return (
-      <div className='rounded-2xl border border-border bg-card shadow p-8 text-center text-sm text-muted-foreground'>
+      <div className='rounded-2xl border border-border bg-card shadow-sm p-8 text-center text-sm text-muted-foreground'>
         No published questions available yet. Check back soon.
       </div>
     );

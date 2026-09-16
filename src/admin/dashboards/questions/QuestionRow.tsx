@@ -54,7 +54,7 @@ export default function QuestionRow({
       className={cn(
         'group flex cursor-pointer items-start gap-2.5 rounded-xl border px-3 py-2.5 transition-colors',
         isActive
-          ? 'border-primary/50 bg-primary/5 shadow-sm'
+          ? 'border-primary/50 bg-primary/5 shadow-xs'
           : 'border-transparent hover:border-border hover:bg-accent/40'
       )}
     >
@@ -74,7 +74,7 @@ export default function QuestionRow({
             </span>
           )}
           {hasAiSuggestion && (
-            <span className='flex items-center gap-0.5 rounded-full bg-gradient-to-r from-amber-500/15 to-orange-500/15 px-1.5 py-0.5 font-semibold text-amber-700 dark:text-amber-400'>
+            <span className='flex items-center gap-0.5 rounded-full bg-linear-to-r from-amber-500/15 to-orange-500/15 px-1.5 py-0.5 font-semibold text-amber-700 dark:text-amber-400'>
               <Sparkles className='h-2.5 w-2.5' />
               AI
             </span>

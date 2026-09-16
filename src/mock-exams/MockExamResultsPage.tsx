@@ -27,7 +27,7 @@ function MockExamResultsPage({ user }: { user: AuthUser }) {
 
         {data && (
           <>
-            <div className='rounded-sm border border-border bg-gradient-to-br from-primary via-primary to-secondary text-primary-foreground shadow-lg p-6 md:p-8 flex flex-col items-center text-center gap-2'>
+            <div className='rounded-sm border border-border bg-linear-to-br from-primary via-primary to-secondary text-primary-foreground shadow-lg p-6 md:p-8 flex flex-col items-center text-center gap-2'>
               <Trophy className='h-8 w-8' />
               <h2 className='text-lg font-bold'>{data.mockTestTitle}</h2>
               <p className='text-4xl font-black'>
@@ -65,7 +65,7 @@ function MockExamResultsPage({ user }: { user: AuthUser }) {
                 .map((item) => {
                   const options = (item.options as unknown as Option[]) ?? [];
                   return (
-                    <div key={item.order} className='rounded-sm border border-border bg-card shadow p-5 md:p-6 flex flex-col gap-4'>
+                    <div key={item.order} className='rounded-sm border border-border bg-card shadow-sm p-5 md:p-6 flex flex-col gap-4'>
                       <div className='flex items-center justify-between gap-3 text-xs text-muted-foreground'>
                         <span className='flex items-center gap-2'>
                           <span className='rounded-full bg-accent px-2.5 py-0.5 font-medium text-accent-foreground'>

@@ -132,7 +132,7 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
                         className='flex items-center gap-4 p-3 rounded-lg border border-border/70'
                       >
                         <div
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                             a.isCorrect ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
                           }`}
                         >

@@ -16,7 +16,7 @@ export default function ChartPanel({
   className?: string;
 }) {
   return (
-    <Card className={cn('rounded-2xl border-border/80 shadow-sm p-5 md:p-6', className)}>
+    <Card className={cn('rounded-2xl border-border/80 shadow-xs p-5 md:p-6', className)}>
       <div className='flex flex-wrap items-start justify-between gap-3 mb-5'>
         <div>
           <h3 className='text-sm font-bold text-foreground'>{title}</h3>

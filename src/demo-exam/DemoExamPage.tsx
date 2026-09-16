@@ -81,7 +81,7 @@ export default function DemoExamPage() {
   if (phase === 'intro') {
     return (
       <div className='mx-auto max-w-2xl px-6 py-16 sm:py-24'>
-        <div className='rounded-3xl border border-border bg-card p-8 text-center shadow-sm sm:p-12'>
+        <div className='rounded-3xl border border-border bg-card p-8 text-center shadow-xs sm:p-12'>
           <div className='mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl shadow-lg'>
             <img src='/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
           </div>
@@ -110,7 +110,7 @@ export default function DemoExamPage() {
           <Button
             size='lg'
             onClick={startExam}
-            className='mt-8 w-full bg-gradient-to-r from-primary to-secondary text-white sm:w-auto sm:px-10'
+            className='mt-8 w-full bg-linear-to-r from-primary to-secondary text-white sm:w-auto sm:px-10'
           >
             Start the demo exam
           </Button>
@@ -127,7 +127,7 @@ export default function DemoExamPage() {
     return (
       <div className='mx-auto max-w-4xl px-6 py-8 sm:py-12'>
         {/* Header: timer + progress */}
-        <div className='mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card px-5 py-3 shadow-sm'>
+        <div className='mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card px-5 py-3 shadow-xs'>
           <div className='text-sm font-medium text-muted-foreground'>
             Question {currentIndex + 1} of {questions.length} · {answeredCount} answered
           </div>
@@ -167,7 +167,7 @@ export default function DemoExamPage() {
         </div>
 
         {/* Question card */}
-        <div className='rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8'>
+        <div className='rounded-3xl border border-border bg-card p-6 shadow-xs sm:p-8'>
           <p className='text-base font-medium leading-7 text-foreground'>{question.stem}</p>
 
           <div className='mt-6 space-y-2.5'>
@@ -207,7 +207,7 @@ export default function DemoExamPage() {
             Previous
           </Button>
           {currentIndex === questions.length - 1 ? (
-            <Button onClick={finishExam} className='bg-gradient-to-r from-primary to-secondary text-white'>
+            <Button onClick={finishExam} className='bg-linear-to-r from-primary to-secondary text-white'>
               Submit exam
             </Button>
           ) : (
@@ -259,7 +259,7 @@ export default function DemoExamPage() {
 
   return (
     <div className='mx-auto max-w-3xl px-6 py-16 sm:py-20'>
-      <div className={cn('rounded-3xl border-2 p-8 text-center shadow-sm sm:p-12', tier.border, tier.bg)}>
+      <div className={cn('rounded-3xl border-2 p-8 text-center shadow-xs sm:p-12', tier.border, tier.bg)}>
         <TierIcon className={cn('mx-auto h-12 w-12', tier.color)} />
         <div className='mt-4 text-5xl font-bold text-foreground'>{score.percent}%</div>
         <p className='mt-1 text-sm text-muted-foreground'>
@@ -269,7 +269,7 @@ export default function DemoExamPage() {
         <p className='mx-auto mt-3 max-w-xl text-base leading-relaxed text-muted-foreground'>{tier.message}</p>
 
         <div className='mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row'>
-          <Button asChild size='lg' className='bg-gradient-to-r from-primary to-secondary text-white'>
+          <Button asChild size='lg' className='bg-linear-to-r from-primary to-secondary text-white'>
             <WaspRouterLink to={tier.cta.to}>{tier.cta.label}</WaspRouterLink>
           </Button>
           <Button variant='outline' size='lg' onClick={startExam}>

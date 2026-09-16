@@ -50,7 +50,7 @@ function MockExamsPage({ user }: { user: AuthUser }) {
         {isLoading && <LoadingSpinner />}
 
         {!isLoading && (!mockExams || mockExams.length === 0) && (
-          <div className='rounded-sm border border-border bg-card shadow p-6 text-sm text-muted-foreground'>
+          <div className='rounded-sm border border-border bg-card shadow-sm p-6 text-sm text-muted-foreground'>
             No mock exams are available yet.
           </div>
         )}
@@ -68,7 +68,7 @@ function MockExamsPage({ user }: { user: AuthUser }) {
                     className={cn(
                       'flex-none rounded-full border px-4 py-2 text-sm font-semibold transition-colors',
                       isActive
-                        ? 'border-transparent bg-gradient-to-r from-primary to-secondary text-white shadow'
+                        ? 'border-transparent bg-linear-to-r from-primary to-secondary text-white shadow-sm'
                         : 'border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground'
                     )}
                   >
@@ -114,7 +114,7 @@ function MockExamsPage({ user }: { user: AuthUser }) {
                   <Button
                     onClick={handleStartOrResume}
                     disabled={capReached}
-                    className='self-start bg-gradient-to-r from-primary to-secondary font-semibold text-white'
+                    className='self-start bg-linear-to-r from-primary to-secondary font-semibold text-white'
                   >
                     <PlayCircle className='h-4 w-4 mr-2' />
                     {active.inProgressAttemptId ? 'Resume exam' : 'Start exam'}

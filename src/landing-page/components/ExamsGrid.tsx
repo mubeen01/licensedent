@@ -30,12 +30,12 @@ export default function ExamsGrid() {
                 className='group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-7 transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md'
               >
                 {/* Top gradient accent — ties the card to its exam colour */}
-                <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${exam.colorGradient}`} aria-hidden='true' />
+                <div className={`absolute inset-x-0 top-0 h-1 bg-linear-to-r ${exam.colorGradient}`} aria-hidden='true' />
 
                 <div className='flex h-full flex-col'>
                   <div className='flex items-start justify-between'>
                     <span
-                      className={`flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-gradient-to-br ${exam.colorGradient} text-2xl shadow-sm`}
+                      className={`flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-linear-to-br ${exam.colorGradient} text-2xl shadow-xs`}
                     >
                       {exam.flagEmoji}
                     </span>

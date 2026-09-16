@@ -15,7 +15,7 @@ function AuditLogPage({ user }: { user: AuthUser }) {
     <DefaultLayout user={user}>
       <Breadcrumb pageName='Audit Log' />
 
-      <div className='rounded-2xl border border-border bg-card shadow-sm'>
+      <div className='rounded-2xl border border-border bg-card shadow-xs'>
         {isLoading && (
           <div className='p-6'>
             <LoadingSpinner />

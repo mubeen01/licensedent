@@ -53,7 +53,7 @@ export default function TrustSection() {
               <div
                 className={`flex h-full flex-col items-center rounded-2xl border p-7 text-center transition-all duration-200 hover:-translate-y-1 hover:shadow-md ${point.border} ${point.bg}`}
               >
-                <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-card shadow-sm ${point.color}`}>
+                <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-card shadow-xs ${point.color}`}>
                   <Icon className='h-6 w-6' />
                 </div>
                 <h3 className='mb-2 text-base font-semibold text-foreground'>{point.name}</h3>

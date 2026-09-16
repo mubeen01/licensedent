@@ -2,7 +2,7 @@ import { type PageViewSource } from 'wasp/entities';
 
 const SourcesTable = ({ sources }: { sources: PageViewSource[] | undefined }) => {
   return (
-    <div className='rounded-2xl border border-border bg-card px-5 pt-6 pb-2.5 shadow-sm sm:px-7.5 xl:pb-1'>
+    <div className='rounded-2xl border border-border bg-card px-5 pt-6 pb-2.5 shadow-xs sm:px-7.5 xl:pb-1'>
       <h4 className='mb-6 text-lg font-bold text-foreground'>Top Sources</h4>
 
       <div className='flex flex-col overflow-hidden rounded-xl'>

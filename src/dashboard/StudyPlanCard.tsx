@@ -73,7 +73,7 @@ export default function StudyPlanCard() {
         </div>
 
         <div className='flex items-center gap-6 mb-6'>
-          <div className='w-24 h-24 flex-shrink-0'>
+          <div className='w-24 h-24 shrink-0'>
             <ReactApexChart options={options} series={[readiness?.score ?? 0]} type='radialBar' height={96} />
           </div>
           <div>
@@ -105,13 +105,13 @@ export default function StudyPlanCard() {
                   className='flex items-center justify-between gap-2 rounded-lg border border-border/70 p-3 hover:border-primary/40 hover:bg-accent/50 transition-colors'
                 >
                   <span className='flex items-center gap-2'>
-                    <Target className='w-3.5 h-3.5 text-primary flex-shrink-0' />
+                    <Target className='w-3.5 h-3.5 text-primary shrink-0' />
                     <span className='text-sm font-medium text-foreground'>{s.name}</span>
                     <span className='text-xs text-muted-foreground'>
                       {s.attempted === 0 ? 'Not started' : `${s.accuracy}% accuracy`}
                     </span>
                   </span>
-                  <ChevronRight className='w-4 h-4 text-muted-foreground flex-shrink-0' />
+                  <ChevronRight className='w-4 h-4 text-muted-foreground shrink-0' />
                 </WaspRouterLink>
               ))}
             </div>
@@ -166,7 +166,7 @@ function ExamDateForm({
           min={todayISO}
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className='flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+          className='flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
         />
         <Button disabled={!date || isPastDate || isSaving} onClick={handleSave}>
           Save

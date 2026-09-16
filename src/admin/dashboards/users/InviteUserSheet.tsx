@@ -52,7 +52,7 @@ export default function InviteUserSheet({ onInvited }: { onInvited: () => void }
     >
       <Button
         size='sm'
-        className='bg-gradient-to-r from-primary to-secondary text-white'
+        className='bg-linear-to-r from-primary to-secondary text-white'
         onClick={() => setOpen(true)}
       >
         <UserPlus className='mr-1.5 h-4 w-4' />

@@ -33,7 +33,7 @@ function VideoLibrary() {
           <div className='grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
             {lectures.map((lecture) => (
               <Card key={lecture.id} className='overflow-hidden shadow-md'>
-                <div className='relative flex h-40 items-center justify-center bg-gradient-to-br from-primary/80 to-secondary/80 text-white'>
+                <div className='relative flex h-40 items-center justify-center bg-linear-to-br from-primary/80 to-secondary/80 text-white'>
                   {lecture.youtubeId ? (
                     <PlayCircle className='h-12 w-12' />
                   ) : (

@@ -23,7 +23,7 @@ export default function SectionTitle({
 
   const titleElement =
     typeof title === 'string' ? (
-      <h2 className='text-title-lg font-bold tracking-tight text-foreground sm:text-title-xl lg:text-title-xxl [text-wrap:balance]'>
+      <h2 className='text-title-lg font-bold tracking-tight text-foreground sm:text-title-xl lg:text-title-xxl text-balance'>
         {title}
       </h2>
     ) : (
@@ -32,7 +32,7 @@ export default function SectionTitle({
 
   const descriptionElement =
     typeof description === 'string' ? (
-      <p className='mt-4 text-base leading-8 text-muted-foreground sm:text-lg [text-wrap:pretty]'>
+      <p className='mt-4 text-base leading-8 text-muted-foreground sm:text-lg text-pretty'>
         {description}
       </p>
     ) : (

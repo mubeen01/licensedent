@@ -81,7 +81,7 @@ export default function QuestionStatusDonut() {
             {segments.map((s) => (
               <li key={s.label} className='flex items-center justify-between gap-2 text-sm'>
                 <span className='flex items-center gap-2 font-medium text-foreground'>
-                  <span className='h-2.5 w-2.5 rounded-full flex-shrink-0' style={{ backgroundColor: s.color }} />
+                  <span className='h-2.5 w-2.5 rounded-full shrink-0' style={{ backgroundColor: s.color }} />
                   {s.label}
                 </span>
                 <span className='text-muted-foreground tabular-nums'>

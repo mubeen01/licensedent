@@ -131,7 +131,7 @@ function MarkedQuestionCard({
             onBlur={() => persist({ note })}
             placeholder='Write anything you want to remember about this question…'
             rows={2}
-            className='select-text mt-1 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+            className='select-text mt-1 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring'
           />
           {isSaving && <p className='text-[11px] text-muted-foreground mt-1'>Saving…</p>}
         </div>

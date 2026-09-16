@@ -546,7 +546,7 @@ const QuestionReviewCard = forwardRef<QuestionReviewCardHandle, QuestionReviewCa
               type='button'
               onClick={handleRemoveImage}
               disabled={isUploadingImage}
-              className='absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow'
+              className='absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm'
               title='Remove image'
             >
               <X className='h-3 w-3' />
@@ -578,7 +578,7 @@ const QuestionReviewCard = forwardRef<QuestionReviewCardHandle, QuestionReviewCa
         className={cn(
           'relative shrink-0 overflow-hidden rounded-xl border',
           hasAiSuggestion
-            ? 'border-amber-300/70 bg-gradient-to-br from-amber-50 via-amber-50/60 to-transparent dark:border-amber-900/70 dark:from-amber-950/50 dark:via-amber-950/20'
+            ? 'border-amber-300/70 bg-linear-to-br from-amber-50 via-amber-50/60 to-transparent dark:border-amber-900/70 dark:from-amber-950/50 dark:via-amber-950/20'
             : aiDraftFailed
               ? 'border-destructive/50 bg-destructive/5'
               : 'border-dashed border-border bg-muted/20'
@@ -588,7 +588,7 @@ const QuestionReviewCard = forwardRef<QuestionReviewCardHandle, QuestionReviewCa
           <div className='flex items-center gap-2.5'>
             <span
               className={cn(
-                'flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gradient-to-br text-white shadow-sm',
+                'flex h-8 w-8 flex-none items-center justify-center rounded-full bg-linear-to-br text-white shadow-xs',
                 hasAiSuggestion ? 'from-amber-500 to-orange-500' : 'from-primary to-secondary'
               )}
             >
@@ -618,7 +618,7 @@ const QuestionReviewCard = forwardRef<QuestionReviewCardHandle, QuestionReviewCa
             variant={hasAiSuggestion ? 'outline' : 'default'}
             disabled={isDrafting}
             onClick={handleDraftWithAi}
-            className={!hasAiSuggestion ? 'bg-gradient-to-r from-primary to-secondary text-white border-0' : ''}
+            className={!hasAiSuggestion ? 'bg-linear-to-r from-primary to-secondary text-white border-0' : ''}
           >
             {isDrafting ? (
               'Drafting…'
@@ -685,7 +685,7 @@ const QuestionReviewCard = forwardRef<QuestionReviewCardHandle, QuestionReviewCa
                 type='button'
                 size='sm'
                 onClick={handleUseSuggestion}
-                className='self-start bg-gradient-to-r from-primary to-secondary text-white border-0'
+                className='self-start bg-linear-to-r from-primary to-secondary text-white border-0'
               >
                 {appliedSuggestionUnreviewed ? 'Use this suggestion again' : 'Use this suggestion'}
               </Button>

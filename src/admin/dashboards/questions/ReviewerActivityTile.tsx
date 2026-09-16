@@ -9,8 +9,8 @@ export default function ReviewerActivityTile() {
   const { data, isLoading } = useQuery(getReviewerActivityStats);
 
   return (
-    <div className='flex items-center gap-3 rounded-2xl border border-border bg-gradient-to-br from-amber-500/5 via-card to-card px-4 py-3 shadow-sm'>
-      <span className='flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-sm'>
+    <div className='flex items-center gap-3 rounded-2xl border border-border bg-linear-to-br from-amber-500/5 via-card to-card px-4 py-3 shadow-xs'>
+      <span className='flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-linear-to-br from-amber-500 to-orange-500 text-white shadow-xs'>
         <Flame className='h-5 w-5' />
       </span>
       <div className='flex items-baseline gap-1.5'>

@@ -64,9 +64,9 @@ function Hero() {
   return (
     <div className='relative w-full overflow-hidden bg-background pt-14'>
       <div className='pointer-events-none absolute inset-0 -z-10 overflow-hidden' aria-hidden='true'>
-        <div className='absolute -top-24 -left-24 h-[26rem] w-[26rem] rounded-full bg-primary/15 blur-3xl' />
-        <div className='absolute top-1/3 -right-24 h-[26rem] w-[26rem] rounded-full bg-secondary/15 blur-3xl' />
-        <div className='absolute -bottom-24 left-1/3 h-[22rem] w-[22rem] rounded-full bg-gold/10 blur-3xl' />
+        <div className='absolute -top-24 -left-24 h-104 w-104 rounded-full bg-primary/15 blur-3xl' />
+        <div className='absolute top-1/3 -right-24 h-104 w-104 rounded-full bg-secondary/15 blur-3xl' />
+        <div className='absolute -bottom-24 left-1/3 h-88 w-88 rounded-full bg-gold/10 blur-3xl' />
       </div>
 
       <div className='mx-auto max-w-5xl px-6 py-16 text-center sm:py-20 lg:px-8'>
@@ -86,7 +86,7 @@ function Hero() {
 
           <h1 className='mt-6 text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-6xl'>
             Gulf + Ireland dental{' '}
-            <span className='block animate-gradient-x bg-gradient-to-r from-primary via-primary-muted to-secondary bg-[length:200%_100%] bg-clip-text text-transparent sm:inline'>
+            <span className='block animate-gradient-x bg-linear-to-r from-primary via-primary-muted to-secondary bg-size-[200%_100%] bg-clip-text text-transparent sm:inline'>
               licensing exams
             </span>{' '}
             in one place
@@ -132,16 +132,16 @@ function ExamsIndexGrid() {
                 style={{ animationDelay: `${idx * 60}ms` }}
                 className='animate-fade-in-up group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-5 opacity-0 transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-xl'
               >
-                <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${exam.colorGradient}`} aria-hidden='true' />
+                <div className={`absolute inset-x-0 top-0 h-1 bg-linear-to-r ${exam.colorGradient}`} aria-hidden='true' />
                 <div
-                  className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-gradient-to-br ${exam.colorGradient} opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-25`}
+                  className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-linear-to-br ${exam.colorGradient} opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-25`}
                   aria-hidden='true'
                 />
 
                 <div className='relative z-10 flex h-full flex-col'>
                   <div className='flex items-start justify-between'>
                     <span
-                      className={`flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-gradient-to-br ${exam.colorGradient} text-xl shadow-sm transition-transform duration-300 group-hover:scale-110`}
+                      className={`flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-linear-to-br ${exam.colorGradient} text-xl shadow-xs transition-transform duration-300 group-hover:scale-110`}
                     >
                       {exam.flagEmoji}
                     </span>
@@ -210,8 +210,8 @@ function ExamsIndexGrid() {
 function ClosingCta() {
   return (
     <div className='mx-auto max-w-5xl px-6 py-16 md:py-24 lg:px-8'>
-      <div className='relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-secondary/5 p-10 text-center shadow-lg sm:p-14'>
-        <div className='mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary text-white shadow-lg'>
+      <div className='relative overflow-hidden rounded-3xl border border-border bg-linear-to-br from-primary/10 via-card to-secondary/5 p-10 text-center shadow-lg sm:p-14'>
+        <div className='mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-primary to-secondary text-white shadow-lg'>
           <Sparkles className='h-6 w-6' />
         </div>
         <h2 className='mt-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl'>
@@ -225,7 +225,7 @@ function ClosingCta() {
           <Button
             size='lg'
             asChild
-            className='group w-full border-0 bg-gradient-to-r from-primary to-secondary px-8 font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-110 sm:w-auto'
+            className='group w-full border-0 bg-linear-to-r from-primary to-secondary px-8 font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-110 sm:w-auto'
           >
             <WaspRouterLink to={routes.SignupRoute.to}>
               Create free account

@@ -439,7 +439,7 @@ function QuestionsReviewPage({ user }: { user: AuthUser }) {
               className={cn(
                 'rounded-full px-4 py-1.5 text-sm font-semibold transition-all',
                 view === v
-                  ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-md'
+                  ? 'bg-linear-to-r from-primary to-secondary text-white shadow-md'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -465,7 +465,7 @@ function QuestionsReviewPage({ user }: { user: AuthUser }) {
       <div className='flex flex-col lg:flex-row lg:items-start gap-4'>
         {/* Left: subjects + recent imports */}
         <div className='lg:w-64 shrink-0 flex flex-col gap-4 lg:max-h-[85vh] lg:overflow-y-auto lg:pr-1'>
-          <div className='rounded-2xl border border-border bg-card shadow-sm p-4'>
+          <div className='rounded-2xl border border-border bg-card shadow-xs p-4'>
             <div className='flex items-center justify-between mb-3'>
               <p className='text-sm font-medium'>Subjects</p>
               {!isAddingSubject && (
@@ -538,7 +538,7 @@ function QuestionsReviewPage({ user }: { user: AuthUser }) {
             </ul>
           </div>
 
-          <div className='rounded-2xl border border-border bg-card shadow-sm p-4'>
+          <div className='rounded-2xl border border-border bg-card shadow-xs p-4'>
             <p className='text-sm font-medium mb-3'>Recent imports</p>
             {batchesLoading && <LoadingSpinner />}
             {!batchesLoading && (!batches || batches.length === 0) && (
@@ -570,7 +570,7 @@ function QuestionsReviewPage({ user }: { user: AuthUser }) {
         </div>
 
         {!selection && (
-          <div className='flex-1 rounded-2xl border border-border bg-card shadow-sm p-6 text-sm text-muted-foreground'>
+          <div className='flex-1 rounded-2xl border border-border bg-card shadow-xs p-6 text-sm text-muted-foreground'>
             Select a subject or a recent import on the left to review its questions, or search for one above.
           </div>
         )}
@@ -581,7 +581,7 @@ function QuestionsReviewPage({ user }: { user: AuthUser }) {
             {/* Fills the remaining width now that there's no competing
                 always-visible 3rd column -- each row gets much more room to
                 show the actual question text. */}
-            <div className='flex-1 min-w-0 flex flex-col rounded-2xl border border-border bg-card shadow-sm overflow-hidden lg:max-h-[85vh]'>
+            <div className='flex-1 min-w-0 flex flex-col rounded-2xl border border-border bg-card shadow-xs overflow-hidden lg:max-h-[85vh]'>
               <div className='flex flex-col gap-2.5 border-b border-border p-3'>
                 {(selectedSubject || selectedBatch) && (
                   <p
@@ -699,7 +699,7 @@ function QuestionsReviewPage({ user }: { user: AuthUser }) {
               {bulkResult && (
                 <p
                   className={cn(
-                    'mx-3 mt-2 rounded-lg border px-3 py-2 text-xs font-medium shadow-sm',
+                    'mx-3 mt-2 rounded-lg border px-3 py-2 text-xs font-medium shadow-xs',
                     bulkResult.startsWith('Done —')
                       ? 'border-success/40 bg-success/10 text-success'
                       : 'border-border bg-muted/40 text-foreground'

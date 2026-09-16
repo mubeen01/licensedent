@@ -61,7 +61,7 @@ function MockExamInstructionsPage({ user }: { user: AuthUser }) {
   return (
     <div className='min-h-screen bg-background flex items-center justify-center p-4 md:p-8'>
       <div className='w-full max-w-2xl rounded-2xl border border-border bg-card shadow-2xl overflow-hidden'>
-        <div className='bg-gradient-to-r from-primary via-primary to-secondary px-6 py-8 md:px-10 md:py-10 text-primary-foreground text-center'>
+        <div className='bg-linear-to-r from-primary via-primary to-secondary px-6 py-8 md:px-10 md:py-10 text-primary-foreground text-center'>
           <p className='text-xs font-bold uppercase tracking-[0.2em] opacity-80'>{meta.examName}</p>
           <h1 className='mt-2 text-2xl md:text-3xl font-black'>{meta.title}</h1>
           <div className='mt-5 flex items-center justify-center gap-6 text-sm font-semibold'>
@@ -116,7 +116,7 @@ function MockExamInstructionsPage({ user }: { user: AuthUser }) {
             size='lg'
             disabled={!accepted || isStarting}
             onClick={handleBegin}
-            className='bg-gradient-to-r from-primary to-secondary font-bold text-white'
+            className='bg-linear-to-r from-primary to-secondary font-bold text-white'
           >
             {isStarting ? 'Starting…' : 'Begin exam'}
           </Button>

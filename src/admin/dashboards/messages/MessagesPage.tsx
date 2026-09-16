@@ -39,7 +39,7 @@ function AdminMessages({ user }: { user: AuthUser }) {
 
       <div className='flex flex-col gap-3'>
         {messages?.map((m) => (
-          <div key={m.id} className='rounded-2xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-3'>
+          <div key={m.id} className='rounded-2xl border border-border bg-card shadow-xs hover:shadow-md transition-shadow p-5 flex flex-col gap-3'>
             <div className='flex items-start justify-between gap-4'>
               <div className='flex items-center gap-2'>
                 {m.isRead ? (

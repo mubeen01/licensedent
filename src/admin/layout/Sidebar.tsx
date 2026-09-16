@@ -84,7 +84,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       )}
     >
       {/* Brand header */}
-      <div className='flex items-center justify-between gap-2 px-6 py-6 relative overflow-hidden flex-shrink-0 border-b border-border'>
+      <div className='flex items-center justify-between gap-2 px-6 py-6 relative overflow-hidden shrink-0 border-b border-border'>
         <NavLink to={routes.LandingPageRoute.to} className='flex items-center gap-3 relative z-10'>
           <div className='flex h-10 w-10 flex-none items-center justify-center overflow-hidden rounded-2xl shadow-[0_8px_20px_-6px_hsl(var(--primary)/0.5)]'>
             <img src='/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
@@ -124,7 +124,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         className={cn(
                           'group relative flex items-center gap-3 rounded-xl py-2.5 px-3.5 font-semibold text-sm transition-all duration-200',
                           active
-                            ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-[0_8px_20px_-6px_hsl(var(--primary)/0.5)]'
+                            ? 'bg-linear-to-r from-primary to-secondary text-white shadow-[0_8px_20px_-6px_hsl(var(--primary)/0.5)]'
                             : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                         )}
                       >

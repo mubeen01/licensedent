@@ -31,7 +31,7 @@ export default function UsersOverviewStats() {
       {TILES.map((tile) => {
         const c = COLORS[tile.color];
         return (
-          <div key={tile.key} className='rounded-2xl border border-border bg-card p-4 shadow-sm'>
+          <div key={tile.key} className='rounded-2xl border border-border bg-card p-4 shadow-xs'>
             <div className={cn('mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg', c.bg, c.text)}>
               <tile.icon className='h-4 w-4' />
             </div>

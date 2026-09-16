@@ -11,7 +11,7 @@ export default function AccountPage({ user }: { user: AuthUser }) {
     <DashboardLayout user={user} pageTitle='Account'>
       <div className='max-w-3xl mx-auto p-6'>
         <Card className='shadow-xl overflow-hidden'>
-          <CardHeader className='bg-gradient-to-r from-primary via-primary to-secondary'>
+          <CardHeader className='bg-linear-to-r from-primary via-primary to-secondary'>
             <CardTitle className='text-xl font-black text-primary-foreground flex items-center gap-3'>
               <div className='p-2 bg-white/20 rounded-xl'>
                 <UserIcon className='w-5 h-5' />

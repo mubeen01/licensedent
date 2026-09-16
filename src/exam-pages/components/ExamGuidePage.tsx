@@ -87,9 +87,9 @@ function Hero({ config, accentClasses: a }: { config: ExamGuideConfig; accentCla
   return (
     <div className='relative w-full overflow-hidden bg-background pt-14'>
       <div className='pointer-events-none absolute inset-0 -z-10 overflow-hidden' aria-hidden='true'>
-        <div className={`absolute -top-24 -left-24 h-[26rem] w-[26rem] rounded-full ${a.glow} blur-3xl`} />
-        <div className='absolute top-1/3 -right-24 h-[26rem] w-[26rem] rounded-full bg-primary/15 blur-3xl' />
-        <div className='absolute -bottom-24 left-1/3 h-[22rem] w-[22rem] rounded-full bg-gold/10 blur-3xl' />
+        <div className={`absolute -top-24 -left-24 h-104 w-104 rounded-full ${a.glow} blur-3xl`} />
+        <div className='absolute top-1/3 -right-24 h-104 w-104 rounded-full bg-primary/15 blur-3xl' />
+        <div className='absolute -bottom-24 left-1/3 h-88 w-88 rounded-full bg-gold/10 blur-3xl' />
       </div>
 
       <div className='mx-auto max-w-5xl px-6 py-16 sm:py-20 lg:px-8'>
@@ -106,7 +106,7 @@ function Hero({ config, accentClasses: a }: { config: ExamGuideConfig; accentCla
             className={`inline-flex items-center gap-2 rounded-full border ${a.border30} ${a.bg10} px-4 py-1.5 text-sm font-medium ${a.text} ${a.textDark}`}
           >
             <span
-              className={`flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br ${a.gradientFrom} ${a.gradientTo} text-sm shadow-sm`}
+              className={`flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-br ${a.gradientFrom} ${a.gradientTo} text-sm shadow-xs`}
             >
               {config.badgeFlagEmoji}
             </span>
@@ -117,7 +117,7 @@ function Hero({ config, accentClasses: a }: { config: ExamGuideConfig; accentCla
         <h1 className='mt-6 text-center text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-left lg:text-6xl'>
           {config.heroTitleLead}{' '}
           <span
-            className={`block bg-gradient-to-r ${a.gradientFrom} ${a.gradientVia} to-primary bg-clip-text text-transparent sm:inline`}
+            className={`block bg-linear-to-r ${a.gradientFrom} ${a.gradientVia} to-primary bg-clip-text text-transparent sm:inline`}
           >
             {config.heroTitleHighlight}
           </span>
@@ -131,7 +131,7 @@ function Hero({ config, accentClasses: a }: { config: ExamGuideConfig; accentCla
           <Button
             size='lg'
             asChild
-            className='group w-full border-0 bg-gradient-to-r from-primary to-secondary px-8 font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-110 sm:w-auto'
+            className='group w-full border-0 bg-linear-to-r from-primary to-secondary px-8 font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-110 sm:w-auto'
           >
             <WaspRouterLink to={routes.SignupRoute.to}>
               Start practicing free
@@ -213,7 +213,7 @@ function Roadmap({ config, accentClasses: a }: { config: ExamGuideConfig; accent
             return (
               <li key={step.title} className='group relative'>
                 <div
-                  className={`absolute -left-[2.6rem] flex h-9 w-9 items-center justify-center rounded-full border-4 border-background bg-gradient-to-br ${a.gradientFrom} to-primary text-white shadow`}
+                  className={`absolute left-[-2.6rem] flex h-9 w-9 items-center justify-center rounded-full border-4 border-background bg-linear-to-br ${a.gradientFrom} to-primary text-white shadow-sm`}
                 >
                   <Icon className='h-4 w-4' />
                 </div>
@@ -275,7 +275,7 @@ function ExamSubjectsSection({ config, accentClasses: a }: { config: ExamGuideCo
         {config.examSubjects.map((subject) => (
           <div
             key={subject.name}
-            className={`group flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${a.hoverBorder30}`}
+            className={`group flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${a.hoverBorder30}`}
           >
             {subject.name}
             {subject.weight && (
@@ -352,7 +352,7 @@ function SampleQuestionSection({ config, accentClasses: a }: { config: ExamGuide
       </div>
 
       <div className='mt-8 flex justify-center'>
-        <Button asChild size='lg' className='group bg-gradient-to-r from-primary to-secondary font-semibold text-white'>
+        <Button asChild size='lg' className='group bg-linear-to-r from-primary to-secondary font-semibold text-white'>
           <WaspRouterLink to={routes.DemoExamRoute.to}>
             Try more questions like this
             <ArrowRight className='h-4 w-4 transition-transform group-hover:translate-x-1' />
@@ -401,10 +401,10 @@ function ClosingCta({ config, accentClasses: a }: { config: ExamGuideConfig; acc
   return (
     <div className='mx-auto max-w-5xl px-6 py-16 md:py-24 lg:px-8'>
       <div
-        className={`relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br ${a.glowFrom10} via-card to-primary/5 p-10 text-center shadow-lg sm:p-14`}
+        className={`relative overflow-hidden rounded-3xl border border-border bg-linear-to-br ${a.glowFrom10} via-card to-primary/5 p-10 text-center shadow-lg sm:p-14`}
       >
         <div
-          className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${a.gradientFrom} to-primary text-white shadow-lg`}
+          className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br ${a.gradientFrom} to-primary text-white shadow-lg`}
         >
           <Sparkles className='h-6 w-6' />
         </div>
@@ -414,7 +414,7 @@ function ClosingCta({ config, accentClasses: a }: { config: ExamGuideConfig; acc
           <Button
             size='lg'
             asChild
-            className='group w-full border-0 bg-gradient-to-r from-primary to-secondary px-8 font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-110 sm:w-auto'
+            className='group w-full border-0 bg-linear-to-r from-primary to-secondary px-8 font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-110 sm:w-auto'
           >
             <WaspRouterLink to={routes.SignupRoute.to}>
               Create free account

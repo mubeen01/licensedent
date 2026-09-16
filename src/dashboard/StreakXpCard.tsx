@@ -12,7 +12,7 @@ export default function StreakXpCard() {
       <CardContent className='p-6'>
         <div className='flex flex-col sm:flex-row sm:items-center gap-6 mb-6'>
           <div className='flex items-center gap-4'>
-            <div className='p-3 bg-orange-500/10 rounded-xl flex-shrink-0'>
+            <div className='p-3 bg-orange-500/10 rounded-xl shrink-0'>
               <Flame className='h-5 w-5 text-orange-500' />
             </div>
             <div>
@@ -52,9 +52,9 @@ export default function StreakXpCard() {
             >
               <div className='flex items-center gap-1.5'>
                 {badge.achieved ? (
-                  <Award className='w-3.5 h-3.5 text-primary flex-shrink-0' />
+                  <Award className='w-3.5 h-3.5 text-primary shrink-0' />
                 ) : (
-                  <Lock className='w-3.5 h-3.5 text-muted-foreground flex-shrink-0' />
+                  <Lock className='w-3.5 h-3.5 text-muted-foreground shrink-0' />
                 )}
                 <span className='text-xs font-medium text-foreground truncate'>{badge.label}</span>
               </div>

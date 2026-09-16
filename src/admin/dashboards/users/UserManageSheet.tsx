@@ -59,7 +59,7 @@ function SheetBody({ user }: { user: ManagedUser }) {
     <>
       <SheetHeader>
         <div className='flex items-center gap-3'>
-          <span className='flex h-12 w-12 flex-none items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-sm font-bold text-white shadow-sm'>
+          <span className='flex h-12 w-12 flex-none items-center justify-center rounded-full bg-linear-to-br from-primary to-secondary text-sm font-bold text-white shadow-xs'>
             {initials}
           </span>
           <div className='min-w-0 text-left'>

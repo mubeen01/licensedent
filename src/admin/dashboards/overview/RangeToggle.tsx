@@ -18,7 +18,7 @@ export default function RangeToggle({
           onClick={() => onChange(opt)}
           className={cn(
             'rounded-full px-3 py-1 text-xs font-semibold transition-colors',
-            value === opt ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            value === opt ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
           )}
         >
           {opt}d

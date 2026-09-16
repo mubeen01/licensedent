@@ -45,7 +45,7 @@ export default function PricingTeaser({ plans }: { plans: PricingTeaserPlan[] })
               {plan.highlighted && (
                 <span
                   aria-hidden='true'
-                  className='absolute inset-x-8 top-0 h-0.5 rounded-full bg-gradient-to-r from-primary to-secondary'
+                  className='absolute inset-x-8 top-0 h-0.5 rounded-full bg-linear-to-r from-primary to-secondary'
                 />
               )}
 
@@ -61,7 +61,7 @@ export default function PricingTeaser({ plans }: { plans: PricingTeaserPlan[] })
                 )}
               </div>
 
-              <p className='mt-3 min-h-[2.5rem] text-sm leading-6 text-muted-foreground'>{plan.tagline}</p>
+              <p className='mt-3 min-h-10 text-sm leading-6 text-muted-foreground'>{plan.tagline}</p>
 
               {/* Price is the real differentiator here, so it carries the type weight; duration/exam-scope ride along as context */}
               <div className='mt-6'>

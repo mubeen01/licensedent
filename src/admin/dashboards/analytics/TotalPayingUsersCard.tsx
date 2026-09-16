@@ -10,7 +10,7 @@ const TotalPayingUsersCard = ({ dailyStats, isLoading }: DailyStatsProps) => {
   }, [dailyStats]);
 
   return (
-    <Card className='rounded-2xl border-border/80 shadow-sm hover:-translate-y-1 hover:shadow-lg'>
+    <Card className='rounded-2xl border-border/80 shadow-xs hover:-translate-y-1 hover:shadow-lg'>
       <CardHeader className='pb-2'>
         <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary'>
           <ShoppingBag className='size-6' />

@@ -373,7 +373,7 @@ function ImportQuestionsPage({ user }: { user: AuthUser }) {
       <div className='max-w-6xl grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start'>
         <div className='flex flex-col gap-6 min-w-0'>
           {/* Step 1 — destination */}
-          <div className='rounded-2xl border border-border bg-card shadow-sm p-6 flex flex-col gap-5'>
+          <div className='rounded-2xl border border-border bg-card shadow-xs p-6 flex flex-col gap-5'>
             <SectionHeading step={1} title='Destination' subtitle='Where these questions should land' />
 
             <div>
@@ -402,7 +402,7 @@ function ImportQuestionsPage({ user }: { user: AuthUser }) {
                   className={cn(
                     'rounded-xl border px-3 py-2.5 text-left text-sm transition-all',
                     subjectMode === 'single'
-                      ? 'border-primary/40 bg-primary/5 text-foreground shadow-sm ring-1 ring-primary/20'
+                      ? 'border-primary/40 bg-primary/5 text-foreground shadow-xs ring-1 ring-primary/20'
                       : 'border-input text-muted-foreground hover:border-primary/40'
                   )}
                 >
@@ -415,7 +415,7 @@ function ImportQuestionsPage({ user }: { user: AuthUser }) {
                   className={cn(
                     'rounded-xl border px-3 py-2.5 text-left text-sm transition-all',
                     subjectMode === 'mixed'
-                      ? 'border-primary/40 bg-primary/5 text-foreground shadow-sm ring-1 ring-primary/20'
+                      ? 'border-primary/40 bg-primary/5 text-foreground shadow-xs ring-1 ring-primary/20'
                       : 'border-input text-muted-foreground hover:border-primary/40'
                   )}
                 >
@@ -482,7 +482,7 @@ function ImportQuestionsPage({ user }: { user: AuthUser }) {
           </div>
 
           {/* Step 2 — add source material */}
-          <div className='rounded-2xl border border-border bg-card shadow-sm p-6 flex flex-col gap-4'>
+          <div className='rounded-2xl border border-border bg-card shadow-xs p-6 flex flex-col gap-4'>
             <SectionHeading
               step={2}
               title='Add source material'
@@ -496,7 +496,7 @@ function ImportQuestionsPage({ user }: { user: AuthUser }) {
                 className={cn(
                   'flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-all',
                   addMode === 'files'
-                    ? 'border-primary/40 bg-primary/5 text-foreground shadow-sm ring-1 ring-primary/20'
+                    ? 'border-primary/40 bg-primary/5 text-foreground shadow-xs ring-1 ring-primary/20'
                     : 'border-input text-muted-foreground hover:border-primary/40'
                 )}
               >
@@ -508,7 +508,7 @@ function ImportQuestionsPage({ user }: { user: AuthUser }) {
                 className={cn(
                   'flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-all',
                   addMode === 'paste'
-                    ? 'border-primary/40 bg-primary/5 text-foreground shadow-sm ring-1 ring-primary/20'
+                    ? 'border-primary/40 bg-primary/5 text-foreground shadow-xs ring-1 ring-primary/20'
                     : 'border-input text-muted-foreground hover:border-primary/40'
                 )}
               >
@@ -590,7 +590,7 @@ function ImportQuestionsPage({ user }: { user: AuthUser }) {
 
           {/* Step 3 — preview (optional) */}
           {previewBeforeImport && queue.some((q) => previews.has(q.id)) && (
-            <div className='rounded-2xl border border-border bg-card shadow-sm p-6 flex flex-col gap-4'>
+            <div className='rounded-2xl border border-border bg-card shadow-xs p-6 flex flex-col gap-4'>
               <SectionHeading
                 step={3}
                 title='Preview'
@@ -607,7 +607,7 @@ function ImportQuestionsPage({ user }: { user: AuthUser }) {
           )}
 
           {/* Advanced options */}
-          <div className='rounded-2xl border border-border bg-card shadow-sm overflow-hidden'>
+          <div className='rounded-2xl border border-border bg-card shadow-xs overflow-hidden'>
             <button
               type='button'
               onClick={() => setShowAdvanced((v) => !v)}
@@ -663,7 +663,7 @@ function ImportQuestionsPage({ user }: { user: AuthUser }) {
           </div>
 
           {/* Import action */}
-          <div className='rounded-2xl border border-border bg-card shadow-sm p-6 flex flex-col gap-4'>
+          <div className='rounded-2xl border border-border bg-card shadow-xs p-6 flex flex-col gap-4'>
             <div className='flex items-center justify-between flex-wrap gap-3'>
               <div>
                 <p className='text-sm font-medium text-foreground'>
@@ -697,7 +697,7 @@ function ImportQuestionsPage({ user }: { user: AuthUser }) {
 
           {/* Results */}
           {combinedResult && (
-            <div className='rounded-2xl border border-border bg-card shadow-sm p-6 flex flex-col gap-3'>
+            <div className='rounded-2xl border border-border bg-card shadow-xs p-6 flex flex-col gap-3'>
               <div className='flex items-center gap-2 text-foreground font-medium'>
                 <CheckCircle2 className='h-5 w-5 text-secondary' />
                 Imported {completedResults.length} source{completedResults.length === 1 ? '' : 's'}
@@ -772,7 +772,7 @@ function ImportQuestionsPage({ user }: { user: AuthUser }) {
 
         {/* Sidebar */}
         <div className='flex flex-col gap-6'>
-          <div className='rounded-2xl border border-border bg-card shadow-sm p-5'>
+          <div className='rounded-2xl border border-border bg-card shadow-xs p-5'>
             <p className='text-sm font-medium text-foreground flex items-center gap-1.5 mb-3'>
               <Clock className='h-4 w-4 text-muted-foreground' /> Recent imports
             </p>

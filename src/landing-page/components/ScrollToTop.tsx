@@ -29,7 +29,7 @@ export default function ScrollToTop() {
       onClick={scrollToTop}
       aria-label='Back to top'
       title='Back to top'
-      className='group fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-white shadow-lg ring-1 ring-white/20 transition-all duration-300 hover:scale-110 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none motion-reduce:hover:scale-100'
+      className='group fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-br from-primary to-secondary text-white shadow-lg ring-1 ring-white/20 transition-all duration-300 hover:scale-110 hover:shadow-xl focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none motion-reduce:hover:scale-100'
     >
       {/* Progress ring — fills clockwise as you scroll, like a clinical gauge */}
       <svg className='pointer-events-none absolute inset-0 -m-0.5 h-[calc(100%+4px)] w-[calc(100%+4px)] -rotate-90' viewBox='0 0 36 36'>

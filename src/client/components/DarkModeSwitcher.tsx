@@ -27,7 +27,7 @@ const DarkModeSwitcher = () => {
           className={cn(
             'absolute top-1/2 left-[3px] flex h-6 w-6 -translate-y-1/2 translate-x-0 items-center justify-center rounded-full bg-white shadow-md border border-border transition-all duration-300 ease-in-out',
             {
-              '!right-[3px] !translate-x-full': !isInLightMode,
+              'right-[3px]! translate-x-full!': !isInLightMode,
             }
           )}
         >

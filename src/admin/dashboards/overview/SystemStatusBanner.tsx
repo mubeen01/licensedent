@@ -10,7 +10,7 @@ export default function SystemStatusBanner({ stripeConfigured }: { stripeConfigu
 
   return (
     <div className='flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 mb-6'>
-      <TriangleAlert className='size-5 text-warning flex-shrink-0 mt-0.5' />
+      <TriangleAlert className='size-5 text-warning shrink-0 mt-0.5' />
       <div className='text-sm'>
         <p className='font-semibold text-foreground'>Checkout is offline</p>
         <p className='text-muted-foreground'>
