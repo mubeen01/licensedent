@@ -1,0 +1,575 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
+}
+
+model User {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+
+  email                     String?         @unique
+  username                  String?         @unique
+  isAdmin                   Boolean         @default(false)
+  isDisabled                Boolean         @default(false)
+  lastLoginAt               DateTime?
+  loginCount                Int             @default(0)
+  tags                      String[]        @default([])
+
+  paymentProcessorUserId    String?         @unique
+  lemonSqueezyCustomerPortalUrl String?     // You can delete this if you're not using Lemon Squeezy as your payments processor.
+  subscriptionStatus        String?         // 'active', 'cancel_at_period_end', 'past_due', 'deleted'
+  subscriptionPlan          String?         // 'hobby', 'pro'
+  datePaid                  DateTime?
+  credits                   Int             @default(3)
+
+  gptResponses              GptResponse[]
+  contactFormMessages       ContactFormMessage[]
+  tasks                     Task[]
+  files                     File[]
+
+  userAttempts              UserAttempt[]
+  subscriptions             Subscription[]
+
+  verifiedQuestions         Question[]        @relation("QuestionVerifiedBy")
+  rejectedQuestions         Question[]        @relation("QuestionRejectedBy")
+  editedQuestionVersions    QuestionVersion[]
+
+  mockExamAttempts          MockExamAttempt[]
+  questionNotes             QuestionNote[]
+  reviewSchedules           ReviewSchedule[]
+  customQuizAttempts        CustomQuizAttempt[]
+  adminAuditLogs            AdminAuditLog[]
+  profile                   UserProfile?
+  notes                     AdminUserNote[]   @relation("AdminUserNoteSubject")
+  authoredUserNotes         AdminUserNote[]   @relation("AdminUserNoteAuthor")
+}
+
+model GptResponse {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+  updatedAt                 DateTime        @updatedAt
+
+  user                      User            @relation(fields: [userId], references: [id])
+  userId                    String
+
+  content                   String
+}
+
+model Task {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+
+  user                      User            @relation(fields: [userId], references: [id])
+  userId                    String
+
+  description               String
+  time                      String          @default("1")
+  isDone                    Boolean         @default(false)
+}
+
+model File {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+
+  user                      User            @relation(fields: [userId], references: [id])
+  userId                    String
+
+  name                      String
+  type                      String
+  key                       String
+  uploadUrl                 String
+}
+
+model DailyStats {
+  id                               Int             @id @default(autoincrement())
+  date                             DateTime        @default(now()) @unique
+
+  totalViews                       Int             @default(0)
+  prevDayViewsChangePercent        String          @default("0")
+  userCount                        Int             @default(0)
+  paidUserCount                    Int             @default(0)
+  userDelta                        Int             @default(0)
+  paidUserDelta                    Int             @default(0)
+  totalRevenue                     Float           @default(0)
+  totalProfit                      Float           @default(0)
+
+  sources                          PageViewSource[]
+}
+
+model PageViewSource {
+  @@id([date, name])
+  name                     String
+  date                     DateTime        @default(now())
+
+  dailyStats               DailyStats?     @relation(fields: [dailyStatsId], references: [id])
+  dailyStatsId             Int?
+
+  visitors                 Int
+}
+
+model Logs {
+  id                       Int             @id @default(autoincrement())
+  createdAt                DateTime        @default(now())
+
+  message                  String
+  level                    String
+}
+
+model ContactFormMessage {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+
+  user                      User            @relation(fields: [userId], references: [id])
+  userId                    String
+
+  content                   String
+  isRead                    Boolean         @default(false)
+  repliedAt                 DateTime?
+}
+
+// ---- General Dentist exam-prep models (Phase 1) ----
+
+enum QuestionStatus {
+  pending
+  flagged
+  reviewed
+  published
+  rejected
+}
+
+enum QuestionDifficulty {
+  easy
+  medium
+  hard
+}
+
+enum ImportBatchStatus {
+  parsing
+  review_pending
+  done
+}
+
+enum SubscriptionPlanType {
+  fast_track
+  standard
+  extended
+}
+
+model Exam {
+  id                        String          @id @default(uuid())
+  name                      String
+  slug                      String          @unique
+  isActive                  Boolean         @default(true)
+
+  // Marketing/branding metadata for showing this exam consistently across the
+  // app (landing grid, pricing, practice/mock-exam pickers, dashboard, admin)
+  // instead of the hardcoded copy that used to live only in the landing page's
+  // contentSections.ts. All optional since the original "General Dentist"
+  // exam predates this and doesn't need to appear in the branded picker.
+  code                      String?         // e.g. "DHA"
+  country                   String?         // e.g. "Dubai, UAE"
+  flagEmoji                 String?         // e.g. "🇦🇪"
+  authorityLabel            String?         // e.g. "Dubai Health Authority"
+  description               String?
+  colorGradient             String?         // Tailwind gradient classes, e.g. "from-amber-500 to-amber-400"
+
+  subjects                  Subject[]
+  questions                 Question[]
+  mockTests                 MockTest[]
+  subscriptionsWithAccess   Subscription[]
+  userProfiles              UserProfile[]
+}
+
+model Subject {
+  id                        String          @id @default(uuid())
+  name                      String
+  // Archived subjects stay fully manageable in the admin review queue (rename,
+  // move/delete their questions) but are hidden from students -- the practice
+  // picker, practice question draws, and mock-exam draws all filter this out.
+  // A deliberately reversible alternative to hard-deleting a subject.
+  isActive                  Boolean         @default(true)
+
+  exam                      Exam            @relation(fields: [examId], references: [id])
+  examId                    String
+
+  questions                 Question[]
+}
+
+model Question {
+  id                        String          @id @default(uuid())
+  stem                      String
+  options                   Json            // [{ key, text }]
+  correctKey                String?         // null = not confirmed yet (never a guess treated as fact)
+  explanation                String?        // null = no explanation available from the source
+  imageUrl                  String?
+
+  // Content tags for Quiz Builder filtering (src/quiz-builder/). Nullable/
+  // false-default rather than required -- most of the existing ~9,000-question
+  // bank predates these fields and is untagged; filters on them just return
+  // fewer matches until admin tagging (manual or AI-drafted, same gate as
+  // correctKey/explanation below) catches up. Not versioned in
+  // QuestionVersion -- that table is for user-facing content changes, these
+  // are internal classification metadata.
+  difficulty                QuestionDifficulty?
+  isHighYield               Boolean         @default(false)
+  isCaseBased               Boolean         @default(false)
+
+  // AI-drafted suggestion for flagged questions with no source answer -- never
+  // treated as confirmed, never auto-published. Surfaced in the admin review
+  // queue as "AI-suggested, unconfirmed"; a human must copy it into
+  // correctKey/explanation (editing if needed) and approve, same gate as everything else.
+  suggestedCorrectKey       String?
+  suggestedExplanation      String?
+  // Same "AI-suggested, unconfirmed" gate as suggestedCorrectKey/
+  // suggestedExplanation above, extended to the content tags -- an admin must
+  // explicitly copy these into difficulty/isHighYield/isCaseBased.
+  suggestedDifficulty       QuestionDifficulty?
+  suggestedIsHighYield      Boolean?
+  suggestedIsCaseBased      Boolean?
+  suggestionSource          String?         // e.g. "openai:gpt-4.1-mini"
+  suggestedAt               DateTime?
+  sourceRef                 String?
+  status                    QuestionStatus  @default(pending)
+  createdAt                 DateTime        @default(now())
+
+  // set only when status flips to "published" -- who/when confirmed this
+  // question is safe to serve to students (never set by an automated script)
+  verifiedBy                User?           @relation("QuestionVerifiedBy", fields: [verifiedById], references: [id])
+  verifiedById               String?
+  verifiedAt                DateTime?
+
+  // Set only when status flips to "rejected" -- who/when/why a question was
+  // turned away during review (bad answer key, too few options, etc.),
+  // captured at reject time instead of being lost the moment the row is
+  // deleted. Rejecting no longer deletes the row -- see rejectQuestion.
+  rejectedBy                User?           @relation("QuestionRejectedBy", fields: [rejectedById], references: [id])
+  rejectedById              String?
+  rejectedAt                DateTime?
+  rejectionReason           String?
+
+  subject                   Subject         @relation(fields: [subjectId], references: [id])
+  subjectId                 String
+
+  exams                     Exam[]
+  mockTests                 MockTest[]
+
+  importBatch               ImportBatch?    @relation(fields: [importBatchId], references: [id])
+  importBatchId              String?
+
+  userAttempts              UserAttempt[]
+  versions                  QuestionVersion[]
+
+  mockExamAttemptItems      MockExamAttemptItem[]
+  notes                     QuestionNote[]
+  reviewSchedules           ReviewSchedule[]
+  customQuizAttemptItems    CustomQuizAttemptItem[]
+}
+
+// Snapshot of a Question's prior content, written whenever an already-
+// published question is edited -- so a correction to live content is never
+// silently destructive.
+model QuestionVersion {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+
+  question                  Question        @relation(fields: [questionId], references: [id])
+  questionId                String
+
+  stem                      String
+  options                   Json
+  correctKey                String?
+  explanation                String?
+
+  editedBy                  User?           @relation(fields: [editedById], references: [id])
+  editedById                 String?
+}
+
+// A lightweight trail for admin actions that otherwise leave no record --
+// subject create/rename/archive/delete, bulk question actions, and admin-role
+// grants. Deliberately NOT written to on every single-question approve/reject/
+// edit/delete: those already carry an implicit trail via Question.status +
+// verifiedById/verifiedAt and QuestionVersion snapshots, and logging each one
+// here would just be noise at normal review volume.
+model AdminAuditLog {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+
+  admin                     User            @relation(fields: [adminId], references: [id])
+  adminId                   String
+
+  action                    String          // e.g. "subject.create", "subject.archive", "question.bulkApprove", "user.setAdmin"
+  entityType                String          // e.g. "Subject", "Question", "User"
+  // '(bulk)' sentinel when an action touches many rows at once -- the real
+  // list of affected ids lives in `details` instead.
+  entityId                  String
+  details                   Json?
+}
+
+// Internal support/CRM-style note left by an admin on a user's account --
+// distinct from AdminAuditLog, which records actions taken, not freeform
+// context an admin wants to leave for other admins.
+model AdminUserNote {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+
+  user                      User            @relation("AdminUserNoteSubject", fields: [userId], references: [id], onDelete: Cascade)
+  userId                    String
+
+  admin                     User            @relation("AdminUserNoteAuthor", fields: [adminId], references: [id])
+  adminId                   String
+
+  body                      String
+}
+
+model ImportBatch {
+  id                        String              @id @default(uuid())
+  fileName                  String
+  subjectName               String
+  totalParsed               Int                 @default(0)
+  totalReviewed             Int                 @default(0)
+  totalPublished             Int                @default(0)
+  status                    ImportBatchStatus   @default(parsing)
+  createdAt                 DateTime            @default(now())
+
+  questions                 Question[]
+}
+
+model UserAttempt {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+
+  user                      User            @relation(fields: [userId], references: [id])
+  userId                    String
+
+  question                  Question        @relation(fields: [questionId], references: [id])
+  questionId                String
+
+  selectedKey                String
+  isCorrect                 Boolean
+  markedForReview            Boolean         @default(false)
+
+  // null means practice mode (not part of a mock test)
+  mockTest                  MockTest?       @relation(fields: [mockTestId], references: [id])
+  mockTestId                 String?
+}
+
+model MockTest {
+  id                        String          @id @default(uuid())
+  title                     String
+  durationMinutes           Int
+  // How many questions each attempt randomly draws from the exam's published
+  // bank -- NOT a fixed set. `questions` below is the legacy static M2M link,
+  // left in place but unused by the random-draw flow (see MockExamAttempt).
+  questionCount             Int             @default(150)
+  isActive                  Boolean         @default(true)
+  createdAt                 DateTime        @default(now())
+
+  // Sequence within its exam (1, 2, 3...). Mocks 1-10 are all open together;
+  // mock 11 unlocks only once all of 1-10 have a submitted attempt, and from
+  // then on each mock N unlocks once mock N-1 has a submitted attempt --
+  // see getMockExams in src/mock-exams/operations.ts for the actual rule.
+  order                     Int             @default(1)
+
+  exam                      Exam            @relation(fields: [examId], references: [id])
+  examId                    String
+
+  questions                 Question[]
+  userAttempts              UserAttempt[]
+  attempts                  MockExamAttempt[]
+}
+
+enum MockExamAttemptStatus {
+  in_progress
+  submitted
+}
+
+// One student's timed run through a MockTest: a fresh random sample of
+// `questionCount` published questions is drawn and snapshotted into
+// MockExamAttemptItem the moment the attempt starts, so the question set for
+// this attempt never shifts even as the bank keeps growing. Deliberately
+// separate from UserAttempt (practice mode's flat, immediate-feedback model)
+// since a mock exam needs a session to group ~150 answers, a timer anchor,
+// and a single grade-on-submit moment instead of per-question feedback.
+model MockExamAttempt {
+  id                        String                  @id @default(uuid())
+  createdAt                 DateTime                @default(now())
+  submittedAt               DateTime?
+  status                    MockExamAttemptStatus   @default(in_progress)
+
+  // Snapshot of MockTest.durationMinutes at start time, so a later edit to
+  // the mock test's duration doesn't retroactively change an in-flight timer.
+  durationMinutes           Int
+  correctCount              Int?
+
+  user                      User                    @relation(fields: [userId], references: [id])
+  userId                    String
+
+  mockTest                  MockTest                @relation(fields: [mockTestId], references: [id])
+  mockTestId                String
+
+  items                     MockExamAttemptItem[]
+}
+
+model MockExamAttemptItem {
+  id                        String            @id @default(uuid())
+  order                     Int
+
+  selectedKey               String?
+  markedForReview           Boolean           @default(false)
+
+  attempt                   MockExamAttempt   @relation(fields: [attemptId], references: [id])
+  attemptId                 String
+
+  question                  Question          @relation(fields: [questionId], references: [id])
+  questionId                String
+
+  @@unique([attemptId, questionId])
+}
+
+enum CustomQuizAttemptStatus {
+  in_progress
+  submitted
+}
+
+// Timed/Exam-Mode runs of the Quiz Builder (Extended-plan perk,
+// src/quiz-builder/). Deliberately a separate model from MockExamAttempt
+// rather than reusing it -- MockExamAttempt is tightly coupled to a fixed
+// MockTest row (duration/count, ladder-unlock ordering), which doesn't fit
+// an ad-hoc, per-request question set. Same "different session shapes get
+// different tables" split as UserAttempt vs MockExamAttempt above. Like
+// MockExamAttempt, answers here do NOT write to UserAttempt/ReviewSchedule --
+// they count toward the student's streak (via createdAt/submittedAt) but not
+// per-subject Progress or Smart Review. Only practice-mode custom quizzes
+// (Quiz Builder Phase 1, via submitAnswer) do.
+model CustomQuizAttempt {
+  id                        String                    @id @default(uuid())
+  createdAt                 DateTime                  @default(now())
+  submittedAt                DateTime?
+  status                    CustomQuizAttemptStatus   @default(in_progress)
+
+  // Snapshot of the chosen timer at start, so a later change to defaults
+  // doesn't retroactively change an in-flight timer. Null = untimed.
+  durationMinutes           Int?
+  correctCount              Int?
+
+  user                      User                      @relation(fields: [userId], references: [id])
+  userId                    String
+
+  items                     CustomQuizAttemptItem[]
+}
+
+model CustomQuizAttemptItem {
+  id                        String              @id @default(uuid())
+  order                     Int
+
+  selectedKey               String?
+  markedForReview           Boolean             @default(false)
+
+  attempt                   CustomQuizAttempt   @relation(fields: [attemptId], references: [id])
+  attemptId                 String
+
+  question                  Question            @relation(fields: [questionId], references: [id])
+  questionId                String
+
+  @@unique([attemptId, questionId])
+}
+
+model Subscription {
+  id                        String                @id @default(uuid())
+  createdAt                 DateTime              @default(now())
+
+  user                      User                  @relation(fields: [userId], references: [id])
+  userId                    String
+
+  planType                  SubscriptionPlanType
+  durationDays              Int
+  allExamsAccess            Boolean               @default(false)
+
+  // When exam access ends. Set at grant time (createdAt + durationDays); a
+  // renewal extends the later of now/expiresAt by the new duration. Backfilled
+  // for the pre-migration rows; all grant paths (admin + webhook) must set it.
+  expiresAt                 DateTime?
+
+  // set when the plan is scoped to a single exam (i.e. allExamsAccess is false)
+  examAccess                Exam?                 @relation(fields: [examAccessId], references: [id])
+  examAccessId               String?
+}
+
+// A student's personal "important" flag + notepad on a question, independent
+// of any single practice attempt -- persists across retries, drives the
+// Review page (src/questions/ReviewPage.tsx). One row per (user, question).
+model QuestionNote {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+  updatedAt                 DateTime        @updatedAt
+
+  user                      User            @relation(fields: [userId], references: [id])
+  userId                    String
+
+  question                  Question        @relation(fields: [questionId], references: [id])
+  questionId                String
+
+  markedImportant           Boolean         @default(false)
+  note                      String?
+
+  @@unique([userId, questionId])
+}
+
+// Per-(user, question) spaced-repetition state, driving Smart Review
+// (src/questions/SmartReviewPage.tsx). Written every time submitAnswer is
+// called in practice mode -- correct answers push dueAt further out
+// (SM-2-lite), incorrect answers reset it to resurface tomorrow. Independent
+// of QuestionNote: a question enters this table just by being answered, not
+// only when starred/annotated.
+model ReviewSchedule {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+  updatedAt                 DateTime        @updatedAt
+
+  user                      User            @relation(fields: [userId], references: [id])
+  userId                    String
+
+  question                  Question        @relation(fields: [questionId], references: [id])
+  questionId                String
+
+  intervalDays              Int             @default(1)
+  easeFactor                Float           @default(2.5)
+  repetitions               Int             @default(0)
+  dueAt                     DateTime        @default(now())
+
+  @@unique([userId, questionId])
+}
+
+// One-time onboarding capture, gated in front of the dashboard (see
+// src/client/App.tsx) until completedAt is set. Kept separate from User
+// (rather than bolted-on fields) since it's a distinct concern, same as
+// QuestionNote/UserAttempt above. Absence of a row for a user IS "not yet
+// onboarded" -- there's no other "not started" state to track.
+model UserProfile {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+  updatedAt                 DateTime        @updatedAt
+
+  user                      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                    String          @unique
+
+  fullName                  String?
+  country                   String?
+  address                   String?
+  qualification             String?
+  yearsOfExperience         Int?
+  targetExamDate            DateTime?
+
+  // Which licensing exam they're preparing for -- optional at the schema
+  // level only because Prisma requires it on a nullable relation; the
+  // completeOnboarding action always requires and sets this.
+  exam                      Exam?           @relation(fields: [examId], references: [id])
+  examId                    String?
+
+  completedAt               DateTime?
+}

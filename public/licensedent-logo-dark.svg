@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 360">
+  <defs>
+    <linearGradient id="v3ddbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1A5A58"/>
+      <stop offset="1" stop-color="#0E7C7B"/>
+    </linearGradient>
+  </defs>
+  <rect width="1240" height="360" rx="48" fill="#0B1E20"/>
+  <rect x="24" y="24" width="312" height="312" rx="80" fill="url(#v3ddbg)"/>
+  <g transform="translate(88,62) scale(0.66)">
+    <path d="M128 30c-70 0-122 30-122 92 0 42 22 62 34 100 10 32 14 80 36 80 22 0 16-50 28-82 6-16 14-24 30-24s24 8 30 24c12 32 6 82 28 82 22 0 26-48 36-80 12-38 34-58 34-100 0-62-52-92-122-92z" fill="#fff"/>
+    <path d="M86 162l36 36 68-78" fill="none" stroke="#0B4F4E" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M86 162l36 36 68-78" fill="none" stroke="#E3C565" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="372" y="168" font-family="Plus Jakarta Sans, Inter, Segoe UI, Arial, sans-serif" font-size="92" font-weight="800" letter-spacing="-2" fill="#FFFFFF">License<tspan fill="#4ED6D2">Dent</tspan></text>
+  <text x="374" y="216" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="27" font-weight="600" letter-spacing="4" fill="#4ED6D2">DHA • MOH • IDC IRELAND</text>
+  <rect x="374" y="236" width="380" height="8" rx="4" fill="#C9A227"/>
+  <text x="374" y="280" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="25" fill="#9AB5B3">Gulf + Ireland Dental Licensing Prep</text>
+</svg>

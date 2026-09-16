@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .chat-height {
+    @apply h-[calc(100vh_-_8.125rem)] lg:h-[calc(100vh_-_5.625rem)];
+  }
+  .inbox-height {
+    @apply h-[calc(100vh_-_8.125rem)] lg:h-[calc(100vh_-_5.625rem)];
+  }
+
+  /* Text gradient utilities */
+  .text-gradient-primary {
+    background: linear-gradient(to right, hsl(var(--primary-muted)), hsl(var(--primary)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-primary-diagonal {
+    background: linear-gradient(135deg, hsl(var(--primary-muted)), hsl(var(--primary)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Border gradient utilities */
+  .border-gradient-primary {
+    background: linear-gradient(to right, hsl(var(--primary-muted)), hsl(var(--primary)));
+    padding: 1px;
+  }
+
+  .border-gradient-primary > * {
+    background: hsl(var(--background));
+  }
+}
+
+/* Here is an example of how to add a custom font. 
+* Fonts are stored in the public/fonts folder.
+* They are defined first here, then need to be referenced in the tailwind.config.js file
+* under `theme.extend.fontFamily`, and then can be used as a tailwind class, e.g. className='font-satoshi'.
+*/
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* third-party libraries CSS */
+
+.tableCheckbox:checked ~ div span {
+  @apply opacity-100;
+}
+.tableCheckbox:checked ~ div {
+  @apply bg-primary border-primary;
+}
+
+.apexcharts-legend-text {
+  @apply !text-muted-foreground;
+}
+.apexcharts-text {
+  @apply !fill-muted-foreground;
+}
+.apexcharts-xcrosshairs {
+  @apply !fill-border;
+}
+.apexcharts-gridline {
+  @apply !stroke-border;
+}
+.apexcharts-series.apexcharts-pie-series path {
+  @apply dark:!stroke-transparent;
+}
+.apexcharts-legend-series {
+  @apply !inline-flex gap-1.5;
+}
+.apexcharts-tooltip.apexcharts-theme-light {
+  @apply dark:!bg-card dark:!border-border;
+}
+.apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-title {
+  @apply dark:!bg-muted dark:!border-border;
+}
+.apexcharts-xaxistooltip,
+.apexcharts-yaxistooltip {
+  @apply dark:!bg-muted dark:!border-muted dark:!text-muted-foreground;
+}
+.apexcharts-xaxistooltip-bottom:after {
+  @apply dark:!border-b-muted;
+}
+.apexcharts-xaxistooltip-bottom:before {
+  @apply dark:!border-b-muted;
+}
+
+@layer base {
+  :root {
+    /* User-specified brand palette:
+       Primary #0F766E (deep teal) · Secondary #0EA5E9 (sky blue) ·
+       Accent #D4A017 (gold) · Background #F8FAFC (cool slate white) */
+    --background: 210 40% 98%;
+    --foreground: 210 30% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 30% 12%;
+    --card-accent: 0 0% 100%;
+    --card-accent-foreground: 210 30% 12%;
+    --card-subtle: 175 40% 96%;
+    --card-subtle-foreground: 210 30% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 30% 12%;
+    --primary: 175 77% 26%;
+    --primary-foreground: 0 0% 100%;
+    --primary-muted: 175 60% 45%;
+    --secondary: 199 89% 48%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-muted: 199 70% 92%;
+    --secondary-muted-foreground: 210 30% 12%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 210 12% 40%;
+    --accent: 43 70% 94%;
+    --accent-foreground: 210 30% 12%;
+    --gold: 43 80% 46%;
+    --gold-foreground: 210 35% 12%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 152 60% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 43 80% 46%;
+    --warning-foreground: 210 35% 12%;
+    --border: 210 20% 88%;
+    --input: 210 20% 88%;
+    --ring: 175 77% 26%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 210 35% 7%;
+    --foreground: 210 20% 96%;
+    --card: 210 32% 10%;
+    --card-foreground: 210 20% 96%;
+    --card-accent: 175 40% 92%;
+    --card-accent-foreground: 210 30% 10%;
+    --card-subtle: 210 28% 14%;
+    --card-subtle-foreground: 210 20% 96%;
+    --popover: 210 32% 9%;
+    --popover-foreground: 210 20% 96%;
+    --primary: 175 65% 45%;
+    --primary-foreground: 210 35% 8%;
+    --primary-muted: 175 70% 28%;
+    --secondary: 199 85% 58%;
+    --secondary-foreground: 210 35% 8%;
+    --secondary-muted: 199 40% 22%;
+    --secondary-muted-foreground: 210 20% 96%;
+    --muted: 210 20% 16%;
+    --muted-foreground: 200 10% 65%;
+    --accent: 210 24% 16%;
+    --accent-foreground: 210 20% 96%;
+    --gold: 43 75% 55%;
+    --gold-foreground: 210 35% 8%;
+    --destructive: 0 62.8% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --success: 152 50% 48%;
+    --success-foreground: 210 35% 8%;
+    --warning: 43 75% 55%;
+    --warning-foreground: 210 35% 8%;
+    --border: 210 20% 18%;
+    --input: 210 20% 18%;
+    --ring: 175 65% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
