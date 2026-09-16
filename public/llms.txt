@@ -1,0 +1,36 @@
+# LicenseDent
+
+> Human-verified practice questions, timed mock tests and subject-wise
+> revision for Gulf and Ireland dental licensing exams. Every question is
+> written or reviewed by a dentist -- never AI-guessed. Covers DHA (Dubai),
+> HAAD/DOH (Abu Dhabi), MOH (UAE federal), SHA (Sharjah), SMLE/SDLE (Saudi
+> Arabia), OMSB (Oman), QCHP (Qatar), NHRA (Bahrain), KDLE/KMLE (Kuwait),
+> and the Irish Dental Council statutory exam (IDC Ireland).
+
+<!--
+  PRD-01 S1.4. TODO(PRD-01 Q1): replace https://licensedent.example.com
+  below with the real production domain once decided (see
+  docs/07-seo-geo-blog-strategy-PRD-01.md §6) and keep in sync with
+  SeoHead.tsx's SITE_ORIGIN constant.
+-->
+
+## Exam guides
+
+- [DHA (Dubai)](https://licensedent.example.com/exams/dha): Exam code GEN5301, DataFlow verification, attempt rules and subject coverage.
+- [HAAD / DOH (Abu Dhabi)](https://licensedent.example.com/exams/haad): PQR, DataFlow, shared-attempt rules with DHA and MOH.
+- [MOH (UAE federal)](https://licensedent.example.com/exams/moh): DataFlow/PQR framework, coverage beyond Dubai and Abu Dhabi.
+- [SHA (Sharjah)](https://licensedent.example.com/exams/sha): Two-stage license, supervised-practice period, DataFlow verification.
+- [SMLE / SDLE (Saudi Arabia)](https://licensedent.example.com/exams/smle): SCFHS-run, scaled scoring, Prometric delivery, early eligibility for final-year students.
+- [OMSB (Oman)](https://licensedent.example.com/exams/omsb): Pearson VUE delivery, Muscat in-person viva.
+- [QCHP (Qatar)](https://licensedent.example.com/exams/qchp): 150 questions, three and a half hours, Prometric delivery, mandatory DataFlow verification.
+- [NHRA (Bahrain)](https://licensedent.example.com/exams/nhra): Mehan portal application, 150-question Prometric exam, instant results, four-attempt rule.
+- [KDLE / KMLE (Kuwait)](https://licensedent.example.com/exams/kmle): Mandatory in-person viva, two-part format, sponsor rules.
+- [IDC Ireland](https://licensedent.example.com/exams/idc-ireland): Dental Council statutory exam for BDS graduates -- Part 1 SAQ + bench, Part 2 OSCE, January lottery.
+- [All exams](https://licensedent.example.com/exams): Compare all 10 exams side by side.
+
+## Product
+
+- [Home](https://licensedent.example.com/): Overview, live question-bank stats, and exam coverage.
+- [Pricing](https://licensedent.example.com/pricing): Fast Track, Standard and Extended plans.
+- [Free demo exam](https://licensedent.example.com/demo-exam): 20-question, 15-minute DHA-style exam, no login required.
+- [Terms, refunds & disclaimers](https://licensedent.example.com/legal): Terms of service, 7-day refund policy, regulator-affiliation disclaimer.

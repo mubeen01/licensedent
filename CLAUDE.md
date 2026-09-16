@@ -108,6 +108,26 @@ deliberately deferred).
 
 **Session changelog** (newest first — keep entries short, link the PRD for detail):
 
+- **2026-09-16**: PRD-01 Phase S1 mostly done (S1.1-S1.4; S1.G still
+  blocked). Enabled `prerender: true` on all 15 public routes in
+  `main.wasp.ts`. This surfaced a real bug an audit-by-grep had missed:
+  `wasp start`'s dev SSR warm-up pass (which actually renders every
+  `prerender: true` route through `react-dom-server`) crashed with
+  `window is not defined` in `useLocalStorage.tsx` (a render-body
+  `window.localStorage` call, not inside `useEffect`) — used by
+  `useColorMode` → `DarkModeSwitcher` → `NavBar`, rendered on every
+  marketing page via `App.tsx`. **Lesson**: when auditing for
+  prerender/SSR-safety, grep the shared layout (`src/client/`) too, not
+  just the page's own directory — a page-scoped audit will miss anything
+  pulled in by a global wrapper. Fixed with a `typeof window ===
+  'undefined'` guard. Added `public/robots.txt`, `public/sitemap.xml`,
+  `public/llms.txt` (all hand-written, placeholder domain, real content
+  reused from already-written `config.seo` copy — nothing invented).
+  **Still open**: actual `wasp build` prerender output is unverified —
+  `wasp build` currently fails here on `app.emailSender must not be set
+  to Dummy when building for production`, a pre-existing owner action
+  item (`06-phase-status.md`), not something to fix as part of this PRD.
+  See `docs/07-seo-geo-blog-strategy-PRD-01.md` §7 for full evidence.
 - **2026-09-16**: PRD-01 Phase S0 finished (except S0.3, blocked on Q1 —
   real domain). Wired `SeoHead` (title/description/canonical) into the 3
   remaining candidate pages (`LegalPage.tsx`, `DemoExamPage.tsx` intro

@@ -290,28 +290,30 @@ export default app({
   },
 
   spec: [
-    route('LandingPageRoute', '/', page(LandingPage)),
+    // prerender: true (PRD-01 S1.1) -- audited clean in S0.5, see
+    // docs/07-seo-geo-blog-strategy-PRD-01.md §7 for the evidence table.
+    route('LandingPageRoute', '/', page(LandingPage), { prerender: true }),
     query(getPublicExams, { entities: ['Exam'] }),
     query(getPublicBankStats, { entities: ['Question', 'Subject', 'Exam'] }),
 
     // Legal (public — terms of service, refund policy, disclaimers)
-    route('LegalRoute', '/legal', page(LegalPage)),
+    route('LegalRoute', '/legal', page(LegalPage), { prerender: true }),
 
     // Demo Exam (public, front-end only — no auth, no DB, sample questions)
-    route('DemoExamRoute', '/demo-exam', page(DemoExamPage)),
+    route('DemoExamRoute', '/demo-exam', page(DemoExamPage), { prerender: true }),
 
     // Exam guide pages (public, front-end only — one per exam)
-    route('AllExamsRoute', '/exams', page(AllExamsPage)),
-    route('DhaExamRoute', '/exams/dha', page(DhaExamPage)),
-    route('HaadExamRoute', '/exams/haad', page(HaadExamPage)),
-    route('MohExamRoute', '/exams/moh', page(MohExamPage)),
-    route('SmleExamRoute', '/exams/smle', page(SmleExamPage)),
-    route('OmsbExamRoute', '/exams/omsb', page(OmsbExamPage)),
-    route('QchpExamRoute', '/exams/qchp', page(QchpExamPage)),
-    route('KmleExamRoute', '/exams/kmle', page(KmleExamPage)),
-    route('NhraExamRoute', '/exams/nhra', page(NhraExamPage)),
-    route('ShaExamRoute', '/exams/sha', page(ShaExamPage)),
-    route('IdcExamRoute', '/exams/idc-ireland', page(IdcExamPage)),
+    route('AllExamsRoute', '/exams', page(AllExamsPage), { prerender: true }),
+    route('DhaExamRoute', '/exams/dha', page(DhaExamPage), { prerender: true }),
+    route('HaadExamRoute', '/exams/haad', page(HaadExamPage), { prerender: true }),
+    route('MohExamRoute', '/exams/moh', page(MohExamPage), { prerender: true }),
+    route('SmleExamRoute', '/exams/smle', page(SmleExamPage), { prerender: true }),
+    route('OmsbExamRoute', '/exams/omsb', page(OmsbExamPage), { prerender: true }),
+    route('QchpExamRoute', '/exams/qchp', page(QchpExamPage), { prerender: true }),
+    route('KmleExamRoute', '/exams/kmle', page(KmleExamPage), { prerender: true }),
+    route('NhraExamRoute', '/exams/nhra', page(NhraExamPage), { prerender: true }),
+    route('ShaExamRoute', '/exams/sha', page(ShaExamPage), { prerender: true }),
+    route('IdcExamRoute', '/exams/idc-ireland', page(IdcExamPage), { prerender: true }),
 
     // Auth Pages
     route('LoginRoute', '/login', page(Login)),
@@ -326,7 +328,7 @@ export default app({
     action(updateIsUserAdminById, { entities: ['User'] }),
 
     // Payment
-    route('PricingPageRoute', '/pricing', page(PricingPage)),
+    route('PricingPageRoute', '/pricing', page(PricingPage), { prerender: true }),
     route('CheckoutRoute', '/checkout', page(Checkout, { authRequired: true })),
     query(getCustomerPortalUrl, { entities: ['User'] }),
     query(getMySubscription, { entities: ['Subscription'] }),
