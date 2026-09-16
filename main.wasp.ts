@@ -272,13 +272,17 @@ export default app({
   },
 
   emailSender: {
-    // NOTE: "Dummy" provider is just for local development purposes.
-    //   Make sure to check the server logs for the email confirmation url (it will not be sent to an address)!
-    //   Once you are ready for production, switch to e.g. "SendGrid" or "Mailgun" providers. Check out https://docs.opensaas.sh/guides/email-sending/ .
-    provider: 'Dummy',
+    // Resend (Wasp 0.25 first-class provider). Needs RESEND_API_KEY in
+    // .env.server (dev) / as a Railway server secret (prod) -- see
+    // docs/09-work-changelog.md's deploy-infra entry for the full setup
+    // checklist. Falls back to no-op-ish behavior with an empty/missing
+    // key: the server still boots, but actual sends (signup verification,
+    // password reset) will fail until a real key is set.
+    provider: 'Resend',
     defaultFrom: {
       name: 'LicenseDent',
-      // When using a real provider, e.g. SendGrid, you must use the same email address that you configured your account to send out emails with!
+      // Must match a sender address verified with Resend for the
+      // licensedent.com domain (DNS records added in Resend's dashboard).
       email: 'support@licensedent.com',
     },
   },

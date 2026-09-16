@@ -1,0 +1,48 @@
+name: Wasp Deploy
+
+# PRD-01 deploy-infra work (2026-09-16). Redeploys to Railway on every
+# push to main. See docs/09-work-changelog.md for the full setup
+# checklist -- this file alone isn't enough to run yet:
+#   1. `wasp deploy railway launch licensedent` must be run once, manually,
+#      to create the Railway project (this workflow only does
+#      *re*-deploys, per Wasp's own docs).
+#   2. RAILWAY_PROJECT_ID below must be filled in with the real ID from
+#      that launch (Railway dashboard -> project -> Settings).
+#   3. A RAILWAY_API_TOKEN repo secret must be added (Railway dashboard ->
+#      https://railway.com/account/tokens -> generate without selecting a
+#      workspace -> GitHub repo -> Settings -> Secrets and variables ->
+#      Actions).
+#   4. This repo needs an actual GitHub remote (none configured yet as of
+#      this commit) for pushes to main to trigger anything.
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      WASP_VERSION: '0.25'
+      RAILWAY_PROJECT_NAME: licensedent
+      RAILWAY_PROJECT_ID: TODO_FILL_IN_AFTER_RAILWAY_LAUNCH
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24.20.0'
+
+      - name: Install Wasp
+        run: npm i -g @wasp.sh/wasp-cli@$WASP_VERSION
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy
+        run: wasp deploy railway deploy $RAILWAY_PROJECT_NAME --existing-project-id $RAILWAY_PROJECT_ID
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
