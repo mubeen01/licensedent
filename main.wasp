@@ -1,13 +1,13 @@
 app OpenSaaS {
   wasp: {
-    version: "^0.21.0"
+    version: "^0.22.0"
   },
 
   title: "LicenseDent - Gulf + Ireland Dental Licensing Exam Prep",
 
   head: [
     "<link rel='icon' href='/licensedent-favicon.svg' type='image/svg+xml' />",
-    "<meta charset='utf-8' />",
+    "<meta charSet='utf-8' />",
     "<meta name='description' content='Practice-question bank, timed mock tests and subject-wise revision for DHA, HAAD, MOH, SMLE and IDC Ireland dental licensing exams.' />",
     "<meta name='author' content='LicenseDent' />",
     "<meta name='keywords' content='DHA exam prep, HAAD exam, IDC Ireland exam, dental licensing exam, dentist mock test, DHA MCQs, LicenseDent' />",
