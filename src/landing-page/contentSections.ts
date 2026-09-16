@@ -1,5 +1,4 @@
 import { getPlanPrice, PaymentPlanId } from '../payment/plans';
-import { BlogUrl } from '../shared/common';
 import type { GridFeature } from './components/FeaturesGrid';
 import type { PracticeMode } from './components/PracticeModes';
 import type { PricingTeaserPlan } from './components/PricingTeaser';
@@ -488,7 +487,6 @@ export const footerNavigation = {
     { name: 'FAQ', href: '/#faq' },
   ],
   company: [
-    { name: 'Blog', href: BlogUrl },
     { name: 'Contact', href: 'mailto:support@licensedent.com' },
     { name: 'Terms of Service', href: '/legal#terms' },
     { name: 'Refund Policy', href: '/legal#refund' },

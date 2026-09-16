@@ -198,7 +198,7 @@ import {
 } from './src/admin/dashboards/messages/operations' with { type: 'ref' }
 
 export default app({
-  name: 'OpenSaaS',
+  name: 'LicenseDent',
   wasp: { version: '^0.25.0' },
 
   title: 'LicenseDent - Gulf + Ireland Dental Licensing Exam Prep',
