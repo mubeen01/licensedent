@@ -87,56 +87,36 @@ Read `docs/` in this order depending on what you need:
 - **`docs/08-wasp-upgrade-and-rebrand-status.md`** — what changed in the
   Wasp 0.18→0.25 upgrade, Tailwind v3→v4, and the rebrand. Read this if
   something about the current stack surprises you.
+- **`docs/09-work-changelog.md`** — dated, cited log of every work
+  session across all initiatives (not just PRD-01). Read this to see what
+  actually happened recently and why, with commit-hash citations in both
+  repos. **Update it every session** — see "Working discipline" below.
 
 If you're Claude Code specifically: this project also has persistent
 cross-session memory (separate from this file) that gets loaded
 automatically — check it for anything not written down here, especially
 *why* past decisions were made, not just *what* the current state is.
 
-## Working discipline for PRD-01 (and future PRDs)
+## Working discipline (applies to PRD-01 and every future initiative)
 
-Go phase-by-phase, one task/page at a time: implement, test against a
-running `wasp start` (typecheck + actual HTTP/DOM check, not just "it
-compiles"), commit locally, then move to the next task. Don't batch
-unrelated tasks into one commit. Whenever a task changes what's `done` vs
-`todo` in a PRD's status table, update that table in the same commit — the
-status table is the source of truth for "what's already done, don't
-redo it," so a stale one wastes the next session's time. Add a line to
-this changelog for anything a future session needs to know that isn't
-obvious from the diff itself (a decision made, a gotcha hit, scope
-deliberately deferred).
+This is a hard rule, not a suggestion — treat documentation as a
+deliverable of the work, not an afterthought:
 
-**Session changelog** (newest first — keep entries short, link the PRD for detail):
+1. Go phase-by-phase, one task/page at a time.
+2. Implement, then test against a running `wasp start` — typecheck *and*
+   an actual HTTP/DOM check, not just "it compiles."
+3. Commit locally (don't batch unrelated tasks into one commit).
+4. **Update docs in the same commit as the code**, every time, no
+   exceptions:
+   - The relevant PRD/status doc's own task table (`done`/`todo` +
+     verification evidence) — it's the source of truth for "what's
+     already done, don't redo it."
+   - `docs/09-work-changelog.md` — add a dated entry (what changed, why,
+     evidence, citations — use the template at the bottom of that file).
+     This is the project's PM-style running log; it must never fall
+     behind the code. If you did something worth remembering, it isn't
+     done until it's in that file.
+5. Only then move to the next task.
 
-- **2026-09-16**: PRD-01 Phase S1 mostly done (S1.1-S1.4; S1.G still
-  blocked). Enabled `prerender: true` on all 15 public routes in
-  `main.wasp.ts`. This surfaced a real bug an audit-by-grep had missed:
-  `wasp start`'s dev SSR warm-up pass (which actually renders every
-  `prerender: true` route through `react-dom-server`) crashed with
-  `window is not defined` in `useLocalStorage.tsx` (a render-body
-  `window.localStorage` call, not inside `useEffect`) — used by
-  `useColorMode` → `DarkModeSwitcher` → `NavBar`, rendered on every
-  marketing page via `App.tsx`. **Lesson**: when auditing for
-  prerender/SSR-safety, grep the shared layout (`src/client/`) too, not
-  just the page's own directory — a page-scoped audit will miss anything
-  pulled in by a global wrapper. Fixed with a `typeof window ===
-  'undefined'` guard. Added `public/robots.txt`, `public/sitemap.xml`,
-  `public/llms.txt` (all hand-written, placeholder domain, real content
-  reused from already-written `config.seo` copy — nothing invented).
-  **Still open**: actual `wasp build` prerender output is unverified —
-  `wasp build` currently fails here on `app.emailSender must not be set
-  to Dummy when building for production`, a pre-existing owner action
-  item (`06-phase-status.md`), not something to fix as part of this PRD.
-  See `docs/07-seo-geo-blog-strategy-PRD-01.md` §7 for full evidence.
-- **2026-09-16**: PRD-01 Phase S0 finished (except S0.3, blocked on Q1 —
-  real domain). Wired `SeoHead` (title/description/canonical) into the 3
-  remaining candidate pages (`LegalPage.tsx`, `DemoExamPage.tsx` intro
-  phase, `AllExamsPage.tsx`), completing S0.1/S0.2 at 15/15 pages. Ran
-  S0.5's prerender audit: all 13 prerender candidates (landing, legal,
-  demo-exam intro, pricing, 10 exam guides) are clean — every
-  `window`/`document`/`Math.random()` use is confined to `useEffect` or
-  click handlers, never the render body, so S1.1 (`prerender: true`) can
-  be flipped on with no further code changes. See
-  `docs/07-seo-geo-blog-strategy-PRD-01.md` §7 for the full evidence
-  table. Next up: Phase S1 (crawlability — robots.txt, sitemap.xml,
-  prerender flags, llms.txt).
+A stale doc costs the next session real time re-deriving what's already
+known — treat an undocumented change as an unfinished one.
