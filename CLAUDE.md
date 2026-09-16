@@ -45,6 +45,33 @@ above). WSL2 auto-appends Windows PATH entries with spaces
 word-split on those spaces and fail with `C:/Program: No such file or
 directory`. This is scoped to this shell session, not a system-wide fix.
 
+**Gotcha — if you're driving this from outside an interactive WSL shell**
+(e.g. `wsl.exe -e bash -lc "wasp start &"` from a Windows-side tool/script),
+plain `nohup ... &` is unreliable here — it has repeatedly died silently a
+few seconds after the invoking command returns, leaving orphaned `nodemon`
+processes and no server actually listening (confirmed 2026-09-16). Use a
+detached **tmux** session instead, which survives independently:
+
+```bash
+tmux kill-server 2>/dev/null   # clear any dead/stale session first
+tmux new-session -d -s licensedent ~/start-dev.sh
+```
+
+`~/start-dev.sh` (create once) is just the block above as a script:
+
+```bash
+#!/bin/bash
+export PATH=$(echo $PATH | tr ':' '\n' | grep -v '^/mnt/c' | paste -sd: -)
+source ~/.nvm/nvm.sh && nvm use 24.20.0
+cd ~/LicenseDent/app
+wasp start
+```
+
+Check status with `tmux capture-pane -t licensedent -p | tail -40` or
+`curl http://localhost:3100/`. WSL2 auto-forwards `localhost` ports to
+Windows, so a Windows browser can hit `http://localhost:3100/` directly
+once the tmux session is confirmed up — no port-forward setup needed.
+
 ## Framework specifics (Wasp 0.25 — don't assume older-Wasp conventions)
 
 - **`main.wasp.ts`, not `main.wasp`.** The classic Wasp DSL was retired at
