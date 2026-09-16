@@ -41,6 +41,11 @@ const MOCK_EXAM_ATTEMPT_CAPS: Record<PaymentPlanId, number> = {
   [PaymentPlanId.FastTrack]: 20,
   [PaymentPlanId.Standard]: 60,
   [PaymentPlanId.Extended]: 150,
+  // Mock Exams (this Gulf-shared question bank, resolveExamId's `general_dentist`
+  // default above) isn't part of Ireland Pathway's content model -- that's the
+  // Lesson/Part quiz system (PRD-002 Phase I5) plus Quiz Builder (Phase I8), not
+  // classic mock tests. 0 until/unless a real Ireland mock-exam surface is scoped.
+  [PaymentPlanId.IrelandPathway]: 0,
 };
 
 function getMockExamAttemptCap(user: { subscriptionPlan: string | null; subscriptionStatus: string | null }): number {

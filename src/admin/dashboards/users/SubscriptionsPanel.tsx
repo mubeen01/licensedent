@@ -110,7 +110,9 @@ function GrantSubscriptionForm({
   const [error, setError] = useState<string | null>(null);
 
   const plan = planType ? paymentPlans[planType] : null;
-  const needsExam = plan?.effect.kind === 'access' && !plan.effect.allExamsAccess;
+  // Implied-exam plans (e.g. Ireland Pathway) fix their exam server-side -- no picker.
+  const impliesOwnExam = plan?.effect.kind === 'access' && !!plan.effect.impliedExamCode;
+  const needsExam = plan?.effect.kind === 'access' && !plan.effect.allExamsAccess && !impliesOwnExam;
   const canSubmit = !!planType && (!needsExam || !!examId);
 
   async function handleGrant() {
@@ -163,6 +165,10 @@ function GrantSubscriptionForm({
               ))}
             </SelectContent>
           </Select>
+        )}
+
+        {impliesOwnExam && (
+          <p className='text-xs text-muted-foreground'>This plan is fixed to IDC Ireland — no exam choice needed.</p>
         )}
 
         {error && <p className='text-xs text-destructive'>{error}</p>}

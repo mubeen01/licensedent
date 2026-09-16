@@ -20,8 +20,10 @@ export type CheckoutSession = {
 
 const generateCheckoutSessionSchema = z.object({
   planId: z.nativeEnum(PaymentPlanId),
-  // Required for single-exam ('access', allExamsAccess: false) plans -- which Exam the
-  // student is buying access to. Ignored for the Extended plan (all exams).
+  // Required for single-exam ('access', allExamsAccess: false) plans that don't imply
+  // their own exam -- which Exam the student is buying access to. Ignored for
+  // all-exams plans (Extended) and for implied-exam plans (Ireland Pathway), where the
+  // exam is resolved server-side instead -- see impliedExamCode below.
   examId: z.string().optional(),
 });
 
@@ -48,14 +50,29 @@ export const generateCheckoutSession: GenerateCheckoutSession<
 
   const paymentPlan = paymentPlans[paymentPlanId];
   const isSingleExamPlan = paymentPlan.effect.kind === 'access' && !paymentPlan.effect.allExamsAccess;
+  const impliedExamCode = paymentPlan.effect.kind === 'access' ? paymentPlan.effect.impliedExamCode : undefined;
 
+  // Resolved server-side, never trusting client-supplied examId for the final value --
+  // for implied-exam plans (e.g. Ireland Pathway) the exam is fixed by the plan itself,
+  // for other single-exam plans (Fast Track/Standard) it's the student's picked examId,
+  // validated to actually exist either way.
+  let resolvedExamId: string | undefined;
   if (isSingleExamPlan) {
-    if (!examId) {
-      throw new HttpError(400, 'Please choose which exam this plan is for.');
-    }
-    const exam = await context.entities.Exam.findUnique({ where: { id: examId } });
-    if (!exam) {
-      throw new HttpError(400, 'Selected exam not found.');
+    if (impliedExamCode) {
+      const impliedExam = await context.entities.Exam.findFirst({ where: { code: impliedExamCode } });
+      if (!impliedExam) {
+        throw new HttpError(500, `Implied exam with code "${impliedExamCode}" not found.`);
+      }
+      resolvedExamId = impliedExam.id;
+    } else {
+      if (!examId) {
+        throw new HttpError(400, 'Please choose which exam this plan is for.');
+      }
+      const exam = await context.entities.Exam.findUnique({ where: { id: examId } });
+      if (!exam) {
+        throw new HttpError(400, 'Selected exam not found.');
+      }
+      resolvedExamId = examId;
     }
   }
 
@@ -64,7 +81,7 @@ export const generateCheckoutSession: GenerateCheckoutSession<
     userEmail,
     paymentPlan,
     prismaUserDelegate: context.entities.User,
-    examId: isSingleExamPlan ? examId : undefined,
+    examId: resolvedExamId,
   });
 
   return {

@@ -90,8 +90,23 @@ export const grantUserSubscription: GrantUserSubscription<GrantUserSubscriptionI
     throw new HttpError(400, `Plan ${planType} is not a grantable access plan`);
   }
 
-  if (!plan.effect.allExamsAccess && !examId) {
-    throw new HttpError(400, 'This plan is scoped to a single exam — pick which exam to grant access to');
+  // Resolved server-side, same pattern as generateCheckoutSession -- for implied-exam
+  // plans (e.g. Ireland Pathway) the exam is fixed by the plan itself, not admin-picked,
+  // and any examId the admin form happens to send for one is ignored rather than trusted.
+  let resolvedExamId: string | null = null;
+  if (!plan.effect.allExamsAccess) {
+    if (plan.effect.impliedExamCode) {
+      const impliedExam = await context.entities.Exam.findFirst({ where: { code: plan.effect.impliedExamCode } });
+      if (!impliedExam) {
+        throw new HttpError(500, `Implied exam with code "${plan.effect.impliedExamCode}" not found.`);
+      }
+      resolvedExamId = impliedExam.id;
+    } else {
+      if (!examId) {
+        throw new HttpError(400, 'This plan is scoped to a single exam — pick which exam to grant access to');
+      }
+      resolvedExamId = examId;
+    }
   }
 
   const created = await context.entities.Subscription.create({
@@ -100,7 +115,7 @@ export const grantUserSubscription: GrantUserSubscription<GrantUserSubscriptionI
       planType,
       durationDays: plan.effect.durationDays,
       allExamsAccess: plan.effect.allExamsAccess,
-      examAccessId: plan.effect.allExamsAccess ? null : examId,
+      examAccessId: resolvedExamId,
     },
   });
 
@@ -108,7 +123,7 @@ export const grantUserSubscription: GrantUserSubscription<GrantUserSubscriptionI
     action: 'user.grantSubscription',
     entityType: 'User',
     entityId: userId,
-    details: { planType, durationDays: plan.effect.durationDays, examId: examId ?? null },
+    details: { planType, durationDays: plan.effect.durationDays, examId: resolvedExamId },
   });
 
   return created;

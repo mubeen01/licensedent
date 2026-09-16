@@ -16,6 +16,12 @@ import SeoHead from '../client/components/SeoHead';
 
 const bestDealPaymentPlanId: PaymentPlanId = PaymentPlanId.Standard;
 
+// PRD-002 §6 Q2: don't publicly launch Ireland Pathway until real IDC-specific content
+// exists (Phase I7.1) -- so it's excluded here rather than from PaymentPlanId itself,
+// keeping the plan fully buildable/testable (checkout, admin grant) without being
+// purchasable from this page yet. Add it once I7.1 lands.
+const visiblePaymentPlanIds: PaymentPlanId[] = [PaymentPlanId.FastTrack, PaymentPlanId.Standard, PaymentPlanId.Extended];
+
 interface PaymentPlanCard {
   name: string;
   price: string;
@@ -52,6 +58,22 @@ export const paymentPlanCards: Record<PaymentPlanId, PaymentPlanCard> = {
     duration: teaserFor('Extended').duration,
     features: teaserFor('Extended').features,
   },
+  // Deliberately NOT sourced from `pricingTeaserPlans` (unlike the other three) -- that
+  // array also feeds the public LandingPage's teaser section, and this plan isn't
+  // publicly visible yet (see visiblePaymentPlanIds above). Still required here for
+  // Record<PaymentPlanId, ...> exhaustiveness even though its card doesn't render.
+  [PaymentPlanId.IrelandPathway]: {
+    name: prettyPaymentPlanName(PaymentPlanId.IrelandPathway),
+    price: getPlanPrice(PaymentPlanId.IrelandPathway),
+    tagline: 'IDC Ireland only — question bank + video lectures',
+    duration: '6 months · IDC Ireland only',
+    features: [
+      'Full IDC Ireland question bank',
+      'Video lectures as the library launches',
+      'Unlimited practice + timed mocks',
+      'Progress analytics',
+    ],
+  },
 };
 
 const PricingPage = () => {
@@ -86,8 +108,12 @@ const PricingPage = () => {
       navigate(routes.LoginRoute.to);
       return;
     }
-    const isSingleExamPlan = paymentPlanId !== PaymentPlanId.Extended;
-    if (isSingleExamPlan && !selectedExamId) {
+    const planEffect = paymentPlans[paymentPlanId].effect;
+    // Needs the shared exam-picker's choice only for plans that are single-exam AND
+    // don't already imply their own exam (e.g. Ireland Pathway implies IDC server-side).
+    const needsPickedExam =
+      planEffect.kind === 'access' && !planEffect.allExamsAccess && !planEffect.impliedExamCode;
+    if (needsPickedExam && !selectedExamId) {
       setErrorMessage('Please choose which exam you want this plan for.');
       return;
     }
@@ -96,7 +122,7 @@ const PricingPage = () => {
 
       const checkoutResults = await generateCheckoutSession({
         planId: paymentPlanId,
-        examId: isSingleExamPlan ? selectedExamId : undefined,
+        examId: needsPickedExam ? selectedExamId : undefined,
       });
 
       if (checkoutResults?.sessionUrl) {
@@ -190,7 +216,7 @@ const PricingPage = () => {
           </div>
         )}
         <div className='isolate mx-auto mt-16 grid max-w-md grid-cols-1 gap-y-8 lg:gap-x-8 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3'>
-          {Object.values(PaymentPlanId).map((planId) => (
+          {visiblePaymentPlanIds.map((planId) => (
             <Card
               key={planId}
               className={cn(

@@ -368,7 +368,7 @@ export default app({
     action(updateUserTags, { entities: ['User'] }),
     action(updateUserProfileByAdmin, { entities: ['UserProfile'] }),
     query(getUserSubscriptions, { entities: ['Subscription'] }),
-    action(grantUserSubscription, { entities: ['Subscription'] }),
+    action(grantUserSubscription, { entities: ['Subscription', 'Exam'] }),
     action(revokeUserSubscription, { entities: ['Subscription'] }),
     action(toggleUserDisabled, { entities: ['User'] }),
     action(inviteUser, { entities: ['User'] }),
