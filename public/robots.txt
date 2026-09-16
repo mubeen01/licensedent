@@ -1,7 +1,5 @@
-# PRD-01 S1.2. TODO(PRD-01 Q1): replace with the real production domain
-# once decided (see docs/07-seo-geo-blog-strategy-PRD-01.md §6) and keep
-# this in sync with SeoHead.tsx's SITE_ORIGIN constant.
+# PRD-01 S1.2. Keep in sync with SeoHead.tsx's SITE_ORIGIN constant.
 User-agent: *
 Allow: /
 
-Sitemap: https://licensedent.example.com/sitemap.xml
+Sitemap: https://licensedent.com/sitemap.xml

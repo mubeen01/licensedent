@@ -5,8 +5,7 @@
  * react-helmet or similar library is needed.
  *
  * `path` must be the route's own path (e.g. '/exams/dha') so the canonical
- * URL is correct once PRD-01 §6 Q1 (real production domain) is answered --
- * see the TODO below for where to update it.
+ * URL is correct.
  */
 interface SeoHeadProps {
   title: string;
@@ -18,10 +17,10 @@ interface SeoHeadProps {
   extraJsonLd?: Record<string, unknown>[];
 }
 
-// TODO(PRD-01 Q1): replace with the real production domain once decided.
+// PRD-01 Q1 (real production domain): answered 2026-09-16, licensedent.com.
 // Exported so other JSON-LD builders (OrganizationJsonLd, breadcrumbs, Course)
 // stay in sync with SeoHead's own canonical URLs -- one place to update.
-export const SITE_ORIGIN = 'https://licensedent.example.com';
+export const SITE_ORIGIN = 'https://licensedent.com';
 
 export default function SeoHead({ title, description, path, faqs, extraJsonLd }: SeoHeadProps) {
   const canonicalUrl = `${SITE_ORIGIN}${path}`;
