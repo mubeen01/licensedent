@@ -13,7 +13,7 @@ import DashboardLayout from '../dashboard/DashboardLayout';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import { Button } from '../components/ui/button';
 import { cn } from '../lib/utils';
-import { hasExtendedPlanAccess } from '../payment/planAccess';
+import { hasQuizBuilderPlanAccess } from '../payment/planAccess';
 import ExtendedPlanUpsell from '../client/components/ExtendedPlanUpsell';
 import PracticeSession from '../questions/PracticeSession';
 import type { CustomQuizFilters } from '../questions/operations';
@@ -366,7 +366,7 @@ function QuizBuilderSetup({ onStartPractice }: { onStartPractice: (filters: Cust
 }
 
 export default function QuizBuilderPage({ user }: { user: AuthUser }) {
-  const unlocked = hasExtendedPlanAccess(user);
+  const unlocked = hasQuizBuilderPlanAccess(user);
 
   return (
     <DashboardLayout user={user} pageTitle='Quiz Builder'>
@@ -375,7 +375,8 @@ export default function QuizBuilderPage({ user }: { user: AuthUser }) {
       ) : (
         <ExtendedPlanUpsell
           feature='Quiz Builder'
-          description="Build your own quiz from any mix of subjects and smart filters — previously wrong, never attempted, bookmarked, and more. No two quizzes are ever quite the same. Upgrade to the Extended plan to unlock it."
+          description="Build your own quiz from any mix of subjects and smart filters — previously wrong, never attempted, bookmarked, and more. No two quizzes are ever quite the same. Upgrade to the Extended or IDC Pathway plan to unlock it."
+          planLabel='Extended or IDC Pathway plan'
         />
       )}
     </DashboardLayout>

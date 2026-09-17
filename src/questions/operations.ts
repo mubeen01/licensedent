@@ -14,12 +14,12 @@ import {
 import * as z from 'zod';
 import { resolveOptionalImageUrl } from '../file-upload/s3Utils';
 import {
-  type AccessEntities,
+  type ExamAwareAccessEntities,
   getAccessibleExamIds,
   getEffectiveAccess,
   requireActivePlan,
-  requireExtendedPlan,
   requirePracticeSlotToday,
+  requireQuizBuilderPlan,
 } from '../payment/access';
 import { ensureArgsSchemaOrThrowHttpError } from '../server/validation';
 
@@ -474,19 +474,27 @@ export const getDueReviewCount: GetDueReviewCount<void, number> = async (_args, 
 /*  later, so the "what counts as a match" rule only lives in one place.     */
 /* -------------------------------------------------------------------------- */
 
-// Quiz Builder is an Extended-plan perk. The client already hides it behind
-// the effective-access hook (QuizBuilderPage.tsx), but that's UI-only -- this
-// server-side enforcement (now through the shared 1.2/1.3 helper, so a
-// REVOKED/EXPIRED Extended plan also stops working immediately) stops a free
-// or lapsed account from calling these operations directly for real content.
-// `context` is deliberately typed against the minimal AccessEntities surface,
-// not pinned to any one operation's generated context type -- this is shared
-// by getCustomQuizMatchCount/getCustomQuizQuestions here AND by
+// Quiz Builder is an Extended/IDC-Pathway-plan perk (PRD-002 Phase I8.2 --
+// see requireQuizBuilderPlan for why Ireland is included but Fast
+// Track/Standard aren't). The client already hides it behind an
+// effective-access hook (QuizBuilderPage.tsx), but that's UI-only -- this
+// server-side enforcement (through the shared access.ts helpers, so a
+// REVOKED/EXPIRED plan also stops working immediately) stops a free or
+// lapsed account from calling these operations directly for real content.
+// Returns the caller's accessible exam ids (already computed as part of the
+// gate check) so callers don't re-derive them. `context` is deliberately
+// typed against the minimal ExamAwareAccessEntities surface, not pinned to
+// any one operation's generated context type -- this is shared by
+// getCustomQuizMatchCount/getCustomQuizQuestions here AND by
 // startCustomQuizAttempt in quiz-builder/operations.ts, each with their own
 // separate main.wasp.ts entity list (see PracticeQuestionEntities above for
 // why pinning to one operation's type is a trap for a shared helper).
-export async function ensureExtendedPlanAccess(userId: string, context: { entities: AccessEntities }) {
-  requireExtendedPlan(await getEffectiveAccess(userId, context.entities));
+export async function ensureQuizBuilderAccess(
+  userId: string,
+  context: { entities: ExamAwareAccessEntities }
+): Promise<string[]> {
+  requireQuizBuilderPlan(await getEffectiveAccess(userId, context.entities));
+  return getAccessibleExamIds(userId, context.entities);
 }
 
 export const customQuizFiltersSchema = z.object({
@@ -515,10 +523,16 @@ export type CustomQuizFilters = z.infer<typeof customQuizFiltersSchema>;
 
 const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6;
 
-export function buildCustomQuizWhere(filters: CustomQuizFilters, userId: string) {
+// PRD-002 Phase I8.2: accessibleExamIds narrows the pool to exams the
+// caller's plan(s) actually cover -- same `Question.exams` M2M relation Phase
+// I3 wired into practice mode/mock exams, applied here so an IDC Pathway
+// subscriber's Quiz Builder only ever draws Ireland-tagged questions, not the
+// shared Gulf pool.
+export function buildCustomQuizWhere(filters: CustomQuizFilters, userId: string, accessibleExamIds: string[]) {
   const where: Record<string, unknown> = {
     status: 'published',
     subject: { isActive: true },
+    exams: { some: { id: { in: accessibleExamIds } } },
   };
   if (filters.subjectIds.length > 0) {
     where.subjectId = { in: filters.subjectIds };
@@ -556,13 +570,24 @@ export function buildCustomQuizWhere(filters: CustomQuizFilters, userId: string)
   return where;
 }
 
+// Minimal entity surface (same "don't pin a shared helper to one operation's
+// generated context type" reasoning as PracticeQuestionEntities above) --
+// startCustomQuizAttempt in quiz-builder/operations.ts calls this too, with
+// its own separate main.wasp.ts entity list.
+type CustomQuizQuestionEntities = {
+  Question: {
+    findMany(args: { where: Record<string, unknown>; select: { id: true } }): Promise<Array<{ id: string }>>;
+  };
+};
+
 export async function resolveCustomQuizQuestionIds(
   filters: CustomQuizFilters,
   userId: string,
-  context: Parameters<GetCustomQuizQuestions<GetCustomQuizQuestionsInput, PracticeQuestion[]>>[1]
+  accessibleExamIds: string[],
+  context: { entities: CustomQuizQuestionEntities }
 ): Promise<string[]> {
   const matches = await context.entities.Question.findMany({
-    where: buildCustomQuizWhere(filters, userId),
+    where: buildCustomQuizWhere(filters, userId, accessibleExamIds),
     select: { id: true },
   });
   return matches.map((m) => m.id);
@@ -578,9 +603,9 @@ export const getCustomQuizMatchCount: GetCustomQuizMatchCount<GetCustomQuizMatch
   context
 ) => {
   const user = ensureUser(context.user);
-  await ensureExtendedPlanAccess(user.id, context);
+  const accessibleExamIds = await ensureQuizBuilderAccess(user.id, context);
   const args = ensureArgsSchemaOrThrowHttpError(getCustomQuizMatchCountInputSchema, rawArgs);
-  return context.entities.Question.count({ where: buildCustomQuizWhere(args.filters, user.id) });
+  return context.entities.Question.count({ where: buildCustomQuizWhere(args.filters, user.id, accessibleExamIds) });
 };
 
 const getCustomQuizQuestionsInputSchema = z.object({
@@ -594,10 +619,10 @@ export const getCustomQuizQuestions: GetCustomQuizQuestions<GetCustomQuizQuestio
   context
 ) => {
   const user = ensureUser(context.user);
-  await ensureExtendedPlanAccess(user.id, context);
+  const accessibleExamIds = await ensureQuizBuilderAccess(user.id, context);
   const args = ensureArgsSchemaOrThrowHttpError(getCustomQuizQuestionsInputSchema, rawArgs);
 
-  const matchingIds = await resolveCustomQuizQuestionIds(args.filters, user.id, context);
+  const matchingIds = await resolveCustomQuizQuestionIds(args.filters, user.id, accessibleExamIds, context);
   const shuffled = [...matchingIds].sort(() => Math.random() - 0.5).slice(0, args.count);
 
   return buildPracticeQuestions(shuffled, user.id, context);

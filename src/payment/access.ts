@@ -239,6 +239,24 @@ export function requireExtendedPlan(access: EffectiveAccess): void {
   }
 }
 
+// PRD-002 Phase I8.2: Quiz Builder is an Extended-plan perk for Gulf students,
+// but the Ireland Pathway plan's own goals (PRD-002 §3 Goal 1, §7 Phase I8
+// intro) explicitly bundle "pick a subject and take a broader quiz" access
+// for IDC Pathway subscribers too -- deliberately NOT opened to Fast
+// Track/Standard (single-exam Gulf plans), which stay exactly as scoped
+// before this phase (see PRD-002 §4 non-goals on not extending their UX).
+export function requireQuizBuilderPlan(access: EffectiveAccess): void {
+  if (
+    !access.active ||
+    (access.planType !== PaymentPlanId.Extended && access.planType !== PaymentPlanId.IrelandPathway)
+  ) {
+    throw new HttpError(
+      403,
+      'The Extended or IDC Pathway plan is needed for this. Pick one on the Pricing page -- access starts instantly.'
+    );
+  }
+}
+
 // 15/day free practice: blocks only when a FREE user has no attempts left
 // today. Paid users (access.active) always pass -- unlimited by D1.
 export function requirePracticeSlotToday(access: EffectiveAccess): void {

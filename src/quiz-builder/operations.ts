@@ -9,7 +9,7 @@ import {
 } from 'wasp/server/operations';
 import * as z from 'zod';
 import { resolveOptionalImageUrl } from '../file-upload/s3Utils';
-import { customQuizFiltersSchema, ensureExtendedPlanAccess, resolveCustomQuizQuestionIds } from '../questions/operations';
+import { customQuizFiltersSchema, ensureQuizBuilderAccess, resolveCustomQuizQuestionIds } from '../questions/operations';
 import { orderOptions, shuffle, type Option } from '../server/shuffleUtils';
 import { ensureArgsSchemaOrThrowHttpError } from '../server/validation';
 
@@ -26,9 +26,9 @@ function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<
 /*  almost exactly, but against an ad-hoc question set (resolved via Quiz     */
 /*  Builder's own filters) instead of a fixed MockTest. No attempt cap here   */
 /*  (unlike mock exams) -- not asked for, and Quiz Builder is already gated   */
-/*  to the Extended plan. Answers here do NOT write to UserAttempt/           */
-/*  ReviewSchedule, same as Mock Exams -- see the schema.prisma comment on    */
-/*  CustomQuizAttempt for why.                                                */
+/*  to the Extended/IDC Pathway plans (PRD-002 I8.2). Answers here do NOT     */
+/*  write to UserAttempt/ReviewSchedule, same as Mock Exams -- see the        */
+/*  schema.prisma comment on CustomQuizAttempt for why.                      */
 /* -------------------------------------------------------------------------- */
 
 const startCustomQuizAttemptInputSchema = z.object({
@@ -43,10 +43,10 @@ export const startCustomQuizAttempt: StartCustomQuizAttempt<StartCustomQuizAttem
   context
 ) => {
   const user = ensureUser(context.user);
-  await ensureExtendedPlanAccess(user.id, context);
+  const accessibleExamIds = await ensureQuizBuilderAccess(user.id, context);
   const args = ensureArgsSchemaOrThrowHttpError(startCustomQuizAttemptInputSchema, rawArgs);
 
-  const matchingIds = await resolveCustomQuizQuestionIds(args.filters, user.id, context);
+  const matchingIds = await resolveCustomQuizQuestionIds(args.filters, user.id, accessibleExamIds, context);
   if (matchingIds.length === 0) {
     throw new HttpError(400, 'No questions match these filters');
   }

@@ -494,12 +494,20 @@ export default app({
 
     // Quiz Builder (Extended-plan perk -- Phase 1: practice-mode filters, Phase 2: timed/exam mode)
     route('QuizBuilderRoute', '/quiz-builder', page(QuizBuilderPage, { authRequired: true })),
-    query(getCustomQuizMatchCount, { entities: ['Question', 'UserAttempt', 'QuestionNote', 'Subscription'] }),
-    query(getCustomQuizQuestions, { entities: ['Question', 'UserAttempt', 'QuestionNote', 'Subscription'] }),
+    query(getCustomQuizMatchCount, { entities: ['Question', 'UserAttempt', 'QuestionNote', 'Subscription', 'Exam'] }),
+    query(getCustomQuizQuestions, { entities: ['Question', 'UserAttempt', 'QuestionNote', 'Subscription', 'Exam'] }),
     route('CustomQuizAttemptRoute', '/quiz-builder/:attemptId', page(CustomQuizAttemptPage, { authRequired: true })),
     route('CustomQuizResultsRoute', '/quiz-builder/:attemptId/results', page(CustomQuizResultsPage, { authRequired: true })),
     action(startCustomQuizAttempt, {
-      entities: ['CustomQuizAttempt', 'CustomQuizAttemptItem', 'Question', 'UserAttempt', 'QuestionNote', 'Subscription'],
+      entities: [
+        'CustomQuizAttempt',
+        'CustomQuizAttemptItem',
+        'Question',
+        'UserAttempt',
+        'QuestionNote',
+        'Subscription',
+        'Exam',
+      ],
     }),
     query(getCustomQuizAttempt, { entities: ['CustomQuizAttempt'] }),
     action(saveCustomQuizAnswer, { entities: ['CustomQuizAttempt', 'CustomQuizAttemptItem'] }),

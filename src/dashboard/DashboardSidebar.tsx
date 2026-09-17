@@ -50,13 +50,20 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
     // empty page to Gulf/Extended users. The schema itself is exam-agnostic,
     // so this is a content-availability call, not a hard architectural limit.
     { to: routes.LessonsRoute.to, label: 'Lessons', icon: BookOpen, showOnlyForIreland: true },
-    // Quiz Builder/Video Lectures are Extended-plan perks that can never work for
-    // Ireland Pathway (Extended explicitly excludes Ireland -- PRD-002 §3 Goal 3),
-    // so showing them with an "Extended" upsell badge would be actively
-    // misleading for an Ireland subscriber, not just inapplicable. Hidden
-    // entirely for Ireland scope rather than shown-then-blocked.
-    { to: routes.QuizBuilderRoute.to, label: 'Quiz Builder', icon: Wand2, badge: 'Extended', hideForIreland: true },
+    // PRD-002 Phase I8.2: Quiz Builder is also an IDC Pathway perk now
+    // (server-scoped to Ireland content only), so it's shown for Ireland
+    // scope too -- the "Extended" badge would be actively misleading there
+    // (an Ireland subscriber already has access), so it's suppressed instead.
+    {
+      to: routes.QuizBuilderRoute.to,
+      label: 'Quiz Builder',
+      icon: Wand2,
+      badge: isIreland ? undefined : 'Extended',
+    },
     { to: routes.MockExamsRoute.to, label: 'Mock Exams', icon: Timer },
+    // Video Lectures stays Extended-only and hidden for Ireland scope --
+    // zero real video content exists for any exam yet (PRD-002 §2), so
+    // showing it (even unlocked) would be an empty page, not just inapplicable.
     {
       to: routes.VideoLecturesRoute.to,
       label: 'Video Lectures',

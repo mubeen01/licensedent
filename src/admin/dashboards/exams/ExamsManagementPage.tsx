@@ -43,6 +43,7 @@ function AddExamCard({ onCreated }: { onCreated: () => void }) {
   const [country, setCountry] = useState('');
   const [flagEmoji, setFlagEmoji] = useState('');
   const [description, setDescription] = useState('');
+  const [standalonePackOnly, setStandalonePackOnly] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +53,7 @@ function AddExamCard({ onCreated }: { onCreated: () => void }) {
     setCountry('');
     setFlagEmoji('');
     setDescription('');
+    setStandalonePackOnly(false);
     setError(null);
   }
 
@@ -70,6 +72,7 @@ function AddExamCard({ onCreated }: { onCreated: () => void }) {
         flagEmoji: flagEmoji || null,
         description: description || null,
         isActive: true,
+        standalonePackOnly,
       });
       reset();
       setIsOpen(false);
@@ -115,6 +118,12 @@ function AddExamCard({ onCreated }: { onCreated: () => void }) {
         <Label className='text-xs text-muted-foreground'>Description</Label>
         <Input className='mt-1' value={description} onChange={(e) => setDescription(e.currentTarget.value)} />
       </div>
+      <div className='flex items-center gap-2'>
+        <Switch id='standalone-pack-only-new' checked={standalonePackOnly} onCheckedChange={setStandalonePackOnly} />
+        <Label htmlFor='standalone-pack-only-new' className='text-sm text-muted-foreground'>
+          Standalone pack only (never included in an all-exams plan)
+        </Label>
+      </div>
       <div className='flex items-center justify-between gap-4 pt-2 border-t border-border'>
         {error && <p className='text-xs text-destructive'>{error}</p>}
         <div className='ml-auto flex gap-2'>
@@ -144,6 +153,7 @@ function ExamRow({ exam, onSaved }: { exam: Exam; onSaved: () => void }) {
   const [flagEmoji, setFlagEmoji] = useState(exam.flagEmoji ?? '');
   const [description, setDescription] = useState(exam.description ?? '');
   const [isActive, setIsActive] = useState(exam.isActive);
+  const [standalonePackOnly, setStandalonePackOnly] = useState(exam.standalonePackOnly);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justSaved, setJustSaved] = useState(false);
@@ -154,7 +164,8 @@ function ExamRow({ exam, onSaved }: { exam: Exam; onSaved: () => void }) {
     country !== (exam.country ?? '') ||
     flagEmoji !== (exam.flagEmoji ?? '') ||
     description !== (exam.description ?? '') ||
-    isActive !== exam.isActive;
+    isActive !== exam.isActive ||
+    standalonePackOnly !== exam.standalonePackOnly;
 
   async function handleSave() {
     setIsSaving(true);
@@ -169,6 +180,7 @@ function ExamRow({ exam, onSaved }: { exam: Exam; onSaved: () => void }) {
         authorityLabel: exam.authorityLabel,
         description: description || null,
         isActive,
+        standalonePackOnly,
       });
       setJustSaved(true);
       onSaved();
@@ -192,11 +204,23 @@ function ExamRow({ exam, onSaved }: { exam: Exam; onSaved: () => void }) {
             <p className='text-xs text-muted-foreground'>{exam.id}</p>
           </div>
         </div>
-        <div className='flex items-center gap-2'>
-          <Label htmlFor={`active-${exam.id}`} className='text-sm text-muted-foreground'>
-            Active
-          </Label>
-          <Switch id={`active-${exam.id}`} checked={isActive} onCheckedChange={setIsActive} />
+        <div className='flex items-center gap-4'>
+          <div className='flex items-center gap-2'>
+            <Label htmlFor={`standalone-${exam.id}`} className='text-sm text-muted-foreground'>
+              Standalone pack only
+            </Label>
+            <Switch
+              id={`standalone-${exam.id}`}
+              checked={standalonePackOnly}
+              onCheckedChange={setStandalonePackOnly}
+            />
+          </div>
+          <div className='flex items-center gap-2'>
+            <Label htmlFor={`active-${exam.id}`} className='text-sm text-muted-foreground'>
+              Active
+            </Label>
+            <Switch id={`active-${exam.id}`} checked={isActive} onCheckedChange={setIsActive} />
+          </div>
         </div>
       </div>
 

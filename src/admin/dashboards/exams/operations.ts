@@ -32,6 +32,7 @@ const updateExamInputSchema = z.object({
   authorityLabel: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   isActive: z.boolean(),
+  standalonePackOnly: z.boolean().optional(),
 });
 type UpdateExamInput = z.infer<typeof updateExamInputSchema>;
 
@@ -49,6 +50,7 @@ export const updateExam: UpdateExam<UpdateExamInput, void> = async (rawArgs, con
       authorityLabel: args.authorityLabel,
       description: args.description,
       isActive: args.isActive,
+      ...(args.standalonePackOnly !== undefined ? { standalonePackOnly: args.standalonePackOnly } : {}),
     },
   });
 };
@@ -61,6 +63,7 @@ const createExamInputSchema = z.object({
   authorityLabel: z.string().trim().nullable().optional(),
   description: z.string().trim().nullable().optional(),
   isActive: z.boolean().optional(),
+  standalonePackOnly: z.boolean().optional(),
 });
 type CreateExamInput = z.infer<typeof createExamInputSchema>;
 
@@ -95,6 +98,7 @@ export const createExam: CreateExam<CreateExamInput, Exam> = async (rawArgs, con
       authorityLabel: args.authorityLabel || null,
       description: args.description || null,
       isActive: args.isActive ?? true,
+      standalonePackOnly: args.standalonePackOnly ?? false,
     },
   });
   await logAdminAction(context, { action: 'exam.create', entityType: 'Exam', entityId: created.id, details: { name: args.name, slug } });
