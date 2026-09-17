@@ -5,6 +5,7 @@ import { getVerificationEmailContent, getPasswordResetEmailContent } from './src
 import { getEmailUserFields } from './src/auth/userSignupFields' with { type: 'ref' }
 import { onBeforeLoginHook } from './src/auth/hooks' with { type: 'ref' }
 import { seedMockUsers } from './src/server/scripts/dbSeeds' with { type: 'ref' }
+import { importLessonFolder } from './src/server/scripts/importLessonFolder' with { type: 'ref' }
 import App from './src/client/App' with { type: 'ref' }
 import { serverMiddlewareFn } from './src/server/serverSetup' with { type: 'ref' }
 
@@ -290,6 +291,10 @@ export default app({
     seeds: [
       // Populates the database with a bunch of fake users to work with during development.
       seedMockUsers,
+      // PRD-003: book-sourced lesson folder -> live Lesson/Parts/Questions.
+      // Run with `wasp db seed importLessonFolder`, env-var configured -- see
+      // src/server/scripts/importLessonFolder.ts's header for usage.
+      importLessonFolder,
     ],
   },
 

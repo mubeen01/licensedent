@@ -152,6 +152,8 @@ const createLessonPartInputSchema = z.object({
   youtubeId: z.string().trim().nullable().optional(),
   durationMinutes: z.number().int().min(1).nullable().optional(),
   notesMarkdown: z.string().nullable().optional(),
+  sourceBook: z.string().trim().nullable().optional(),
+  sourcePages: z.string().trim().nullable().optional(),
 });
 type CreateLessonPartInput = z.infer<typeof createLessonPartInputSchema>;
 
@@ -174,6 +176,8 @@ export const createLessonPart: CreateLessonPart<CreateLessonPartInput, LessonPar
       youtubeId: args.youtubeId || null,
       durationMinutes: args.durationMinutes ?? null,
       notesMarkdown: args.notesMarkdown || null,
+      sourceBook: args.sourceBook || null,
+      sourcePages: args.sourcePages || null,
     },
   });
   await logAdminAction(context, {
@@ -192,6 +196,8 @@ const updateLessonPartInputSchema = z.object({
   youtubeId: z.string().trim().nullable().optional(),
   durationMinutes: z.number().int().min(1).nullable().optional(),
   notesMarkdown: z.string().nullable().optional(),
+  sourceBook: z.string().trim().nullable().optional(),
+  sourcePages: z.string().trim().nullable().optional(),
 });
 type UpdateLessonPartInput = z.infer<typeof updateLessonPartInputSchema>;
 
@@ -207,6 +213,8 @@ export const updateLessonPart: UpdateLessonPart<UpdateLessonPartInput, void> = a
       youtubeId: args.youtubeId || null,
       durationMinutes: args.durationMinutes ?? null,
       notesMarkdown: args.notesMarkdown || null,
+      sourceBook: args.sourceBook || null,
+      sourcePages: args.sourcePages || null,
     },
   });
 };

@@ -631,6 +631,13 @@ model LessonPart {
   durationMinutes           Int?
   notesMarkdown             String?
 
+  // Content-grounding provenance (PRD-003 S1) -- which real book/pages this
+  // Part's script/MCQs were authored from. Nullable: Lessons 1-4's Parts
+  // predate this field and have no recorded provenance (a known gap PRD-003
+  // exists partly to close going forward, not retroactively).
+  sourceBook                String?
+  sourcePages               String?
+
   lesson                    Lesson                  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   lessonId                  String
 

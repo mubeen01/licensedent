@@ -54,6 +54,8 @@ type AdminLessonPart = {
   youtubeId: string | null;
   durationMinutes: number | null;
   notesMarkdown: string | null;
+  sourceBook: string | null;
+  sourcePages: string | null;
   questionCount: number;
 };
 type AdminLesson = {
@@ -387,6 +389,8 @@ function AddPartForm({
   const [youtubeId, setYoutubeId] = useState('');
   const [durationMinutes, setDurationMinutes] = useState('');
   const [notesMarkdown, setNotesMarkdown] = useState('');
+  const [sourceBook, setSourceBook] = useState('');
+  const [sourcePages, setSourcePages] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -405,6 +409,8 @@ function AddPartForm({
         youtubeId: youtubeId.trim() ? extractYoutubeId(youtubeId) : null,
         durationMinutes: durationMinutes ? parseInt(durationMinutes, 10) : null,
         notesMarkdown: notesMarkdown.trim() || null,
+        sourceBook: sourceBook.trim() || null,
+        sourcePages: sourcePages.trim() || null,
       });
       onDone();
     } catch (e: any) {
@@ -450,6 +456,21 @@ function AddPartForm({
         <Label className='text-xs text-muted-foreground'>Notes (markdown)</Label>
         <Textarea className='mt-1' rows={4} value={notesMarkdown} onChange={(e) => setNotesMarkdown(e.currentTarget.value)} />
       </div>
+      <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
+        <div>
+          <Label className='text-xs text-muted-foreground'>Source book (provenance)</Label>
+          <Input
+            className='mt-1'
+            value={sourceBook}
+            onChange={(e) => setSourceBook(e.currentTarget.value)}
+            placeholder="Harty's Endodontics 7th ed"
+          />
+        </div>
+        <div>
+          <Label className='text-xs text-muted-foreground'>Source pages</Label>
+          <Input className='mt-1' value={sourcePages} onChange={(e) => setSourcePages(e.currentTarget.value)} placeholder='112-130' />
+        </div>
+      </div>
       <div className='flex items-center justify-between gap-4 pt-2 border-t border-border'>
         {error && <p className='text-xs text-destructive'>{error}</p>}
         <div className='ml-auto flex gap-2'>
@@ -472,6 +493,8 @@ function PartRow({ part, examId, onSaved }: { part: AdminLessonPart; examId: str
   const [youtubeId, setYoutubeId] = useState(part.youtubeId ?? '');
   const [durationMinutes, setDurationMinutes] = useState(part.durationMinutes ? String(part.durationMinutes) : '');
   const [notesMarkdown, setNotesMarkdown] = useState(part.notesMarkdown ?? '');
+  const [sourceBook, setSourceBook] = useState(part.sourceBook ?? '');
+  const [sourcePages, setSourcePages] = useState(part.sourcePages ?? '');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -480,7 +503,9 @@ function PartRow({ part, examId, onSaved }: { part: AdminLessonPart; examId: str
     order !== String(part.order) ||
     youtubeId !== (part.youtubeId ?? '') ||
     durationMinutes !== (part.durationMinutes ? String(part.durationMinutes) : '') ||
-    notesMarkdown !== (part.notesMarkdown ?? '');
+    notesMarkdown !== (part.notesMarkdown ?? '') ||
+    sourceBook !== (part.sourceBook ?? '') ||
+    sourcePages !== (part.sourcePages ?? '');
 
   async function handleSave() {
     setIsSaving(true);
@@ -493,6 +518,8 @@ function PartRow({ part, examId, onSaved }: { part: AdminLessonPart; examId: str
         youtubeId: youtubeId.trim() ? extractYoutubeId(youtubeId) : null,
         durationMinutes: durationMinutes ? parseInt(durationMinutes, 10) : null,
         notesMarkdown: notesMarkdown.trim() || null,
+        sourceBook: sourceBook.trim() || null,
+        sourcePages: sourcePages.trim() || null,
       });
       onSaved();
     } catch (e: any) {
@@ -554,6 +581,21 @@ function PartRow({ part, examId, onSaved }: { part: AdminLessonPart; examId: str
           <div>
             <Label className='text-xs text-muted-foreground'>Notes (markdown)</Label>
             <Textarea className='mt-1' rows={5} value={notesMarkdown} onChange={(e) => setNotesMarkdown(e.currentTarget.value)} />
+          </div>
+          <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
+            <div>
+              <Label className='text-xs text-muted-foreground'>Source book (provenance)</Label>
+              <Input
+                className='mt-1'
+                value={sourceBook}
+                onChange={(e) => setSourceBook(e.currentTarget.value)}
+                placeholder="Harty's Endodontics 7th ed"
+              />
+            </div>
+            <div>
+              <Label className='text-xs text-muted-foreground'>Source pages</Label>
+              <Input className='mt-1' value={sourcePages} onChange={(e) => setSourcePages(e.currentTarget.value)} placeholder='112-130' />
+            </div>
           </div>
           <div className='flex items-center justify-between gap-4'>
             {error && <p className='text-xs text-destructive'>{error}</p>}
