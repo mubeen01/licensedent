@@ -50,6 +50,7 @@ import {
   getMySubscription,
   getMySubscriptionHistory,
   getMyEffectiveAccess,
+  getMyDashboardScope,
   generateCheckoutSession,
 } from './src/payment/operations' with { type: 'ref' }
 import BillingPage from './src/dashboard/BillingPage' with { type: 'ref' }
@@ -338,6 +339,7 @@ export default app({
     query(getMySubscription, { entities: ['Subscription'] }),
     query(getMySubscriptionHistory, { entities: ['Subscription'] }),
     query(getMyEffectiveAccess, { entities: ['Subscription', 'UserAttempt'] }),
+    query(getMyDashboardScope, { entities: ['Subscription', 'Exam', 'UserAttempt'] }),
     route('BillingRoute', '/billing', page(BillingPage, { authRequired: true })),
     action(generateCheckoutSession, { entities: ['User', 'Exam'] }),
     api('POST', '/payments-webhook', paymentsWebhook, {
@@ -442,7 +444,7 @@ export default app({
 
     // Practice mode (student-facing MCQ engine)
     route('PracticeRoute', '/practice', page(PracticePage, { authRequired: true })),
-    query(getPracticeSubjects, { entities: ['Subject', 'Exam'] }),
+    query(getPracticeSubjects, { entities: ['Subject', 'Exam', 'Subscription', 'UserAttempt'] }),
     query(getPracticeQuestions, { entities: ['Question', 'QuestionNote', 'Subscription', 'UserAttempt', 'Exam'] }),
     action(submitAnswer, { entities: ['Question', 'UserAttempt', 'ReviewSchedule', 'Subscription'] }),
     route('ReviewRoute', '/practice/review', page(ReviewPage, { authRequired: true })),
@@ -473,10 +475,10 @@ export default app({
     route('MockExamInstructionsRoute', '/mock-exams/start/:mockTestId', page(MockExamInstructionsPage, { authRequired: true })),
     route('MockExamAttemptRoute', '/mock-exams/:attemptId', page(MockExamAttemptPage, { authRequired: true })),
     route('MockExamResultsRoute', '/mock-exams/:attemptId/results', page(MockExamResultsPage, { authRequired: true })),
-    query(getMockExams, { entities: ['MockTest', 'MockExamAttempt', 'Exam'] }),
+    query(getMockExams, { entities: ['MockTest', 'MockExamAttempt', 'Exam', 'Subscription', 'UserAttempt'] }),
     query(getMockExamAttempt, { entities: ['MockExamAttempt'] }),
     query(getMockExamResults, { entities: ['MockExamAttempt'] }),
-    query(getExamReadiness, { entities: ['MockTest', 'MockExamAttempt', 'Exam'] }),
+    query(getExamReadiness, { entities: ['MockTest', 'MockExamAttempt', 'Exam', 'Subscription', 'UserAttempt'] }),
     query(getReadinessScore, { entities: ['MockExamAttempt', 'UserAttempt', 'Subject'] }),
     query(getMockTestMeta, { entities: ['MockTest'] }),
     action(startMockExamAttempt, {

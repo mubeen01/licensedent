@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useLocation } from 'react-router';
 import { useAuth, logout } from 'wasp/client/auth';
-import { getDueReviewCount, getMySubscription, useQuery } from 'wasp/client/operations';
+import { getDueReviewCount, getMyDashboardScope, getMySubscription, useQuery } from 'wasp/client/operations';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Button } from '../components/ui/button';
 import { cn } from '../lib/utils';
@@ -31,8 +31,10 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
   const { data: user } = useAuth();
   const { data: subscription } = useQuery(getMySubscription);
   const { data: dueReviewCount } = useQuery(getDueReviewCount);
+  const { data: dashboardScope } = useQuery(getMyDashboardScope);
+  const isIreland = dashboardScope?.kind === 'ireland';
 
-  const navItems = [
+  const allNavItems = [
     { to: routes.DashboardHomeRoute.to, label: 'Dashboard', icon: LayoutDashboard },
     { to: routes.PracticeRoute.to, label: 'Practice', icon: ListChecks },
     {
@@ -42,13 +44,25 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       badge: dueReviewCount ? String(dueReviewCount) : undefined,
     },
     { to: routes.ReviewRoute.to, label: 'Review', icon: Bookmark },
-    { to: routes.QuizBuilderRoute.to, label: 'Quiz Builder', icon: Wand2, badge: 'Extended' },
+    // Quiz Builder/Video Lectures are Extended-plan perks that can never work for
+    // Ireland Pathway (Extended explicitly excludes Ireland -- PRD-002 §3 Goal 3),
+    // so showing them with an "Extended" upsell badge would be actively
+    // misleading for an Ireland subscriber, not just inapplicable. Hidden
+    // entirely for Ireland scope rather than shown-then-blocked.
+    { to: routes.QuizBuilderRoute.to, label: 'Quiz Builder', icon: Wand2, badge: 'Extended', hideForIreland: true },
     { to: routes.MockExamsRoute.to, label: 'Mock Exams', icon: Timer },
-    { to: routes.VideoLecturesRoute.to, label: 'Video Lectures', icon: Video, badge: 'Extended' },
+    {
+      to: routes.VideoLecturesRoute.to,
+      label: 'Video Lectures',
+      icon: Video,
+      badge: 'Extended',
+      hideForIreland: true,
+    },
     { to: routes.ProgressRoute.to, label: 'Progress', icon: BarChart3 },
     { to: routes.AccountRoute.to, label: 'Account', icon: Settings },
     { to: routes.BillingRoute.to, label: 'Billing', icon: CreditCard },
   ];
+  const navItems = allNavItems.filter((item) => !isIreland || !('hideForIreland' in item && item.hideForIreland));
 
   const isActive = (to: string) => location.pathname === to;
 
@@ -85,7 +99,9 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
           </div>
           <div>
             <h1 className='text-sm font-semibold text-foreground leading-tight'>LicenseDent</h1>
-            <p className='text-xs text-muted-foreground leading-tight'>Gulf + Ireland Prep</p>
+            <p className='text-xs text-muted-foreground leading-tight'>
+              {isIreland ? 'IDC Ireland Prep' : 'Gulf + Ireland Prep'}
+            </p>
           </div>
         </WaspRouterLink>
 
@@ -148,7 +164,11 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
               <div className='flex items-center justify-between text-xs'>
                 <span className='text-muted-foreground'>
                   {prettyPaymentPlanName(parsePaymentPlanId(subscription.planType))}
-                  {subscription.allExamsAccess ? ' · all exams' : ''}
+                  {subscription.allExamsAccess
+                    ? ' · all exams'
+                    : subscription.examAccess
+                    ? ` · ${subscription.examAccess.flagEmoji ?? ''} ${subscription.examAccess.code ?? subscription.examAccess.name}`.trim()
+                    : ''}
                 </span>
               </div>
             </>

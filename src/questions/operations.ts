@@ -34,10 +34,21 @@ function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<
 // same underlying question bank, so there's nothing for a student to actually
 // choose between day-to-day. `examId` stays optional (and the M2M-based
 // filtering below still works) so a future caller *could* scope to a specific
-// exam without another schema/API change; today every caller just gets the
-// base bank.
-async function resolveExamId(examEntity: { findFirst: (args: any) => Promise<{ id: string } | null> }, examId?: string) {
+// exam without another schema/API change.
+//
+// PRD-002 Phase I4: when the caller's own access resolves to exactly one exam
+// (e.g. an Ireland Pathway subscriber), default to THAT exam instead of
+// `general_dentist` -- for every Gulf plan this is a no-op (identical content
+// either way, confirmed all Gulf exams share one pool), but for a genuinely
+// single-exam-only user it's the difference between correctly seeing their
+// own exam's subjects and silently seeing an inaccessible Gulf exam's.
+async function resolveExamId(
+  examEntity: { findFirst: (args: any) => Promise<{ id: string } | null> },
+  examId?: string,
+  accessibleExamIds?: string[]
+) {
   if (examId) return examId;
+  if (accessibleExamIds?.length === 1) return accessibleExamIds[0];
   const base = await examEntity.findFirst({ where: { slug: 'general_dentist' } });
   if (!base) throw new HttpError(500, 'No default exam configured');
   return base.id;
@@ -60,9 +71,10 @@ export const getPracticeSubjects: GetPracticeSubjects<GetPracticeSubjectsInput, 
   rawArgs,
   context
 ) => {
-  ensureUser(context.user);
+  const user = ensureUser(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(getPracticeSubjectsInputSchema, rawArgs);
-  const examId = await resolveExamId(context.entities.Exam, args.examId);
+  const accessibleExamIds = await getAccessibleExamIds(user.id, context.entities);
+  const examId = await resolveExamId(context.entities.Exam, args.examId, accessibleExamIds);
 
   const subjects = await context.entities.Subject.findMany({
     where: { isActive: true, questions: { some: { status: 'published', exams: { some: { id: examId } } } } },

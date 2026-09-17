@@ -1,5 +1,5 @@
 import { type AuthUser } from 'wasp/auth';
-import { getMyDashboardOverview, getMyOnboardingProfile, useQuery } from 'wasp/client/operations';
+import { getMyDashboardOverview, getMyDashboardScope, getMyOnboardingProfile, useQuery } from 'wasp/client/operations';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import {
   Activity,
@@ -25,6 +25,8 @@ import { useBankStats } from '../client/hooks/useBankStats';
 function DashboardHomePage({ user }: { user: AuthUser }) {
   const { data: overview, isLoading } = useQuery(getMyDashboardOverview);
   const { data: profile } = useQuery(getMyOnboardingProfile);
+  const { data: dashboardScope } = useQuery(getMyDashboardScope);
+  const isIreland = dashboardScope?.kind === 'ireland';
   const { stats: bankStats } = useBankStats();
   const firstName = profile?.fullName || user.username || user.email?.split('@')[0] || 'there';
   const greeting = getTimeOfDayGreeting();
@@ -43,6 +45,8 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
                 ? `Preparing for ${profile.exam.flagEmoji ?? ''} ${
                     profile.exam.authorityLabel ?? profile.exam.name
                   } Licensing Exam`
+                : isIreland
+                ? 'IDC Ireland Licensing Exam Prep'
                 : 'Gulf Dental Licensing Exam Prep'}
             </div>
             {daysUntilExam !== null && (
@@ -173,7 +177,7 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
                 </div>
               </div>
               <p className='text-primary-foreground/85 mb-5 text-sm leading-relaxed'>
-                {bankStats
+                {bankStats && !isIreland
                   ? `Every answer key is checked by a dentist before it's published — ${bankStats.publishedQuestionCount.toLocaleString()} questions across ${bankStats.subjectCount} subjects and ${bankStats.examCount} Gulf licensing exams.`
                   : "Every answer key is checked by a dentist before it's published — never AI-guessed."}
               </p>

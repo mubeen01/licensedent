@@ -91,6 +91,7 @@ export type ExamAwareAccessEntities = AccessEntities & {
       select: { standalonePackOnly: true };
     }): Promise<{ standalonePackOnly: boolean } | null>;
     findMany(args: { where: { standalonePackOnly: boolean }; select: { id: true } }): Promise<Array<{ id: string }>>;
+    findFirst(args: { where: { code: string }; select: { id: true } }): Promise<{ id: string } | null>;
   };
 };
 
@@ -188,6 +189,30 @@ export async function getAccessibleExamIds(
     select: { id: true },
   });
   return Array.from(new Set([...singleExamIds, ...nonStandaloneExams.map((e) => e.id)]));
+}
+
+// PRD-002 Phase I4: what the dashboard shell (DashboardSidebar/DashboardHomePage)
+// should show. 'ireland' means the user's entire accessible-exam set is exactly
+// IDC Ireland -- true for a real Ireland Pathway subscriber, and (deliberately,
+// by data rather than by plan enum) for anyone else whose access happens to
+// resolve the same way, e.g. an admin grant scoped to IDC on a different plan.
+// Everyone else (free, any Gulf single-exam plan, Extended, or no access at
+// all) gets 'default', the existing multi-exam Gulf dashboard -- Ireland's
+// scoped variant is deliberately NOT a generic "any single-exam plan" mode
+// (see PRD-002 §3 Goal 4: this is specifically about Ireland Pathway
+// subscribers, not Fast Track/Standard, which stay on the default shell).
+export type DashboardScope = { kind: 'ireland' } | { kind: 'default' };
+
+export async function getUserDashboardScope(
+  userId: string,
+  entities: ExamAwareAccessEntities,
+  now: Date = new Date()
+): Promise<DashboardScope> {
+  const accessibleExamIds = await getAccessibleExamIds(userId, entities, now);
+  if (accessibleExamIds.length !== 1) return { kind: 'default' };
+
+  const idcExam = await entities.Exam.findFirst({ where: { code: 'IDC' }, select: { id: true } });
+  return idcExam && accessibleExamIds[0] === idcExam.id ? { kind: 'ireland' } : { kind: 'default' };
 }
 
 /* -------------------------------------------------------------------------- */

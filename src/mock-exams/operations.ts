@@ -14,7 +14,7 @@ import {
 import * as z from 'zod';
 import { computeStreak } from '../dashboard/streak';
 import { resolveOptionalImageUrl } from '../file-upload/s3Utils';
-import { getEffectiveAccessForExam, requireActivePlan } from '../payment/access';
+import { getAccessibleExamIds, getEffectiveAccessForExam, requireActivePlan } from '../payment/access';
 import { PaymentPlanId, SubscriptionStatus } from '../payment/plans';
 import { ensureArgsSchemaOrThrowHttpError } from '../server/validation';
 
@@ -28,8 +28,20 @@ function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<
 // Mock Exams doesn't expose an exam switcher -- all 9 Gulf exams share the same
 // underlying question bank, so `examId` stays optional and defaults to the base
 // exam rather than making a student pick between identical content.
-async function resolveExamId(examEntity: { findFirst: (args: any) => Promise<{ id: string } | null> }, examId?: string) {
+//
+// PRD-002 Phase I4: when the caller's own access resolves to exactly one exam
+// (e.g. an Ireland Pathway subscriber), default to THAT exam instead of
+// `general_dentist` -- a no-op for every Gulf plan (identical content either
+// way), but the difference between a single-exam-only user correctly seeing
+// their own exam's mocks (today: none, since Ireland has zero MockTest rows
+// yet) versus silently seeing an inaccessible Gulf exam's full mock list.
+async function resolveExamId(
+  examEntity: { findFirst: (args: any) => Promise<{ id: string } | null> },
+  examId?: string,
+  accessibleExamIds?: string[]
+) {
   if (examId) return examId;
+  if (accessibleExamIds?.length === 1) return accessibleExamIds[0];
   const base = await examEntity.findFirst({ where: { slug: 'general_dentist' } });
   if (!base) throw new HttpError(500, 'No default exam configured');
   return base.id;
@@ -102,7 +114,8 @@ type GetMockExamsInput = z.infer<typeof getMockExamsInputSchema>;
 export const getMockExams: GetMockExams<GetMockExamsInput, MockExamSummary[]> = async (rawArgs, context) => {
   const user = ensureUser(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(getMockExamsInputSchema, rawArgs);
-  const examId = await resolveExamId(context.entities.Exam, args.examId);
+  const accessibleExamIds = await getAccessibleExamIds(user.id, context.entities);
+  const examId = await resolveExamId(context.entities.Exam, args.examId, accessibleExamIds);
   const attemptsCap = getMockExamAttemptCap(user);
   // Global count across ALL mock exams (the cap isn't per-mock-test), so every
   // tab reports the same "used" number even once more mock exams exist.
@@ -503,7 +516,8 @@ type GetExamReadinessInput = z.infer<typeof getExamReadinessInputSchema>;
 export const getExamReadiness: GetExamReadiness<GetExamReadinessInput, ExamReadiness> = async (rawArgs, context) => {
   const user = ensureUser(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(getExamReadinessInputSchema, rawArgs);
-  const examId = await resolveExamId(context.entities.Exam, args.examId);
+  const accessibleExamIds = await getAccessibleExamIds(user.id, context.entities);
+  const examId = await resolveExamId(context.entities.Exam, args.examId, accessibleExamIds);
 
   const firstBatch = await context.entities.MockTest.findMany({
     where: { isActive: true, examId, order: { lte: FIRST_BATCH_SIZE } },

@@ -2,13 +2,14 @@ import * as z from 'zod';
 import type {
   GenerateCheckoutSession,
   GetCustomerPortalUrl,
+  GetMyDashboardScope,
   GetMyEffectiveAccess,
   GetMySubscription,
   GetMySubscriptionHistory,
 } from 'wasp/server/operations';
 import type { Subscription } from 'wasp/entities';
 import { PaymentPlanId, paymentPlans } from '../payment/plans';
-import { getEffectiveAccess, type EffectiveAccess } from './access';
+import { getEffectiveAccess, getUserDashboardScope, type DashboardScope, type EffectiveAccess } from './access';
 import { paymentProcessor } from './paymentProcessor';
 import { HttpError } from 'wasp/server';
 import { ensureArgsSchemaOrThrowHttpError } from '../server/validation';
@@ -145,4 +146,16 @@ export const getMyEffectiveAccess: GetMyEffectiveAccess<void, EffectiveAccess> =
     throw new HttpError(401, 'Only authenticated users are allowed to perform this operation');
   }
   return getEffectiveAccess(context.user.id, context.entities);
+};
+
+// PRD-002 Phase I4: which dashboard shell variant DashboardSidebar/
+// DashboardHomePage should render -- deliberately its own query (not folded
+// into getMyEffectiveAccess) since it needs the Exam entity for I3's
+// getUserDashboardScope, which getMyEffectiveAccess's exam-blind counterpart
+// getEffectiveAccess does not.
+export const getMyDashboardScope: GetMyDashboardScope<void, DashboardScope> = async (_args, context) => {
+  if (!context.user) {
+    throw new HttpError(401, 'Only authenticated users are allowed to perform this operation');
+  }
+  return getUserDashboardScope(context.user.id, context.entities);
 };
