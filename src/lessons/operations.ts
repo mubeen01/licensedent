@@ -21,18 +21,31 @@ function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<
 }
 
 // Lessons doesn't expose an exam switcher yet (only IDC Ireland has real
-// Lesson rows) -- default to the caller's own accessible exam, same pattern
-// as resolveExamId in src/mock-exams/operations.ts.
+// Lesson rows) -- default to the caller's own accessible exam when it's
+// unambiguous (exactly one). When it's NOT unambiguous (free users with no
+// live subscription at all, or an Extended/allExamsAccess plan covering
+// several Gulf exams at once), this must NOT fall back to IDC -- that would
+// hand Ireland's lesson list/structure to a Gulf free or Extended-plan user
+// who never bought Ireland Pathway access (getLessons has no plan gate of
+// its own; the sidebar hiding it is client-side only). Falls back to the
+// shared Gulf pool instead (general_dentist, same neutral default
+// resolveExamId in questions/operations.ts uses), which currently has zero
+// Lesson rows -- so an ambiguous-scope caller correctly sees an empty
+// Lessons list rather than someone else's exam's content.
+// SECURITY: an explicit `examId` is only honored if it's one the caller can
+// actually access -- otherwise any authenticated user could POST
+// `{ examId: <IDC's id> }` directly and read Ireland's lesson list, bypassing
+// exam scoping entirely regardless of what the UI sends.
 async function resolveExamId(
   examEntity: { findFirst: (args: any) => Promise<{ id: string } | null> },
   examId: string | undefined,
   accessibleExamIds: string[]
 ): Promise<string> {
-  if (examId) return examId;
+  if (examId && accessibleExamIds.includes(examId)) return examId;
   if (accessibleExamIds.length === 1) return accessibleExamIds[0];
-  const idc = await examEntity.findFirst({ where: { code: 'IDC' } });
-  if (!idc) throw new HttpError(500, 'No default exam configured for Lessons');
-  return idc.id;
+  const fallback = await examEntity.findFirst({ where: { slug: 'general_dentist' } });
+  if (!fallback) throw new HttpError(500, 'No default exam configured for Lessons');
+  return fallback.id;
 }
 
 // Part 1 of a Lesson is always unlocked; Part N+1 unlocks only once Part N

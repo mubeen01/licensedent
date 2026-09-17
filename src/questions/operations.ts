@@ -42,12 +42,19 @@ function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<
 // either way, confirmed all Gulf exams share one pool), but for a genuinely
 // single-exam-only user it's the difference between correctly seeing their
 // own exam's subjects and silently seeing an inaccessible Gulf exam's.
+//
+// SECURITY: an explicit `examId` is only ever honored if it's one the caller
+// can actually access. No client currently sends this arg (no exam switcher
+// exists yet), but the operation is a network-callable endpoint regardless of
+// what the UI does -- without this check, any authenticated user could POST
+// `{ examId: <the other exam's id> }` directly and read that exam's subject
+// list/counts, bypassing the whole point of exam scoping.
 async function resolveExamId(
   examEntity: { findFirst: (args: any) => Promise<{ id: string } | null> },
   examId?: string,
   accessibleExamIds?: string[]
 ) {
-  if (examId) return examId;
+  if (examId && accessibleExamIds?.includes(examId)) return examId;
   if (accessibleExamIds?.length === 1) return accessibleExamIds[0];
   const base = await examEntity.findFirst({ where: { slug: 'general_dentist' } });
   if (!base) throw new HttpError(500, 'No default exam configured');
@@ -197,11 +204,20 @@ export const getPracticeQuestions: GetPracticeQuestions<GetPracticeQuestionsInpu
   requirePracticeSlotToday(access);
   const args = ensureArgsSchemaOrThrowHttpError(getPracticeQuestionsInputSchema, rawArgs);
 
-  // PRD-002 Phase I3: paid users only ever draw from exams their plan(s)
-  // actually cover (e.g. a Fast Track pass for one exam no longer silently
-  // unlocks every other exam's content) -- free users are unrestricted by
-  // exam, same as before, since there's no purchased exam to scope them to.
-  const accessibleExamIds = access.active ? await getAccessibleExamIds(user.id, context.entities) : null;
+  // PRD-002 Phase I3 + fix: paid users only ever draw from exams their
+  // plan(s) actually cover (e.g. a Fast Track pass for one exam no longer
+  // silently unlocks every other exam's content). Free users used to be
+  // unrestricted by exam entirely -- that was safe back when every exam
+  // shared one Gulf pool, but now that Ireland-tagged questions can live on
+  // the same shared Subject rows (see getPracticeSubjects' comment above),
+  // an unfiltered free draw could hand a Gulf free user Ireland-tagged
+  // questions or vice versa. Free users now get the exact same single-exam
+  // fallback getPracticeSubjects already resolves them to (general_dentist,
+  // the shared Gulf pool) -- keeping the subject list and the question draw
+  // scoped to the same exam always, never unfiltered.
+  const accessibleExamIds = access.active
+    ? await getAccessibleExamIds(user.id, context.entities)
+    : [await resolveExamId(context.entities.Exam)];
 
   // Fetching matching IDs and shuffling in-app (rather than ORDER BY RANDOM()
   // in SQL) so this stays cheap as the published question count grows --
@@ -211,7 +227,7 @@ export const getPracticeQuestions: GetPracticeQuestions<GetPracticeQuestionsInpu
       status: 'published',
       subjectId: { in: args.subjectIds },
       subject: { isActive: true },
-      ...(accessibleExamIds ? { exams: { some: { id: { in: accessibleExamIds } } } } : {}),
+      exams: { some: { id: { in: accessibleExamIds } } },
     },
     select: { id: true },
   });
@@ -245,10 +261,27 @@ export const submitAnswer: SubmitAnswer<SubmitAnswerInput, SubmitAnswerResult> =
   const access = await getEffectiveAccess(user.id, context.entities);
   requirePracticeSlotToday(access);
 
-  const question = await context.entities.Question.findUnique({ where: { id: args.questionId } });
+  const question = await context.entities.Question.findUnique({
+    where: { id: args.questionId },
+    include: { exams: { select: { id: true } } },
+  });
   if (!question || question.status !== 'published') {
     throw new HttpError(404, 'Question not found or not available for practice');
   }
+
+  // Cross-exam guard: getPracticeQuestions only ever hands out ids already
+  // scoped to the caller's accessible exam(s), but this action takes a raw
+  // questionId directly -- without re-checking here, any authenticated user
+  // could submit an arbitrary id from the OTHER exam's pool (Gulf vs Ireland)
+  // and this would happily hand back its correctKey/explanation, bypassing
+  // the exam boundary entirely regardless of what the draw step filtered.
+  const accessibleExamIds = access.active
+    ? await getAccessibleExamIds(user.id, context.entities)
+    : [await resolveExamId(context.entities.Exam)];
+  if (!question.exams.some((e) => accessibleExamIds.includes(e.id))) {
+    throw new HttpError(404, 'Question not found or not available for practice');
+  }
+
   // Guaranteed non-null for published questions by the approve-question guard.
   const correctKey = question.correctKey!;
   const explanation = question.explanation!;

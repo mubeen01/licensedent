@@ -36,12 +36,16 @@ function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<
 // way), but the difference between a single-exam-only user correctly seeing
 // their own exam's mocks (Ireland now has 5 real MockTest rows, PRD-003)
 // versus silently seeing an inaccessible Gulf exam's full mock list.
+// SECURITY: an explicit `examId` is only honored if it's one the caller can
+// actually access -- otherwise any authenticated user could POST
+// `{ examId: <the other exam's id> }` directly and read that exam's mock
+// test list, bypassing exam scoping entirely regardless of what the UI sends.
 async function resolveExamId(
   examEntity: { findFirst: (args: any) => Promise<{ id: string } | null> },
   examId?: string,
   accessibleExamIds?: string[]
 ) {
-  if (examId) return examId;
+  if (examId && accessibleExamIds?.includes(examId)) return examId;
   if (accessibleExamIds?.length === 1) return accessibleExamIds[0];
   const base = await examEntity.findFirst({ where: { slug: 'general_dentist' } });
   if (!base) throw new HttpError(500, 'No default exam configured');

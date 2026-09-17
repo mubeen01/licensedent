@@ -487,7 +487,7 @@ export default app({
     route('PracticeRoute', '/practice', page(PracticePage, { authRequired: true })),
     query(getPracticeSubjects, { entities: ['Subject', 'Exam', 'Subscription', 'UserAttempt'] }),
     query(getPracticeQuestions, { entities: ['Question', 'QuestionNote', 'Subscription', 'UserAttempt', 'Exam'] }),
-    action(submitAnswer, { entities: ['Question', 'UserAttempt', 'ReviewSchedule', 'Subscription'] }),
+    action(submitAnswer, { entities: ['Question', 'UserAttempt', 'ReviewSchedule', 'Subscription', 'Exam'] }),
     route('ReviewRoute', '/practice/review', page(ReviewPage, { authRequired: true })),
     action(saveQuestionNote, { entities: ['QuestionNote'] }),
     query(getMyMarkedQuestions, { entities: ['QuestionNote', 'Subscription', 'UserAttempt', 'Exam'] }),
