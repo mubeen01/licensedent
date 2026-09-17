@@ -14,8 +14,8 @@ import {
 import * as z from 'zod';
 import { computeStreak } from '../dashboard/streak';
 import { resolveOptionalImageUrl } from '../file-upload/s3Utils';
-import { getAccessibleExamIds, getEffectiveAccessForExam, requireActivePlan } from '../payment/access';
-import { PaymentPlanId, SubscriptionStatus } from '../payment/plans';
+import { getAccessibleExamIds, getEffectiveAccess, getEffectiveAccessForExam, requireActivePlan } from '../payment/access';
+import { PaymentPlanId } from '../payment/plans';
 import { orderOptions, shuffle, type Option } from '../server/shuffleUtils';
 import { ensureArgsSchemaOrThrowHttpError } from '../server/validation';
 
@@ -34,8 +34,8 @@ function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<
 // (e.g. an Ireland Pathway subscriber), default to THAT exam instead of
 // `general_dentist` -- a no-op for every Gulf plan (identical content either
 // way), but the difference between a single-exam-only user correctly seeing
-// their own exam's mocks (today: none, since Ireland has zero MockTest rows
-// yet) versus silently seeing an inaccessible Gulf exam's full mock list.
+// their own exam's mocks (Ireland now has 5 real MockTest rows, PRD-003)
+// versus silently seeing an inaccessible Gulf exam's full mock list.
 async function resolveExamId(
   examEntity: { findFirst: (args: any) => Promise<{ id: string } | null> },
   examId?: string,
@@ -55,18 +55,26 @@ const MOCK_EXAM_ATTEMPT_CAPS: Record<PaymentPlanId, number> = {
   [PaymentPlanId.FastTrack]: 20,
   [PaymentPlanId.Standard]: 60,
   [PaymentPlanId.Extended]: 150,
-  // Mock Exams (this Gulf-shared question bank, resolveExamId's `general_dentist`
-  // default above) isn't part of Ireland Pathway's content model -- that's the
-  // Lesson/Part quiz system (PRD-002 Phase I5) plus Quiz Builder (Phase I8), not
-  // classic mock tests. 0 until/unless a real Ireland mock-exam surface is scoped.
-  [PaymentPlanId.IrelandPathway]: 0,
+  // A real Ireland Mock Exam surface now exists (5 MockTest rows scoped to
+  // the IDC exam, drawing from its 140 published questions) -- 60 matches
+  // Standard's cap, a reasonable middle ground given Ireland Pathway sits
+  // between Standard ($550) and Extended ($1,000) in price.
+  [PaymentPlanId.IrelandPathway]: 60,
 };
 
-function getMockExamAttemptCap(user: { subscriptionPlan: string | null; subscriptionStatus: string | null }): number {
-  if (!user.subscriptionPlan || !user.subscriptionStatus || user.subscriptionStatus === SubscriptionStatus.Deleted) {
-    return 0;
-  }
-  return MOCK_EXAM_ATTEMPT_CAPS[user.subscriptionPlan as PaymentPlanId] ?? 0;
+// Reads the REAL Subscription model (same source getEffectiveAccess/Billing/
+// the dashboard all use), not the legacy User.subscriptionPlan/subscriptionStatus
+// fields -- those are only ever written by the Stripe/LemonSqueezy webhook
+// paths, never by an admin's manual grantUserSubscription, so any manually-
+// granted plan (confirmed for the Ireland Pathway test account: an active,
+// unexpired Subscription row, but null User.subscriptionPlan) silently always
+// got capped at 0 attempts despite Billing/the dashboard correctly showing an
+// active plan. Real bug, not Ireland-specific -- affects any admin-granted
+// account on any plan.
+async function getMockExamAttemptCap(userId: string, entities: Parameters<typeof getEffectiveAccess>[1]): Promise<number> {
+  const access = await getEffectiveAccess(userId, entities);
+  if (!access.active || !access.planType) return 0;
+  return MOCK_EXAM_ATTEMPT_CAPS[access.planType] ?? 0;
 }
 
 // Mocks 1-10 are all open together. Mock 11 unlocks once every one of 1-10
@@ -117,7 +125,7 @@ export const getMockExams: GetMockExams<GetMockExamsInput, MockExamSummary[]> = 
   const args = ensureArgsSchemaOrThrowHttpError(getMockExamsInputSchema, rawArgs);
   const accessibleExamIds = await getAccessibleExamIds(user.id, context.entities);
   const examId = await resolveExamId(context.entities.Exam, args.examId, accessibleExamIds);
-  const attemptsCap = getMockExamAttemptCap(user);
+  const attemptsCap = await getMockExamAttemptCap(user.id, context.entities);
   // Global count across ALL mock exams (the cap isn't per-mock-test), so every
   // tab reports the same "used" number even once more mock exams exist.
   const attemptsUsed = await context.entities.MockExamAttempt.count({ where: { userId: user.id } });
@@ -251,7 +259,7 @@ export const startMockExamAttempt: StartMockExamAttempt<StartMockExamAttemptInpu
 
   // Cap only gates STARTING a new attempt -- resuming an in-progress one (above)
   // never counts against it twice.
-  const attemptsCap = getMockExamAttemptCap(user);
+  const attemptsCap = await getMockExamAttemptCap(user.id, context.entities);
   const attemptsUsed = await context.entities.MockExamAttempt.count({ where: { userId: user.id } });
   if (attemptsUsed >= attemptsCap) {
     throw new HttpError(403, 'You have reached your plan\'s mock exam attempt limit');

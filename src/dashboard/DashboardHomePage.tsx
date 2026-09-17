@@ -20,6 +20,7 @@ import StreakXpCard from './StreakXpCard';
 import StudyPlanCard from './StudyPlanCard';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
+import { cn } from '../lib/utils';
 import { useBankStats } from '../client/hooks/useBankStats';
 
 function DashboardHomePage({ user }: { user: AuthUser }) {
@@ -36,11 +37,23 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
   return (
     <DashboardLayout user={user} pageTitle='Dashboard'>
       {/* Header */}
-      <div className='border-b border-border bg-background'>
-        <div className='max-w-7xl mx-auto px-6 py-8'>
+      <div
+        className={cn(
+          'border-b',
+          isIreland
+            ? 'border-transparent bg-gradient-to-br from-primary via-primary to-secondary'
+            : 'border-border bg-background'
+        )}
+      >
+        <div className='max-w-7xl mx-auto px-6 py-10 md:py-12'>
           <div className='flex flex-wrap items-center gap-2 mb-4'>
-            <div className='inline-flex items-center px-3 py-1 bg-primary/10 rounded-full text-sm font-medium text-primary'>
-              <span className='w-1.5 h-1.5 bg-primary rounded-full mr-2' />
+            <div
+              className={cn(
+                'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
+                isIreland ? 'bg-white/15 text-primary-foreground backdrop-blur-sm' : 'bg-primary/10 text-primary'
+              )}
+            >
+              <span className={cn('w-1.5 h-1.5 rounded-full mr-2', isIreland ? 'bg-white' : 'bg-primary')} />
               {isIreland
                 ? 'IDC Ireland Licensing Exam Prep'
                 : profile?.exam
@@ -50,17 +63,32 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
                 : 'Gulf Dental Licensing Exam Prep'}
             </div>
             {daysUntilExam !== null && (
-              <div className='inline-flex items-center gap-1.5 px-3 py-1 bg-muted rounded-full text-sm font-medium text-muted-foreground'>
+              <div
+                className={cn(
+                  'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium',
+                  isIreland ? 'bg-white/10 text-primary-foreground/90 backdrop-blur-sm' : 'bg-muted text-muted-foreground'
+                )}
+              >
                 <CalendarClock className='w-3.5 h-3.5' />
                 {daysUntilExam === 0 ? 'Your exam is today' : `${daysUntilExam} day${daysUntilExam === 1 ? '' : 's'} until your exam`}
               </div>
             )}
           </div>
 
-          <h1 className='text-2xl md:text-3xl font-semibold tracking-tight text-foreground mb-2'>
+          <h1
+            className={cn(
+              'text-2xl md:text-4xl font-semibold tracking-tight mb-2',
+              isIreland ? 'text-primary-foreground' : 'text-foreground'
+            )}
+          >
             {greeting}, {firstName}
           </h1>
-          <p className='text-base text-muted-foreground leading-relaxed max-w-2xl mb-6'>
+          <p
+            className={cn(
+              'text-base leading-relaxed max-w-2xl mb-7',
+              isIreland ? 'text-primary-foreground/80' : 'text-muted-foreground'
+            )}
+          >
             {overview && overview.totalAttempted > 0
               ? `You've answered ${overview.totalAttempted} questions at ${overview.accuracy}% accuracy. Keep going.`
               : 'Start practicing to see your accuracy and progress here.'}
@@ -68,13 +96,20 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
 
           <div className='flex flex-col sm:flex-row gap-3'>
             <WaspRouterLink to={routes.PracticeRoute.to}>
-              <Button>
+              <Button
+                className={isIreland ? 'bg-white text-primary hover:bg-white/90 shadow-lg' : undefined}
+              >
                 <Rocket className='w-4 h-4 mr-2' />
                 Start Practicing
               </Button>
             </WaspRouterLink>
             <WaspRouterLink to={routes.ProgressRoute.to}>
-              <Button variant='outline'>
+              <Button
+                variant='outline'
+                className={
+                  isIreland ? 'bg-white/10 border-white/30 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground' : undefined
+                }
+              >
                 <Target className='w-4 h-4 mr-2' />
                 View Progress
               </Button>
@@ -97,24 +132,28 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
             label='Total'
             value={isLoading ? '…' : overview?.totalAttempted ?? 0}
             sub='Questions attempted'
+            isIreland={isIreland}
           />
           <StatCard
             icon={Activity}
             label='Week'
             value={isLoading ? '…' : overview?.thisWeekAttempted ?? 0}
             sub='Attempted this week'
+            isIreland={isIreland}
           />
           <StatCard
             icon={Award}
             label='Accuracy'
             value={isLoading ? '…' : `${overview?.accuracy ?? 0}%`}
             sub='Overall accuracy'
+            isIreland={isIreland}
           />
           <StatCard
             icon={Layers}
             label='Subjects'
             value={isLoading ? '…' : overview?.subjectsCovered ?? 0}
             sub='Subjects covered'
+            isIreland={isIreland}
           />
         </div>
 
@@ -165,7 +204,12 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
           </div>
 
           {/* Trust card — real claims only, from the landing page's own stats */}
-          <Card className='bg-primary border-primary'>
+          <Card
+            className={cn(
+              'border-primary',
+              isIreland ? 'bg-gradient-to-br from-primary to-secondary' : 'bg-primary'
+            )}
+          >
             <CardContent className='p-6 text-primary-foreground'>
               <div className='flex items-center gap-3 mb-5'>
                 <div className='p-2.5 bg-white/15 rounded-xl'>
@@ -205,17 +249,19 @@ function StatCard({
   label,
   value,
   sub,
+  isIreland,
 }: {
   icon: typeof ListChecks;
   label: string;
   value: string | number;
   sub: string;
+  isIreland?: boolean;
 }) {
   return (
-    <Card>
+    <Card className={isIreland ? 'transition-shadow hover:shadow-lg hover:shadow-primary/5' : undefined}>
       <CardContent className='p-5'>
         <div className='flex items-center justify-between mb-3'>
-          <div className='p-2 bg-primary/10 rounded-lg'>
+          <div className={cn('p-2 rounded-lg', isIreland ? 'bg-gradient-to-br from-primary/15 to-secondary/15' : 'bg-primary/10')}>
             <Icon className='h-4 w-4 text-primary' />
           </div>
           <div className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>{label}</div>

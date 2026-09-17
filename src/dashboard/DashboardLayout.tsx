@@ -2,6 +2,8 @@ import { type ReactNode, useState } from 'react';
 import { Menu, ListChecks, BarChart3, LayoutDashboard } from 'lucide-react';
 import { type AuthUser } from 'wasp/auth';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
+import { useQuery, getMyDashboardScope } from 'wasp/client/operations';
+import { cn } from '../lib/utils';
 import DarkModeSwitcher from '../client/components/DarkModeSwitcher';
 import DashboardSidebar from './DashboardSidebar';
 
@@ -31,9 +33,11 @@ const pageGreetings: Record<string, string> = {
 export default function DashboardLayout({ user, pageTitle, children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const firstName = user.username || user.email?.split('@')[0] || 'there';
+  const { data: dashboardScope } = useQuery(getMyDashboardScope);
+  const isIreland = dashboardScope?.kind === 'ireland';
 
   return (
-    <div className='h-screen bg-muted/30 flex overflow-hidden'>
+    <div className={cn('h-screen bg-muted/30 flex overflow-hidden', isIreland && 'theme-ireland')}>
       {sidebarOpen && (
         <div
           className='fixed inset-0 z-40 bg-black/40 backdrop-blur-xs lg:hidden'

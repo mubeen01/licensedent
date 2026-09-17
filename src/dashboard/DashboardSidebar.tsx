@@ -109,16 +109,30 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
   return (
     <div className='h-full flex flex-col bg-card border-r border-border overflow-hidden'>
       {/* Brand header */}
-      <div className='flex items-center justify-between px-5 py-4 border-b border-border shrink-0'>
+      <div
+        className={cn(
+          'flex items-center justify-between px-5 py-4 border-b border-border shrink-0',
+          isIreland && 'bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent'
+        )}
+      >
         <WaspRouterLink to='/' className='flex items-center space-x-2.5'>
-          <div className='w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0 shadow-xs'>
+          <div
+            className={cn(
+              'w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0 shadow-xs',
+              isIreland && 'ring-2 ring-primary/25 ring-offset-1 ring-offset-background'
+            )}
+          >
             <img src='/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
           </div>
           <div>
             <h1 className='text-sm font-semibold text-foreground leading-tight'>LicenseDent</h1>
-            <p className='text-xs text-muted-foreground leading-tight'>
-              {isIreland ? 'IDC Ireland Prep' : 'Gulf + Ireland Prep'}
-            </p>
+            {isIreland ? (
+              <span className='inline-flex items-center gap-1 mt-0.5 rounded-full bg-gradient-to-r from-primary to-secondary px-1.5 py-px text-[10px] font-semibold text-primary-foreground leading-tight'>
+                IDC Ireland
+              </span>
+            ) : (
+              <p className='text-xs text-muted-foreground leading-tight'>Gulf + Ireland Prep</p>
+            )}
           </div>
         </WaspRouterLink>
 
@@ -142,11 +156,13 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
                 className={cn(
                   'w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors group relative',
                   active
-                    ? 'bg-primary/10 text-primary'
+                    ? isIreland
+                      ? 'bg-gradient-to-r from-primary/15 to-secondary/10 text-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]'
+                      : 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                 )}
               >
-                {active && (
+                {active && !isIreland && (
                   <span className='absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-primary' />
                 )}
                 <item.icon className='mr-3 h-4 w-4 shrink-0' />
@@ -164,22 +180,35 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
 
       {/* Exam access widget (real data, not fabricated) */}
       <div className='p-3 border-t border-border shrink-0'>
-        <div className='rounded-lg border border-border bg-muted/40 p-3'>
+        <div
+          className={cn(
+            'rounded-lg p-3',
+            isIreland
+              ? 'border border-transparent bg-gradient-to-br from-primary to-secondary shadow-md'
+              : 'border border-border bg-muted/40'
+          )}
+        >
           <div className='flex items-center justify-between mb-2'>
-            <span className='font-medium text-xs text-foreground'>Exam Access</span>
-            {subscription && <span className='text-sm font-semibold text-primary'>{daysRemaining}d</span>}
+            <span className={cn('font-medium text-xs', isIreland ? 'text-primary-foreground/90' : 'text-foreground')}>
+              Exam Access
+            </span>
+            {subscription && (
+              <span className={cn('text-sm font-semibold', isIreland ? 'text-primary-foreground' : 'text-primary')}>
+                {daysRemaining}d
+              </span>
+            )}
           </div>
 
           {subscription ? (
             <>
-              <div className='w-full bg-muted rounded-full h-1.5 mb-2 overflow-hidden'>
+              <div className={cn('w-full rounded-full h-1.5 mb-2 overflow-hidden', isIreland ? 'bg-white/25' : 'bg-muted')}>
                 <div
-                  className='bg-primary h-1.5 rounded-full transition-all duration-700'
+                  className={cn('h-1.5 rounded-full transition-all duration-700', isIreland ? 'bg-white' : 'bg-primary')}
                   style={{ width: `${percentRemaining}%` }}
                 />
               </div>
               <div className='flex items-center justify-between text-xs'>
-                <span className='text-muted-foreground'>
+                <span className={isIreland ? 'text-primary-foreground/80' : 'text-muted-foreground'}>
                   {prettyPaymentPlanName(parsePaymentPlanId(subscription.planType))}
                   {subscription.allExamsAccess
                     ? ' · all exams'
@@ -192,7 +221,10 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
           ) : (
             <WaspRouterLink
               to={routes.PricingPageRoute.to}
-              className='text-xs font-medium text-primary hover:underline'
+              className={cn(
+                'text-xs font-medium hover:underline',
+                isIreland ? 'text-primary-foreground' : 'text-primary'
+              )}
             >
               No active plan — buy one →
             </WaspRouterLink>
@@ -204,7 +236,12 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       {user?.email && (
         <div className='p-3 border-t border-border shrink-0'>
           <div className='flex items-center space-x-2 p-2 rounded-lg'>
-            <div className='w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-medium text-xs shrink-0'>
+            <div
+              className={cn(
+                'w-8 h-8 rounded-lg flex items-center justify-center text-primary-foreground font-medium text-xs shrink-0',
+                isIreland ? 'bg-gradient-to-br from-primary to-secondary' : 'bg-primary'
+              )}
+            >
               {user.email[0].toUpperCase()}
             </div>
             <div className='flex-1 min-w-0'>

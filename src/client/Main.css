@@ -6,7 +6,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
+/* `inline` is required here, not optional: these theme colors reference
+   OTHER runtime CSS custom properties (--primary, --background, etc.,
+   themselves overridden by .dark and .theme-ireland below). A plain
+   @theme block freezes each color to whatever those variables resolved to
+   at Tailwind's build time, so `.dark`'s and `.theme-ireland`'s overrides
+   never reach already-generated utility classes (bg-primary, text-primary,
+   etc.) at runtime -- confirmed by a real browser check: `--primary`
+   computed correctly as the overridden value on a themed element, but the
+   rendered color stayed frozen at the light/default theme's value. This
+   silently broke dark mode app-wide (the .dark class toggled correctly,
+   zero visual effect), not just the new Ireland theme. */
+@theme inline {
   --font-satoshi: Satoshi, system-ui, sans-serif;
 
   --color-current: currentColor;
@@ -375,6 +386,44 @@
     --radius: 0.75rem;
   }
 
+  /* Ireland Pathway dashboard theme (2026 redesign) -- deep indigo/violet +
+     emerald accent, applied only when DashboardLayout detects
+     getMyDashboardScope().kind === 'ireland'. Overrides the same token set
+     the default teal/sky/gold theme uses, so every existing shadcn
+     primitive (Card, Button, Progress, badges, etc.) re-skins automatically
+     with no per-component changes -- deliberately scoped to a class, not a
+     replacement of :root, so the Gulf dashboard is completely unaffected. */
+  .theme-ireland {
+    --background: 240 45% 98%;
+    --foreground: 243 35% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 243 35% 12%;
+    --card-accent: 0 0% 100%;
+    --card-accent-foreground: 243 35% 12%;
+    --card-subtle: 243 45% 96%;
+    --card-subtle-foreground: 243 35% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 243 35% 12%;
+    --primary: 243 75% 59%;
+    --primary-foreground: 0 0% 100%;
+    --primary-muted: 243 60% 55%;
+    --secondary: 262 83% 58%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-muted: 262 75% 94%;
+    --secondary-muted-foreground: 243 35% 12%;
+    --muted: 243 25% 96%;
+    --muted-foreground: 243 12% 42%;
+    --accent: 262 70% 95%;
+    --accent-foreground: 243 35% 12%;
+    --gold: 160 84% 33%;
+    --gold-foreground: 0 0% 100%;
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+    --border: 243 30% 91%;
+    --input: 243 30% 91%;
+    --ring: 243 75% 59%;
+  }
+
   .dark {
     --background: 210 35% 7%;
     --foreground: 210 20% 96%;
@@ -408,6 +457,46 @@
     --border: 210 20% 18%;
     --input: 210 20% 18%;
     --ring: 175 65% 45%;
+  }
+
+  /* Descendant combinator, NOT compound (.dark.theme-ireland) -- dark mode
+     toggles .dark on <body> (see useColorMode.ts), while .theme-ireland is
+     applied to a nested div in DashboardLayout. A compound selector
+     requires both classes on the SAME element, which never happens here,
+     so it silently never matched: --card (and everything else below)
+     stayed stuck at the light .theme-ireland override even with dark mode
+     on, since that light override's specificity otherwise wins over the
+     inherited plain .dark rule from <body>. Confirmed via computed style:
+     --card computed "0 0% 100%" in both light and dark before this fix. */
+  .dark .theme-ireland {
+    --background: 245 45% 7%;
+    --foreground: 243 20% 96%;
+    --card: 245 38% 11%;
+    --card-foreground: 243 20% 96%;
+    --card-accent: 262 40% 20%;
+    --card-accent-foreground: 243 20% 96%;
+    --card-subtle: 245 30% 15%;
+    --card-subtle-foreground: 243 20% 96%;
+    --popover: 245 38% 10%;
+    --popover-foreground: 243 20% 96%;
+    --primary: 234 89% 74%;
+    --primary-foreground: 245 45% 10%;
+    --primary-muted: 234 70% 65%;
+    --secondary: 262 75% 72%;
+    --secondary-foreground: 245 45% 10%;
+    --secondary-muted: 262 40% 22%;
+    --secondary-muted-foreground: 243 20% 96%;
+    --muted: 245 28% 16%;
+    --muted-foreground: 243 15% 66%;
+    --accent: 262 35% 20%;
+    --accent-foreground: 243 20% 96%;
+    --gold: 158 64% 52%;
+    --gold-foreground: 245 45% 10%;
+    --success: 158 64% 52%;
+    --success-foreground: 245 45% 10%;
+    --border: 245 30% 22%;
+    --input: 245 30% 22%;
+    --ring: 234 89% 74%;
   }
 }
 

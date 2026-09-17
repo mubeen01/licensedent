@@ -1,6 +1,6 @@
 import { type ApexOptions } from 'apexcharts';
 import { CalendarClock, ChevronRight, Pencil, Target } from 'lucide-react';
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import ReactApexChart from '../lib/reactApexChart';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { getMyStudyPlan, getReadinessScore, updateTargetExamDate, useQuery } from 'wasp/client/operations';
@@ -9,12 +9,29 @@ import { Card, CardContent } from '../components/ui/card';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import { todayISODate } from './greeting';
 
-const READINESS_COLOR = '#0F756D';
+const READINESS_COLOR_FALLBACK = '#0F756D';
+
+// Reads the cascaded --success CSS var from the nearest themed ancestor (the
+// default teal theme, or .theme-ireland's emerald override applied higher up
+// in DashboardLayout) so the ApexCharts gauge -- which needs a real color
+// string, not a CSS var reference -- follows whichever theme is active
+// instead of staying hardcoded to one hex value forever.
+function useThemedChartColor(varName: string, fallbackHex: string) {
+  const probeRef = useRef<HTMLDivElement>(null);
+  const [color, setColor] = useState(fallbackHex);
+  useLayoutEffect(() => {
+    if (!probeRef.current) return;
+    const value = getComputedStyle(probeRef.current).getPropertyValue(varName).trim();
+    if (value) setColor(`hsl(${value})`);
+  }, [varName]);
+  return { probeRef, color };
+}
 
 export default function StudyPlanCard() {
   const { data: plan, isLoading: isLoadingPlan } = useQuery(getMyStudyPlan);
   const { data: readiness } = useQuery(getReadinessScore);
   const [isEditingDate, setIsEditingDate] = useState(false);
+  const { probeRef, color: readinessColor } = useThemedChartColor('--success', READINESS_COLOR_FALLBACK);
 
   if (isLoadingPlan) {
     return (
@@ -51,7 +68,7 @@ export default function StudyPlanCard() {
         },
       },
     },
-    colors: [READINESS_COLOR],
+    colors: [readinessColor],
     labels: ['Readiness'],
   };
 
@@ -73,7 +90,7 @@ export default function StudyPlanCard() {
         </div>
 
         <div className='flex items-center gap-6 mb-6'>
-          <div className='w-24 h-24 shrink-0'>
+          <div ref={probeRef} className='w-24 h-24 shrink-0'>
             <ReactApexChart options={options} series={[readiness?.score ?? 0]} type='radialBar' height={96} />
           </div>
           <div>
