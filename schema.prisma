@@ -47,6 +47,7 @@ model User {
   profile                   UserProfile?
   notes                     AdminUserNote[]   @relation("AdminUserNoteSubject")
   authoredUserNotes         AdminUserNote[]   @relation("AdminUserNoteAuthor")
+  lessonPartQuizAttempts    LessonPartQuizAttempt[]
 }
 
 model GptResponse {
@@ -189,6 +190,7 @@ model Exam {
   mockTests                 MockTest[]
   subscriptionsWithAccess   Subscription[]
   userProfiles              UserProfile[]
+  lessons                   Lesson[]
 }
 
 model Subject {
@@ -274,6 +276,8 @@ model Question {
   notes                     QuestionNote[]
   reviewSchedules           ReviewSchedule[]
   customQuizAttemptItems    CustomQuizAttemptItem[]
+  lessonParts               LessonPart[]
+  lessonPartQuizAttemptItems LessonPartQuizAttemptItem[]
 }
 
 // Snapshot of a Question's prior content, written whenever an already-
@@ -578,4 +582,100 @@ model UserProfile {
   examId                    String?
 
   completedAt               DateTime?
+}
+
+// PRD-002 Phase I5: structured Lesson content (Ireland Pathway's video/MCQ
+// model, superseding the abstract VideoLecture options in PRD-002 §5). A
+// Lesson is a topic (e.g. "Endodontics: Pulp Diagnosis") made of ordered
+// Parts; a Part bundles one video + notes + a gating quiz drawn from the
+// existing Question bank/review pipeline (no parallel question table).
+// Built exam-agnostic (examId FK) so another exam could use structured
+// lessons later, but only Ireland gets real rows for now, per the PRD's scope.
+model Lesson {
+  id                        String       @id @default(uuid())
+  title                     String
+  slug                      String       @unique
+  order                     Int          @default(1)
+  isActive                  Boolean      @default(true)
+
+  // Minimum score (as a percentage) on a Part's quiz required to unlock the
+  // next Part. Configurable per lesson; 70 matches the pilot content's own
+  // production script/slides, not just a guess.
+  passThresholdPercent      Int          @default(70)
+
+  exam                      Exam         @relation(fields: [examId], references: [id])
+  examId                    String
+
+  parts                     LessonPart[]
+}
+
+// One ~20-minute video within a Lesson, plus its notes and gating quiz.
+// youtubeId is nullable using the same "not uploaded yet" convention as the
+// existing static VideoLecture content (src/video-lectures/videoLecturesContent.ts).
+model LessonPart {
+  id                        String                  @id @default(uuid())
+  order                     Int                     // 1, 2, 3... within its Lesson
+
+  title                     String
+  youtubeId                 String?
+  durationMinutes           Int?
+  notesMarkdown             String?
+
+  lesson                    Lesson                  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId                  String
+
+  // Quiz question pool for this Part -- reuses Question directly (and its
+  // full admin review/versioning pipeline), not a parallel content table.
+  questions                 Question[]
+
+  attempts                  LessonPartQuizAttempt[]
+
+  @@unique([lessonId, order])
+}
+
+enum LessonPartQuizAttemptStatus {
+  in_progress
+  submitted
+}
+
+// A student's run through one LessonPart's quiz -- same attempt-header +
+// snapshotted-item-rows shape as MockExamAttempt/CustomQuizAttempt.
+// correctCount/percentage are always computed from items at read time, never
+// stored redundantly, matching the existing convention across both of those
+// models.
+model LessonPartQuizAttempt {
+  id                        String                       @id @default(uuid())
+  createdAt                 DateTime                     @default(now())
+  submittedAt               DateTime?
+  status                    LessonPartQuizAttemptStatus  @default(in_progress)
+  correctCount              Int?
+
+  user                      User                         @relation(fields: [userId], references: [id])
+  userId                    String
+
+  lessonPart                LessonPart                   @relation(fields: [lessonPartId], references: [id], onDelete: Cascade)
+  lessonPartId              String
+
+  items                     LessonPartQuizAttemptItem[]
+}
+
+model LessonPartQuizAttemptItem {
+  id                        String                  @id @default(uuid())
+  order                     Int
+
+  selectedKey               String?
+
+  // Per-attempt shuffled option display order, e.g. ["C","A","D","B"] --
+  // persisted at attempt-creation time (PRD-002 I5.4) so a refresh mid-attempt
+  // shows the same order rather than reshuffling and desyncing from what the
+  // student already saw/answered. Question.options itself is never mutated.
+  optionOrder               Json?
+
+  attempt                   LessonPartQuizAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  attemptId                 String
+
+  question                  Question                @relation(fields: [questionId], references: [id])
+  questionId                String
+
+  @@unique([attemptId, questionId])
 }

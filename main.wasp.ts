@@ -82,6 +82,18 @@ import {
 } from './src/admin/dashboards/users/operations' with { type: 'ref' }
 import AdminExams from './src/admin/dashboards/exams/ExamsManagementPage' with { type: 'ref' }
 import { updateExam, createExam } from './src/admin/dashboards/exams/operations' with { type: 'ref' }
+import AdminLessons from './src/admin/dashboards/lessons/LessonsManagementPage' with { type: 'ref' }
+import {
+  getLessonsForAdmin,
+  createLesson,
+  updateLesson,
+  createLessonPart,
+  updateLessonPart,
+  searchPublishedQuestionsForExam,
+  getLessonPartQuestions,
+  assignQuestionToLessonPart,
+  unassignQuestionFromLessonPart,
+} from './src/admin/dashboards/lessons/operations' with { type: 'ref' }
 import AdminQuestions from './src/admin/dashboards/questions/QuestionsReviewPage' with { type: 'ref' }
 import AdminImportQuestions from './src/admin/dashboards/questions/ImportQuestionsPage' with { type: 'ref' }
 import AdminAuditLog from './src/admin/dashboards/auditLog/AuditLogPage' with { type: 'ref' }
@@ -187,6 +199,19 @@ import {
 
 // Video Lectures
 import VideoLecturesPage from './src/video-lectures/VideoLecturesPage' with { type: 'ref' }
+
+// Lessons (PRD-002 Phase I5 -- structured Lesson/Part/quiz-gate content, Ireland Pathway)
+import LessonsPage from './src/lessons/LessonsPage' with { type: 'ref' }
+import LessonPartQuizPage from './src/lessons/LessonPartQuizPage' with { type: 'ref' }
+import LessonPartQuizResultsPage from './src/lessons/LessonPartQuizResultsPage' with { type: 'ref' }
+import {
+  getLessons,
+  startLessonPartQuizAttempt,
+  getLessonPartQuizAttempt,
+  saveLessonPartQuizAnswer,
+  submitLessonPartQuizAttempt,
+  getLessonPartQuizResults,
+} from './src/lessons/operations' with { type: 'ref' }
 
 // Contact Form Messages
 import AdminMessages from './src/admin/dashboards/messages/MessagesPage' with { type: 'ref' }
@@ -381,6 +406,17 @@ export default app({
     action(updateExam, { entities: ['Exam'] }),
     action(createExam, { entities: ['Exam'] }),
 
+    route('AdminLessonsRoute', '/admin/lessons', page(AdminLessons, { authRequired: true })),
+    query(getLessonsForAdmin, { entities: ['Lesson', 'LessonPart', 'Question'] }),
+    action(createLesson, { entities: ['Lesson'] }),
+    action(updateLesson, { entities: ['Lesson'] }),
+    action(createLessonPart, { entities: ['LessonPart'] }),
+    action(updateLessonPart, { entities: ['LessonPart'] }),
+    query(searchPublishedQuestionsForExam, { entities: ['Question'] }),
+    query(getLessonPartQuestions, { entities: ['LessonPart'] }),
+    action(assignQuestionToLessonPart, { entities: ['LessonPart', 'Question'] }),
+    action(unassignQuestionFromLessonPart, { entities: ['LessonPart'] }),
+
     route('AdminQuestionsRoute', '/admin/questions', page(AdminQuestions, { authRequired: true })),
     route('AdminImportQuestionsRoute', '/admin/questions/import', page(AdminImportQuestions, { authRequired: true })),
 
@@ -505,6 +541,19 @@ export default app({
 
     // Video Lectures (Extended-plan perk — gated in the page component)
     route('VideoLecturesRoute', '/video-lectures', page(VideoLecturesPage, { authRequired: true })),
+
+    // Lessons (PRD-002 Phase I5 -- structured Lesson/Part/quiz-gate content)
+    route('LessonsRoute', '/lessons', page(LessonsPage, { authRequired: true })),
+    query(getLessons, { entities: ['Lesson', 'LessonPart', 'Question', 'Subscription', 'Exam', 'UserAttempt'] }),
+    route('LessonQuizRoute', '/lessons/quiz/:attemptId', page(LessonPartQuizPage, { authRequired: true })),
+    route('LessonQuizResultsRoute', '/lessons/quiz/:attemptId/results', page(LessonPartQuizResultsPage, { authRequired: true })),
+    action(startLessonPartQuizAttempt, {
+      entities: ['LessonPart', 'LessonPartQuizAttempt', 'Question', 'Subscription', 'Exam', 'UserAttempt'],
+    }),
+    query(getLessonPartQuizAttempt, { entities: ['LessonPartQuizAttempt'] }),
+    action(saveLessonPartQuizAnswer, { entities: ['LessonPartQuizAttempt', 'LessonPartQuizAttemptItem'] }),
+    action(submitLessonPartQuizAttempt, { entities: ['LessonPartQuizAttempt', 'LessonPartQuizAttemptItem', 'Question'] }),
+    query(getLessonPartQuizResults, { entities: ['LessonPartQuizAttempt'] }),
 
     // Contact Form Messages
     route('AdminMessagesRoute', '/admin/messages', page(AdminMessages, { authRequired: true })),

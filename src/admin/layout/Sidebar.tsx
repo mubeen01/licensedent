@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   ClipboardCheck,
   GraduationCap,
   History,
@@ -31,6 +32,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
       { to: routes.AdminQuestionsRoute.to, end: true, label: 'Question Review', icon: ClipboardCheck },
       { to: routes.AdminImportQuestionsRoute.to, end: true, label: 'Import Questions', icon: Upload },
       { to: routes.AdminExamsRoute.to, end: true, label: 'Exams', icon: GraduationCap },
+      { to: routes.AdminLessonsRoute.to, end: true, label: 'Lessons', icon: BookOpen },
     ],
   },
   {

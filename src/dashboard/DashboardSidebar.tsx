@@ -1,6 +1,7 @@
 import {
   BarChart3,
   Bookmark,
+  BookOpen,
   ChevronDown,
   CreditCard,
   GraduationCap,
@@ -44,6 +45,11 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       badge: dueReviewCount ? String(dueReviewCount) : undefined,
     },
     { to: routes.ReviewRoute.to, label: 'Review', icon: Bookmark },
+    // Structured Lessons (PRD-002 Phase I5) only has real content for Ireland
+    // Pathway today -- shown only in Ireland scope rather than exposing an
+    // empty page to Gulf/Extended users. The schema itself is exam-agnostic,
+    // so this is a content-availability call, not a hard architectural limit.
+    { to: routes.LessonsRoute.to, label: 'Lessons', icon: BookOpen, showOnlyForIreland: true },
     // Quiz Builder/Video Lectures are Extended-plan perks that can never work for
     // Ireland Pathway (Extended explicitly excludes Ireland -- PRD-002 §3 Goal 3),
     // so showing them with an "Extended" upsell badge would be actively
@@ -62,7 +68,11 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
     { to: routes.AccountRoute.to, label: 'Account', icon: Settings },
     { to: routes.BillingRoute.to, label: 'Billing', icon: CreditCard },
   ];
-  const navItems = allNavItems.filter((item) => !isIreland || !('hideForIreland' in item && item.hideForIreland));
+  const navItems = allNavItems.filter((item) => {
+    if ('hideForIreland' in item && item.hideForIreland && isIreland) return false;
+    if ('showOnlyForIreland' in item && item.showOnlyForIreland && !isIreland) return false;
+    return true;
+  });
 
   const isActive = (to: string) => location.pathname === to;
 
