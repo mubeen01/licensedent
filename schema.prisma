@@ -432,6 +432,12 @@ model MockExamAttemptItem {
   selectedKey               String?
   markedForReview           Boolean           @default(false)
 
+  // Per-attempt shuffled option display order (PRD-002 I8.3), same
+  // convention as LessonPartQuizAttemptItem.optionOrder -- persisted at
+  // attempt-creation time so a refresh mid-attempt shows the same order.
+  // Null on attempts created before this field existed.
+  optionOrder               Json?
+
   attempt                   MockExamAttempt   @relation(fields: [attemptId], references: [id])
   attemptId                 String
 
@@ -479,6 +485,10 @@ model CustomQuizAttemptItem {
 
   selectedKey               String?
   markedForReview           Boolean             @default(false)
+
+  // Per-attempt shuffled option display order (PRD-002 I8.3) -- see
+  // MockExamAttemptItem.optionOrder's comment for the full rationale.
+  optionOrder               Json?
 
   attempt                   CustomQuizAttempt   @relation(fields: [attemptId], references: [id])
   attemptId                 String

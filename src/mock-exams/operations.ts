@@ -16,6 +16,7 @@ import { computeStreak } from '../dashboard/streak';
 import { resolveOptionalImageUrl } from '../file-upload/s3Utils';
 import { getAccessibleExamIds, getEffectiveAccessForExam, requireActivePlan } from '../payment/access';
 import { PaymentPlanId, SubscriptionStatus } from '../payment/plans';
+import { orderOptions, shuffle, type Option } from '../server/shuffleUtils';
 import { ensureArgsSchemaOrThrowHttpError } from '../server/validation';
 
 function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<T> {
@@ -256,15 +257,19 @@ export const startMockExamAttempt: StartMockExamAttempt<StartMockExamAttemptInpu
     throw new HttpError(403, 'You have reached your plan\'s mock exam attempt limit');
   }
 
-  const matchingIds = await context.entities.Question.findMany({
+  const matchingQuestions = await context.entities.Question.findMany({
     where: { status: 'published', exams: { some: { id: mockTest.examId } }, subject: { isActive: true } },
-    select: { id: true },
+    select: { id: true, options: true },
   });
-  if (matchingIds.length === 0) {
+  if (matchingQuestions.length === 0) {
     throw new HttpError(400, 'No published questions are available for this exam yet');
   }
 
-  const shuffled = [...matchingIds].sort(() => Math.random() - 0.5).slice(0, mockTest.questionCount);
+  // PRD-002 I8.3: real Fisher-Yates for question order (previously a known-
+  // biased `.sort(() => Math.random() - 0.5)`), plus a per-question option
+  // shuffle persisted onto each item -- option order was never shuffled at
+  // all before this. See src/server/shuffleUtils.ts.
+  const shuffled = shuffle(matchingQuestions).slice(0, mockTest.questionCount);
 
   const attempt = await context.entities.MockExamAttempt.create({
     data: {
@@ -272,7 +277,11 @@ export const startMockExamAttempt: StartMockExamAttempt<StartMockExamAttemptInpu
       mockTestId: mockTest.id,
       durationMinutes: mockTest.durationMinutes,
       items: {
-        create: shuffled.map((q, i) => ({ questionId: q.id, order: i })),
+        create: shuffled.map((q, i) => ({
+          questionId: q.id,
+          order: i,
+          optionOrder: shuffle((q.options as unknown as Option[]).map((o) => o.key)),
+        })),
       },
     },
   });
@@ -339,7 +348,7 @@ export const getMockExamAttempt: GetMockExamAttempt<GetMockExamAttemptInput, Moc
         order: item.order,
         questionId: item.questionId,
         stem: item.question.stem,
-        options: item.question.options,
+        options: orderOptions(item.question.options as unknown as Option[], item.optionOrder),
         imageUrl: await resolveOptionalImageUrl(item.question.imageUrl),
         subjectName: item.question.subject.name,
         selectedKey: item.selectedKey,
@@ -481,7 +490,7 @@ export const getMockExamResults: GetMockExamResults<GetMockExamResultsInput, Moc
     items: await Promise.all(attempt.items.map(async (item) => ({
       order: item.order,
       stem: item.question.stem,
-      options: item.question.options,
+      options: orderOptions(item.question.options as unknown as Option[], item.optionOrder),
       imageUrl: await resolveOptionalImageUrl(item.question.imageUrl),
       subjectName: item.question.subject.name,
       selectedKey: item.selectedKey,

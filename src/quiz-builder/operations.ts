@@ -10,6 +10,7 @@ import {
 import * as z from 'zod';
 import { resolveOptionalImageUrl } from '../file-upload/s3Utils';
 import { customQuizFiltersSchema, ensureExtendedPlanAccess, resolveCustomQuizQuestionIds } from '../questions/operations';
+import { orderOptions, shuffle, type Option } from '../server/shuffleUtils';
 import { ensureArgsSchemaOrThrowHttpError } from '../server/validation';
 
 function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<T> {
@@ -49,14 +50,27 @@ export const startCustomQuizAttempt: StartCustomQuizAttempt<StartCustomQuizAttem
   if (matchingIds.length === 0) {
     throw new HttpError(400, 'No questions match these filters');
   }
-  const shuffled = [...matchingIds].sort(() => Math.random() - 0.5).slice(0, args.count);
+  // PRD-002 I8.3: real Fisher-Yates (previously a known-biased
+  // `.sort(() => Math.random() - 0.5)`), plus a per-question option shuffle
+  // persisted onto each item -- option order was never shuffled at all
+  // before this. See src/server/shuffleUtils.ts.
+  const chosenIds = shuffle(matchingIds).slice(0, args.count);
+  const chosenQuestions = await context.entities.Question.findMany({
+    where: { id: { in: chosenIds } },
+    select: { id: true, options: true },
+  });
+  const optionsByQuestionId = new Map(chosenQuestions.map((q) => [q.id, q.options as unknown as Option[]]));
 
   const attempt = await context.entities.CustomQuizAttempt.create({
     data: {
       userId: user.id,
       durationMinutes: args.durationMinutes,
       items: {
-        create: shuffled.map((questionId, i) => ({ questionId, order: i })),
+        create: chosenIds.map((questionId, i) => ({
+          questionId,
+          order: i,
+          optionOrder: shuffle((optionsByQuestionId.get(questionId) ?? []).map((o) => o.key)),
+        })),
       },
     },
   });
@@ -120,7 +134,7 @@ export const getCustomQuizAttempt: GetCustomQuizAttempt<GetCustomQuizAttemptInpu
         order: item.order,
         questionId: item.questionId,
         stem: item.question.stem,
-        options: item.question.options,
+        options: orderOptions(item.question.options as unknown as Option[], item.optionOrder),
         imageUrl: await resolveOptionalImageUrl(item.question.imageUrl),
         subjectName: item.question.subject.name,
         selectedKey: item.selectedKey,
@@ -260,7 +274,7 @@ export const getCustomQuizResults: GetCustomQuizResults<GetCustomQuizResultsInpu
       attempt.items.map(async (item) => ({
         order: item.order,
         stem: item.question.stem,
-        options: item.question.options,
+        options: orderOptions(item.question.options as unknown as Option[], item.optionOrder),
         imageUrl: await resolveOptionalImageUrl(item.question.imageUrl),
         subjectName: item.question.subject.name,
         selectedKey: item.selectedKey,

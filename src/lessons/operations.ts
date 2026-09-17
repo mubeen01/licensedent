@@ -10,6 +10,7 @@ import {
 import * as z from 'zod';
 import { resolveOptionalImageUrl } from '../file-upload/s3Utils';
 import { getAccessibleExamIds, getEffectiveAccessForExam, requireActivePlan } from '../payment/access';
+import { orderOptions, shuffle, type Option } from '../server/shuffleUtils';
 import { ensureArgsSchemaOrThrowHttpError } from '../server/validation';
 
 function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<T> {
@@ -17,42 +18,6 @@ function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<
     throw new HttpError(401, 'Only authenticated users are allowed to perform this operation');
   }
   return user as NonNullable<T>;
-}
-
-type Option = { key: string; text: string };
-
-// Fisher-Yates -- same algorithm as src/demo-exam/DemoExamPage.tsx's client-side
-// shuffle(), but run server-side at attempt-creation time and persisted (see
-// LessonPart quiz attempt's `order`/`optionOrder` fields) so a mid-attempt
-// refresh never reshuffles and desyncs from what the student already answered.
-// PRD-002 Phase I5.4 -- this is real per-attempt shuffling, not just a client
-// render trick.
-function shuffle<T>(input: T[]): T[] {
-  const arr = [...input];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-// Reorders a Question's live `options` JSON per an attempt item's persisted
-// `optionOrder` (an array of keys). Falls back to the question's natural
-// order if optionOrder is missing, and never silently drops an option that
-// isn't listed in optionOrder (shouldn't happen, but content must never
-// vanish from a quiz just because of a shuffle-order mismatch).
-function orderOptions(options: Option[], order: unknown): Option[] {
-  if (!Array.isArray(order)) return options;
-  const byKey = new Map(options.map((o) => [o.key, o]));
-  const ordered: Option[] = [];
-  for (const key of order as string[]) {
-    const opt = byKey.get(key);
-    if (opt) ordered.push(opt);
-  }
-  for (const opt of options) {
-    if (!ordered.includes(opt)) ordered.push(opt);
-  }
-  return ordered;
 }
 
 // Lessons doesn't expose an exam switcher yet (only IDC Ireland has real
