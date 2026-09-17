@@ -23,7 +23,7 @@ export default function SectionTitle({
 
   const titleElement =
     typeof title === 'string' ? (
-      <h2 className='text-title-lg font-bold tracking-tight text-foreground sm:text-title-xl lg:text-title-xxl text-balance'>
+      <h2 className='text-3xl font-bold leading-[1.1] tracking-tight text-balance text-foreground sm:text-4xl lg:text-5xl'>
         {title}
       </h2>
     ) : (
@@ -32,7 +32,7 @@ export default function SectionTitle({
 
   const descriptionElement =
     typeof description === 'string' ? (
-      <p className='mt-4 text-base leading-8 text-muted-foreground sm:text-lg text-pretty'>
+      <p className='mt-5 text-base leading-8 text-muted-foreground sm:text-lg text-pretty'>
         {description}
       </p>
     ) : (
@@ -42,7 +42,7 @@ export default function SectionTitle({
   return (
     <Reveal
       className={cn(
-        'mb-10 max-w-2xl sm:mb-12',
+        'mb-12 max-w-2xl sm:mb-16',
         isCentered ? 'mx-auto text-center' : 'text-left',
         className
       )}

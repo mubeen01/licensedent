@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { cn } from '../../lib/utils';
+import Reveal from './Reveal';
 import SectionTitle from './SectionTitle';
 
 /**
@@ -50,7 +51,7 @@ const screens = [
 
 function BrowserChrome({ children, url }: { children: ReactNode; url: string }) {
   return (
-    <div className='overflow-hidden rounded-2xl border border-border bg-card shadow-xl ring-1 ring-black/5'>
+    <div className='card-elevated'>
       <div className='flex items-center gap-3 border-b border-border bg-muted/50 px-4 py-2.5'>
         <div className='flex gap-1.5'>
           <span className='h-2.5 w-2.5 rounded-full bg-destructive/60' />
@@ -246,7 +247,7 @@ export default function ProductWalkthrough() {
         description='The actual screens you land on once you sign up — dashboard, practice, mocks and progress.'
       />
 
-      <div className='grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center'>
+      <Reveal className='grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center'>
         {/* Screen picker */}
         <div className='order-2 space-y-2 lg:order-1'>
           {screens.map((screen) => {
@@ -256,16 +257,16 @@ export default function ProductWalkthrough() {
                 key={screen.id}
                 onClick={() => setActiveId(screen.id)}
                 className={cn(
-                  'flex w-full items-start gap-4 rounded-xl border px-4 py-3.5 text-left transition-colors duration-200',
+                  'flex w-full items-start gap-4 rounded-xl border px-4 py-3.5 text-left transition-all duration-200',
                   isActive
-                    ? 'border-primary/40 bg-primary/5'
+                    ? 'border-primary/40 bg-primary/5 shadow-[0_8px_20px_-14px_hsl(var(--primary)/0.5)]'
                     : 'border-transparent hover:border-border hover:bg-muted/50'
                 )}
               >
                 <span
                   className={cn(
-                    'mt-0.5 flex h-10 w-10 flex-none items-center justify-center rounded-xl',
-                    isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                    'mt-0.5 flex h-10 w-10 flex-none items-center justify-center rounded-xl transition-colors duration-200',
+                    isActive ? 'bg-linear-to-br from-primary to-secondary text-primary-foreground' : 'bg-muted text-muted-foreground'
                   )}
                 >
                   <screen.icon className='h-5 w-5' />
@@ -279,14 +280,19 @@ export default function ProductWalkthrough() {
           })}
         </div>
 
-        {/* Mockup */}
+        {/* Mockup — keyed on the active screen so switching tabs crossfades
+            in the new mockup instead of an instant, jarring cut. */}
         <div className='order-1 lg:order-2'>
           {(() => {
             const Mockup = mockupById[active.id as keyof typeof mockupById] ?? DashboardMockup;
-            return <Mockup />;
+            return (
+              <div key={active.id} className='animate-in fade-in-0 slide-in-from-bottom-2 duration-300'>
+                <Mockup />
+              </div>
+            );
           })()}
         </div>
-      </div>
+      </Reveal>
     </div>
   );
 }

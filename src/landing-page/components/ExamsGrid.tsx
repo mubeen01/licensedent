@@ -27,7 +27,7 @@ export default function ExamsGrid() {
             return (
               <Reveal key={exam.id} delay={Math.min(idx * 70, 350)} className='h-full'>
               <div
-                className='group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-7 transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md'
+                className='card-elevated card-elevated-hover group flex h-full flex-col p-7'
               >
                 {/* Top gradient accent — ties the card to its exam colour */}
                 <div className={`absolute inset-x-0 top-0 h-1 bg-linear-to-r ${exam.colorGradient}`} aria-hidden='true' />

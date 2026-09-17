@@ -98,9 +98,9 @@ function FeaturesGridItem({
   /* ---- Wide horizontal spotlight (the featured feature) ---- */
   if (isLarge) {
     return (
-      <div className='group relative flex h-full flex-col gap-6 overflow-hidden rounded-2xl border border-border bg-card p-8 transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md sm:flex-row sm:items-center sm:p-10'>
+      <div className='card-elevated card-elevated-hover group flex h-full flex-col gap-6 p-8 sm:flex-row sm:items-center sm:p-10'>
         <div
-          className='relative z-10 flex h-16 w-16 flex-none items-center justify-center rounded-xl bg-primary/10 text-primary'
+          className='relative z-10 flex h-16 w-16 flex-none items-center justify-center rounded-xl bg-linear-to-br from-primary/15 to-secondary/15 text-primary'
         >
           {Icon && !icon ? <Icon className='h-7 w-7' strokeWidth={1.75} /> : renderedIcon}
         </div>
@@ -115,14 +115,24 @@ function FeaturesGridItem({
     );
   }
 
-  /* ---- Standard big card ---- */
+  /* ---- Standard card — 'small' gets a visibly more compact treatment
+     (tighter padding, smaller icon, clamped description) so the grid reads
+     as genuine bento size variation rather than uniform tiles. ---- */
+  const isSmall = size === 'small';
   const card = (
-    <div className='group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-7 transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md'>
-      <div className='flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-primary/10 text-primary'>
-        {Icon && !icon ? <Icon className='h-5 w-5' strokeWidth={1.75} /> : renderedIcon}
+    <div className={cn('card-elevated card-elevated-hover group flex h-full flex-col', isSmall ? 'p-5' : 'p-7')}>
+      <div
+        className={cn(
+          'flex flex-none items-center justify-center rounded-xl bg-primary/10 text-primary',
+          isSmall ? 'h-9 w-9' : 'h-12 w-12'
+        )}
+      >
+        {Icon && !icon ? <Icon className={isSmall ? 'h-4 w-4' : 'h-5 w-5'} strokeWidth={1.75} /> : renderedIcon}
       </div>
-      <h3 className='mt-5 text-base font-semibold text-foreground'>{name}</h3>
-      <p className='mt-2 text-sm leading-relaxed text-muted-foreground'>{description}</p>
+      <h3 className={cn('font-semibold text-foreground', isSmall ? 'mt-3 text-sm' : 'mt-5 text-base')}>{name}</h3>
+      <p className={cn('leading-relaxed text-muted-foreground', isSmall ? 'mt-1.5 line-clamp-2 text-xs' : 'mt-2 text-sm')}>
+        {description}
+      </p>
     </div>
   );
 

@@ -35,10 +35,10 @@ export default function PricingTeaser({ plans }: { plans: PricingTeaserPlan[] })
             <Reveal key={plan.name} delay={idx * 100} className='h-full'>
             <div
               className={cn(
-                'group relative flex h-full flex-col rounded-2xl border bg-card p-8 transition-all duration-200',
+                'card-elevated group relative flex h-full flex-col p-8',
                 plan.highlighted
-                  ? 'border-primary/40 shadow-lg ring-1 ring-primary/25 lg:-my-4'
-                  : 'border-border hover:-translate-y-1 hover:border-primary/30 hover:shadow-md'
+                  ? 'border-primary/40 shadow-[0_24px_48px_-20px_hsl(var(--primary)/0.35)] ring-1 ring-primary/25 lg:-my-4'
+                  : 'card-elevated-hover'
               )}
             >
               {/* Thin accent rail on the recommended plan — quiet, not a rainbow badge */}

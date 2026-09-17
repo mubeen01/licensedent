@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '../../lib/utils';
+import Reveal from './Reveal';
 import SectionTitle from './SectionTitle';
 
 export interface StudyTool {
@@ -53,7 +54,7 @@ export default function StudyTools({ tools }: { tools: StudyTool[] }) {
       />
 
       {/* Tab bar */}
-      <div className='no-scrollbar flex justify-start gap-2 overflow-x-auto pb-2 sm:justify-center'>
+      <Reveal className='no-scrollbar flex justify-start gap-2 overflow-x-auto pb-2 sm:justify-center'>
         {tools.map((tool) => {
           const isActive = tool.id === active.id;
           const Icon = toolIcons[tool.id];
@@ -62,9 +63,9 @@ export default function StudyTools({ tools }: { tools: StudyTool[] }) {
               key={tool.id}
               onClick={() => setActiveId(tool.id)}
               className={cn(
-                'flex flex-none items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors duration-200',
+                'flex flex-none items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200',
                 isActive
-                  ? 'border-primary bg-primary text-primary-foreground'
+                  ? 'border-transparent bg-linear-to-r from-primary to-secondary text-primary-foreground shadow-[0_8px_20px_-10px_hsl(var(--primary)/0.6)]'
                   : 'border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground'
               )}
             >
@@ -73,12 +74,13 @@ export default function StudyTools({ tools }: { tools: StudyTool[] }) {
             </button>
           );
         })}
-      </div>
+      </Reveal>
 
-      {/* Active panel */}
-      <div className='relative mt-8 overflow-hidden rounded-2xl border border-border bg-card p-8 sm:p-10'>
+      {/* Active panel — keyed on the active tool so switching tabs animates
+          the new content in instead of an instant, jarring swap. */}
+      <div key={active.id} className='card-elevated mt-8 animate-in fade-in-0 slide-in-from-bottom-2 p-8 duration-300 sm:p-10'>
         <div className='grid gap-8 lg:grid-cols-[auto_1fr] lg:items-start'>
-          <div className='flex h-16 w-16 flex-none items-center justify-center rounded-xl bg-primary/10 text-primary'>
+          <div className='flex h-16 w-16 flex-none items-center justify-center rounded-xl bg-linear-to-br from-primary/15 to-secondary/15 text-primary'>
             {ActiveIcon ? <ActiveIcon className='h-7 w-7' strokeWidth={1.75} /> : <span className='text-3xl'>{active.emoji}</span>}
           </div>
           <div>

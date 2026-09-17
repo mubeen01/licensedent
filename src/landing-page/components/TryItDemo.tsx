@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
+import Reveal from './Reveal';
 import SectionTitle from './SectionTitle';
 
 export interface DemoQuestion {
@@ -49,8 +50,8 @@ export default function TryItDemo({ questions }: { questions: DemoQuestion[] }) 
         ))}
       </div>
 
-      <div className='overflow-hidden rounded-2xl border border-border bg-card shadow-md'>
-        <div className='flex items-center justify-between border-b border-border bg-muted/60 px-6 py-3'>
+      <Reveal className='card-elevated'>
+        <div className='flex items-center justify-between border-b border-border/70 bg-muted/40 px-6 py-3 backdrop-blur-sm'>
           <span className='rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary'>
             {question.subject}
           </span>
@@ -136,7 +137,7 @@ export default function TryItDemo({ questions }: { questions: DemoQuestion[] }) 
             </div>
           )}
         </div>
-      </div>
+      </Reveal>
     </div>
   );
 }

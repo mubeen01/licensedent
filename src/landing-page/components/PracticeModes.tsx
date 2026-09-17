@@ -59,7 +59,7 @@ export default function PracticeModes({ modes }: { modes: PracticeMode[] }) {
           return (
             <Reveal key={mode.label} delay={Math.min(i * 40, 400)} className='inline-flex'>
               <div
-                className={`group flex items-center gap-2.5 rounded-full border bg-card py-2 pl-2 pr-4 text-sm font-medium text-foreground shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${color.border}`}
+                className={`group flex items-center gap-2.5 rounded-full border bg-card/90 py-2 pl-2 pr-4 text-sm font-medium text-foreground shadow-xs backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_24px_-12px_hsl(var(--primary)/0.35)] ${color.border}`}
               >
                 <span
                   className={`flex h-7 w-7 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110 ${color.icon}`}

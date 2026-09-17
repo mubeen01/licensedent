@@ -287,6 +287,23 @@
   }
 }
 
+/* Landing page 2026 redesign: the one shared "premium card" surface every
+   section now builds on, replacing the flat `border + bg-card + shadow-xs`
+   pattern the redesign audit flagged as the dated part of the page. Explicitly
+   art-directed per theme rather than relying on token auto-inversion -- light
+   mode gets a barely-there gradient + soft shadow, dark mode gets a hairline
+   glow border + ambient shadow instead (a plain box-shadow reads as nothing
+   on a dark surface). */
+@utility card-elevated {
+  @apply relative overflow-hidden rounded-2xl border border-border/60 bg-linear-to-br from-card to-card-subtle/50 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-20px_rgba(0,0,0,0.18)] backdrop-blur-sm transition-all duration-300;
+  @apply dark:border-white/10 dark:from-card dark:to-card-subtle/80 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_20px_40px_-20px_rgba(0,0,0,0.6)];
+}
+
+@utility card-elevated-hover {
+  @apply hover:-translate-y-1 hover:border-primary/35 hover:shadow-[0_24px_48px_-20px_hsl(var(--primary)/0.3)];
+  @apply dark:hover:border-primary/40 dark:hover:shadow-[0_0_48px_-12px_hsl(var(--primary)/0.4)];
+}
+
 @layer utilities {
   /* Here is an example of how to add a custom font. 
 * Fonts are stored in the public/fonts folder.

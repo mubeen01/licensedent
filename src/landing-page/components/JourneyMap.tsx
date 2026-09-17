@@ -50,15 +50,17 @@ export default function JourneyMap() {
           {milestones.map((stop, idx) => {
             const Icon = stop.icon;
             return (
-              <Reveal key={stop.title} as='li' delay={idx * 100} className='relative flex flex-col items-start lg:items-center lg:text-center'>
-                <div className='relative z-10 flex h-16 w-16 flex-none items-center justify-center rounded-2xl border-4 border-background bg-primary text-primary-foreground'>
+              <Reveal key={stop.title} as='li' delay={idx * 80} className='relative flex flex-col items-start gap-4 lg:items-center'>
+                <div className='relative z-10 flex h-16 w-16 flex-none items-center justify-center rounded-2xl border-4 border-background bg-linear-to-br from-primary to-secondary text-primary-foreground shadow-lg shadow-primary/25'>
                   <Icon className='h-6 w-6' />
                   <span className='absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gold text-[10px] font-semibold text-gold-foreground'>
                     {idx + 1}
                   </span>
                 </div>
-                <h3 className='mt-4 text-base font-semibold text-foreground'>{stop.title}</h3>
-                <p className='mt-1.5 max-w-[16rem] text-sm leading-6 text-muted-foreground'>{stop.description}</p>
+                <div className='card-elevated card-elevated-hover w-full p-5 lg:text-center'>
+                  <h3 className='text-base font-semibold text-foreground'>{stop.title}</h3>
+                  <p className='mt-1.5 text-sm leading-6 text-muted-foreground'>{stop.description}</p>
+                </div>
               </Reveal>
             );
           })}

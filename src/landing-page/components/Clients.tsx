@@ -31,7 +31,7 @@ const destinations: Destination[] = [
 
 function DestinationChip({ flag, country, exams }: Destination) {
   return (
-    <div className='group flex items-center gap-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md'>
+    <div className='card-elevated card-elevated-hover group flex items-center gap-3 px-5 py-3.5'>
       <span className='flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-muted text-xl leading-none transition-transform duration-300 group-hover:scale-110' aria-hidden='true'>
         {flag}
       </span>

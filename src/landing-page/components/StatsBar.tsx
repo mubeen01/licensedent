@@ -17,9 +17,11 @@ export default function StatsBar({ stats }: { stats: Stat[] }) {
           const Icon = icons[i % icons.length];
           return (
             <Reveal key={stat.label} delay={i * 90} className='px-6 py-8 first:pt-0 sm:py-0 sm:first:pl-0 sm:last:pr-0'>
-              <Icon className='h-5 w-5 text-primary' strokeWidth={1.75} />
-              <div className='mt-4 text-3xl font-semibold tracking-tight text-foreground'>{stat.value}</div>
-              <div className='mt-1 text-sm font-medium text-foreground'>{stat.label}</div>
+              <span className='inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10'>
+                <Icon className='h-5 w-5 text-primary' strokeWidth={1.75} />
+              </span>
+              <div className='mt-4 text-4xl font-bold tracking-tight text-foreground'>{stat.value}</div>
+              <div className='mt-1.5 text-sm font-semibold text-foreground'>{stat.label}</div>
               <div className='mt-1 text-sm text-muted-foreground'>{stat.description}</div>
             </Reveal>
           );

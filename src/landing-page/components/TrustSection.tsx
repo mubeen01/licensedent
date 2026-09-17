@@ -10,6 +10,7 @@ const trustPoints = [
     color: 'text-primary',
     bg: 'bg-primary/10',
     border: 'border-primary/30',
+    glow: 'hover:shadow-[0_20px_40px_-20px_hsl(var(--primary)/0.4)]',
   },
   {
     name: 'Version-tracked content',
@@ -18,6 +19,7 @@ const trustPoints = [
     color: 'text-secondary',
     bg: 'bg-secondary/10',
     border: 'border-secondary/30',
+    glow: 'hover:shadow-[0_20px_40px_-20px_hsl(var(--secondary)/0.4)]',
   },
   {
     name: 'Exam-blueprint mapped',
@@ -26,14 +28,18 @@ const trustPoints = [
     color: 'text-gold',
     bg: 'bg-gold/10',
     border: 'border-gold/30',
+    glow: 'hover:shadow-[0_20px_40px_-20px_hsl(var(--gold)/0.4)]',
   },
   {
     name: 'Your data, protected',
     description: 'Your practice history and scores are private to your account — never shared or sold.',
     icon: Lock,
-    color: 'text-teal-700 dark:text-teal-400',
-    bg: 'bg-teal-500/10',
-    border: 'border-teal-500/30',
+    // Was hardcoded text-teal-700/bg-teal-500 -- now the `success` token, which
+    // no other card in this row uses yet, keeping each card's color distinct.
+    color: 'text-success',
+    bg: 'bg-success/10',
+    border: 'border-success/30',
+    glow: 'hover:shadow-[0_20px_40px_-20px_hsl(var(--success)/0.4)]',
   },
 ];
 
@@ -51,7 +57,7 @@ export default function TrustSection() {
           return (
             <Reveal key={point.name} delay={Math.min(idx * 80, 320)} className='h-full'>
               <div
-                className={`flex h-full flex-col items-center rounded-2xl border p-7 text-center transition-all duration-200 hover:-translate-y-1 hover:shadow-md ${point.border} ${point.bg}`}
+                className={`flex h-full flex-col items-center rounded-2xl border p-7 text-center backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 ${point.border} ${point.bg} ${point.glow}`}
               >
                 <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-card shadow-xs ${point.color}`}>
                   <Icon className='h-6 w-6' />

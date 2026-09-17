@@ -29,19 +29,19 @@ export default function ProcessSteps() {
   return (
     <div className='mx-auto max-w-7xl px-6 py-16 md:py-24 lg:px-8'>
       <SectionTitle title='How LicenseDent works' description='From sign-up to exam day, in four steps.' />
-      <div className='mt-4 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4'>
+      <div className='mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4'>
         {steps.map((step, idx) => {
           const Icon = step.icon;
           return (
-            <Reveal key={step.title} delay={idx * 120}>
-              <div className='flex flex-col items-start border-t-2 border-primary pt-5'>
-                <div className='text-xs font-semibold uppercase tracking-wide text-muted-foreground'>
-                  Step {idx + 1}
+            <Reveal key={step.title} delay={idx * 120} className='h-full'>
+              <div className='card-elevated card-elevated-hover flex h-full flex-col p-6'>
+                <span className='text-4xl font-bold tracking-tight text-primary/15' aria-hidden='true'>
+                  {String(idx + 1).padStart(2, '0')}
+                </span>
+                <div className='mt-2 flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-br from-primary/15 to-secondary/15 text-primary'>
+                  <Icon className='h-5 w-5' strokeWidth={1.75} />
                 </div>
-                <div className='mt-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary'>
-                  <Icon className='h-5 w-5' />
-                </div>
-                <h3 className='mt-3 text-base font-semibold text-foreground'>{step.title}</h3>
+                <h3 className='mt-4 text-base font-semibold text-foreground'>{step.title}</h3>
                 <p className='mt-2 text-sm leading-6 text-muted-foreground'>{step.description}</p>
               </div>
             </Reveal>
