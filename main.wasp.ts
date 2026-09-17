@@ -231,7 +231,17 @@ export default app({
   title: 'LicenseDent - Gulf + Ireland Dental Licensing Exam Prep',
 
   head: [
-    "<link rel='icon' href='/licensedent-favicon.svg' type='image/svg+xml' />",
+    // SVG favicon for modern browsers + Google Search (which supports SVG
+    // favicons). PNG fallbacks alongside it for the crawlers/browsers that
+    // don't render SVG favicons (notably Safari) and for anything that
+    // falls back to the conventional /favicon.ico path -- that file used to
+    // be OpenSaaS's leftover generic default, not LicenseDent's icon, so
+    // anything relying on it (rather than these link tags) would have shown
+    // the wrong brand mark.
+    "<link rel='icon' href='/logo/licensedent-favicon.svg' type='image/svg+xml' />",
+    "<link rel='icon' href='/logo/favicon-32x32.png' type='image/png' sizes='32x32' />",
+    "<link rel='icon' href='/logo/favicon-16x16.png' type='image/png' sizes='16x16' />",
+    "<link rel='apple-touch-icon' href='/logo/apple-touch-icon.png' sizes='180x180' />",
     "<meta charSet='utf-8' />",
     "<meta name='description' content='Practice-question bank, timed mock tests and subject-wise revision for DHA, HAAD, MOH, SMLE and IDC Ireland dental licensing exams.' />",
     "<meta name='author' content='LicenseDent' />",
@@ -242,8 +252,8 @@ export default app({
     "<meta property='og:site_name' content='LicenseDent' />",
     "<meta property='og:url' content='https://licensedent.com' />",
     "<meta property='og:description' content='Practice-question bank, timed mock tests and subject-wise revision for DHA, HAAD, MOH, SMLE and IDC Ireland dental licensing exams.' />",
-    "<meta property='og:image' content='https://licensedent.com/licensedent-logo-primary.svg' />",
-    "<meta name='twitter:image' content='https://licensedent.com/licensedent-logo-primary.svg' />",
+    "<meta property='og:image' content='https://licensedent.com/logo/licensedent-logo-primary.svg' />",
+    "<meta name='twitter:image' content='https://licensedent.com/logo/licensedent-logo-primary.svg' />",
     "<meta name='twitter:image:width' content='800' />",
     "<meta name='twitter:image:height' content='400' />",
     "<meta name='twitter:card' content='summary_large_image' />",

@@ -16,7 +16,7 @@ export default function OrganizationJsonLd() {
     '@type': 'EducationalOrganization',
     name: 'LicenseDent',
     url: SITE_ORIGIN,
-    logo: `${SITE_ORIGIN}/licensedent-icon.svg`,
+    logo: `${SITE_ORIGIN}/logo/licensedent-icon.svg`,
     description:
       'Human-verified practice questions, timed mock tests and subject-wise revision for Gulf and Ireland dental licensing exams. Never AI-guessed.',
   };

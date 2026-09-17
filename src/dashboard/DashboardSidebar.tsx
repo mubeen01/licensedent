@@ -122,7 +122,7 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
               isIreland && 'ring-2 ring-primary/25 ring-offset-1 ring-offset-background'
             )}
           >
-            <img src='/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
+            <img src='/logo/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
           </div>
           <div>
             <h1 className='text-sm font-semibold text-foreground leading-tight'>LicenseDent</h1>

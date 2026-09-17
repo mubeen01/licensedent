@@ -89,7 +89,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       <div className='flex items-center justify-between gap-2 px-6 py-6 relative overflow-hidden shrink-0 border-b border-border'>
         <NavLink to={routes.LandingPageRoute.to} className='flex items-center gap-3 relative z-10'>
           <div className='flex h-10 w-10 flex-none items-center justify-center overflow-hidden rounded-2xl shadow-[0_8px_20px_-6px_hsl(var(--primary)/0.5)]'>
-            <img src='/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
+            <img src='/logo/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
           </div>
           <div>
             <h1 className='text-sm font-black leading-tight text-foreground'>LicenseDent</h1>

@@ -89,7 +89,7 @@ export default function DemoExamPage() {
         />
         <div className='rounded-3xl border border-border bg-card p-8 text-center shadow-xs sm:p-12'>
           <div className='mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl shadow-lg'>
-            <img src='/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
+            <img src='/logo/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
           </div>
           <h1 className='mt-6 text-3xl font-bold text-foreground'>Free DHA-Style Demo Exam</h1>
           <p className='mt-3 text-muted-foreground'>

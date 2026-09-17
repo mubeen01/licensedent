@@ -190,7 +190,7 @@ const PricingPage = () => {
         <div id='pricing' className='mx-auto max-w-4xl text-center'>
           <div className='flex justify-center'>
             <span className='inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary'>
-              <img src='/licensedent-icon.svg' alt='' className='h-5 w-5 rounded-md' />
+              <img src='/logo/licensedent-icon.svg' alt='' className='h-5 w-5 rounded-md' />
               LicenseDent · Gulf + Ireland · dentist-verified
             </span>
           </div>
