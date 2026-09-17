@@ -38,7 +38,13 @@ function slugify(title: string): string {
 /* -------------------------------------------------------------------------- */
 
 type AdminLessonPart = LessonPart & { questionCount: number };
-type AdminLesson = Lesson & { examName: string; parts: AdminLessonPart[] };
+type AdminLesson = Lesson & {
+  examName: string;
+  examFlagEmoji: string | null;
+  examStandalonePackOnly: boolean;
+  subjectNames: string[];
+  parts: AdminLessonPart[];
+};
 
 export const getLessonsForAdmin: GetLessonsForAdmin<void, AdminLesson[]> = async (_args, context) => {
   ensureAdmin(context.user);
@@ -46,14 +52,25 @@ export const getLessonsForAdmin: GetLessonsForAdmin<void, AdminLesson[]> = async
   const lessons = await context.entities.Lesson.findMany({
     orderBy: [{ examId: 'asc' }, { order: 'asc' }],
     include: {
-      exam: { select: { name: true } },
-      parts: { orderBy: { order: 'asc' }, include: { questions: { select: { id: true } } } },
+      exam: { select: { name: true, flagEmoji: true, standalonePackOnly: true } },
+      parts: {
+        orderBy: { order: 'asc' },
+        include: { questions: { select: { id: true, subject: { select: { name: true } } } } },
+      },
     },
   });
 
   return lessons.map((lesson) => ({
     ...lesson,
     examName: lesson.exam.name,
+    examFlagEmoji: lesson.exam.flagEmoji,
+    examStandalonePackOnly: lesson.exam.standalonePackOnly,
+    // Which Subject(s) this Lesson's assigned questions actually cover --
+    // read-only, computed from real data rather than a separate field to
+    // keep in sync, since a Lesson has no subject of its own (Question does).
+    subjectNames: Array.from(
+      new Set(lesson.parts.flatMap((part) => part.questions.map((q) => q.subject.name)))
+    ).sort(),
     parts: lesson.parts.map((part) => ({ ...part, questionCount: part.questions.length })),
   }));
 };

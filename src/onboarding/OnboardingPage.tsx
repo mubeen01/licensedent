@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { type AuthUser } from 'wasp/auth';
-import { completeOnboarding, getPublicExams, useQuery } from 'wasp/client/operations';
+import { completeOnboarding, getMyDashboardScope, getPublicExams, useQuery } from 'wasp/client/operations';
 import { useNavigate } from 'react-router';
 import { routes } from 'wasp/client/router';
 import { Button } from '../components/ui/button';
@@ -73,6 +73,21 @@ function OnboardingPage({ user }: { user: AuthUser }) {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { data: exams, isLoading: examsLoading } = useQuery(getPublicExams);
+  const { data: dashboardScope } = useQuery(getMyDashboardScope);
+  const isIreland = dashboardScope?.kind === 'ireland';
+  // A subscriber whose access already resolves to Ireland-only (granted before
+  // onboarding, e.g. an admin grant or a completed IDC Pathway checkout) must
+  // never be offered a Gulf exam here -- the goal-setting step would otherwise
+  // contradict what they actually paid for. Free/prospective users (no access
+  // yet) still see the full list, since they haven't chosen a plan.
+  const selectableExams = isIreland ? (exams?.filter((e) => e.code === 'IDC') ?? []) : (exams ?? []);
+
+  useEffect(() => {
+    if (isIreland && selectableExams.length === 1 && formData.examId !== selectableExams[0].id) {
+      set('examId', selectableExams[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isIreland, selectableExams.length]);
 
   useEffect(() => {
     localStorage.setItem(DRAFT_KEY, JSON.stringify({ formData, currentStep }));
@@ -182,18 +197,25 @@ function OnboardingPage({ user }: { user: AuthUser }) {
                 <Label>
                   Which licensing exam are you preparing for? <RequiredMark />
                 </Label>
-                <Select value={formData.examId} onValueChange={(v) => set('examId', v)}>
+                <Select
+                  value={formData.examId}
+                  onValueChange={(v) => set('examId', v)}
+                  disabled={isIreland}
+                >
                   <SelectTrigger className='w-full mt-1.5'>
                     <SelectValue placeholder={examsLoading ? 'Loading exams…' : 'Select an exam'} />
                   </SelectTrigger>
                   <SelectContent>
-                    {exams?.map((exam) => (
+                    {selectableExams.map((exam) => (
                       <SelectItem key={exam.id} value={exam.id}>
                         {exam.flagEmoji} {exam.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {isIreland && (
+                  <p className='mt-1.5 text-xs text-muted-foreground'>Locked to IDC Ireland — your plan only covers this exam.</p>
+                )}
               </div>
               <div>
                 <Label>

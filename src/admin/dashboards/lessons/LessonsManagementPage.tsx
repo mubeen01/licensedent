@@ -19,6 +19,7 @@ import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Switch } from '../../../components/ui/switch';
 import { Textarea } from '../../../components/ui/textarea';
+import { cn } from '../../../lib/utils';
 import Breadcrumb from '../../layout/Breadcrumb';
 import DefaultLayout from '../../layout/DefaultLayout';
 import LoadingSpinner from '../../layout/LoadingSpinner';
@@ -54,12 +55,16 @@ type AdminLesson = {
   id: string;
   examId: string;
   examName: string;
+  examFlagEmoji: string | null;
+  examStandalonePackOnly: boolean;
+  subjectNames: string[];
   title: string;
   order: number;
   passThresholdPercent: number;
   isActive: boolean;
   parts: AdminLessonPart[];
 };
+type AdminExamOption = { id: string; name: string; flagEmoji: string | null; standalonePackOnly: boolean };
 
 function LessonsManagementPage({ user }: { user: AuthUser }) {
   const { data: lessons, isLoading, refetch } = useQuery(getLessonsForAdmin);
@@ -91,7 +96,7 @@ function AddLessonCard({
   exams,
   onCreated,
 }: {
-  exams: { id: string; name: string }[];
+  exams: AdminExamOption[];
   onCreated: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -148,18 +153,31 @@ function AddLessonCard({
       <p className='font-semibold text-foreground'>New lesson</p>
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         <div>
-          <Label className='text-xs text-muted-foreground'>Exam *</Label>
+          <Label className='text-xs text-muted-foreground'>Exam * (which dashboard this Lesson appears on)</Label>
           <select
             className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
             value={examId}
             onChange={(e) => setExamId(e.currentTarget.value)}
           >
             <option value=''>Select exam…</option>
-            {exams.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.name}
-              </option>
-            ))}
+            <optgroup label='Standalone (own dashboard, e.g. Ireland)'>
+              {exams
+                .filter((e) => e.standalonePackOnly)
+                .map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.flagEmoji ?? ''} {e.name}
+                  </option>
+                ))}
+            </optgroup>
+            <optgroup label='Gulf (shared, all-exams dashboard)'>
+              {exams
+                .filter((e) => !e.standalonePackOnly)
+                .map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.flagEmoji ?? ''} {e.name}
+                  </option>
+                ))}
+            </optgroup>
           </select>
         </div>
         <div>
@@ -255,9 +273,27 @@ function LessonCard({ lesson, onSaved }: { lesson: AdminLesson; onSaved: () => v
           </span>
           <div>
             <p className='font-bold text-foreground'>{lesson.title}</p>
-            <p className='text-xs text-muted-foreground'>
-              {lesson.examName} · {lesson.parts.length} part{lesson.parts.length === 1 ? '' : 's'}
-            </p>
+            <div className='mt-1 flex flex-wrap items-center gap-1.5'>
+              <span
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold',
+                  lesson.examStandalonePackOnly
+                    ? 'bg-secondary/15 text-secondary-foreground dark:text-secondary'
+                    : 'bg-primary/15 text-primary'
+                )}
+              >
+                {lesson.examFlagEmoji} {lesson.examName}
+                {lesson.examStandalonePackOnly ? ' · own dashboard' : ' · Gulf dashboard'}
+              </span>
+              {lesson.subjectNames.map((name) => (
+                <span key={name} className='inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground'>
+                  {name}
+                </span>
+              ))}
+              <span className='text-xs text-muted-foreground'>
+                · {lesson.parts.length} part{lesson.parts.length === 1 ? '' : 's'}
+              </span>
+            </div>
           </div>
         </div>
         <div className='flex items-center gap-2'>

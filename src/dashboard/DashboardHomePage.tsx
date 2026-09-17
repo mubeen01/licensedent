@@ -41,12 +41,12 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
           <div className='flex flex-wrap items-center gap-2 mb-4'>
             <div className='inline-flex items-center px-3 py-1 bg-primary/10 rounded-full text-sm font-medium text-primary'>
               <span className='w-1.5 h-1.5 bg-primary rounded-full mr-2' />
-              {profile?.exam
+              {isIreland
+                ? 'IDC Ireland Licensing Exam Prep'
+                : profile?.exam
                 ? `Preparing for ${profile.exam.flagEmoji ?? ''} ${
                     profile.exam.authorityLabel ?? profile.exam.name
                   } Licensing Exam`
-                : isIreland
-                ? 'IDC Ireland Licensing Exam Prep'
                 : 'Gulf Dental Licensing Exam Prep'}
             </div>
             {daysUntilExam !== null && (

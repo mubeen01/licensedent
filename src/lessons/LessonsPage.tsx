@@ -1,6 +1,7 @@
 import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Clock, ListChecks, Lock, PlayCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import ReactMarkdown from 'react-markdown';
 import { type AuthUser } from 'wasp/auth';
 import { getLessons, startLessonPartQuizAttempt, useQuery } from 'wasp/client/operations';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
@@ -177,8 +178,8 @@ function LessonPartRow({
           )}
 
           {part.notesMarkdown && (
-            <div className='rounded-lg bg-muted p-4 text-sm leading-relaxed text-foreground whitespace-pre-wrap'>
-              {part.notesMarkdown}
+            <div className='prose prose-sm dark:prose-invert max-w-none rounded-lg bg-muted p-4 leading-relaxed prose-headings:mt-3 prose-headings:mb-1.5 prose-p:my-1.5 prose-ul:my-1.5 prose-li:my-0.5 first:prose-headings:mt-0'>
+              <ReactMarkdown>{part.notesMarkdown}</ReactMarkdown>
             </div>
           )}
 
