@@ -16,11 +16,17 @@ import SeoHead from '../client/components/SeoHead';
 
 const bestDealPaymentPlanId: PaymentPlanId = PaymentPlanId.Standard;
 
-// PRD-002 §6 Q2: don't publicly launch Ireland Pathway until real IDC-specific content
-// exists (Phase I7.1) -- so it's excluded here rather than from PaymentPlanId itself,
-// keeping the plan fully buildable/testable (checkout, admin grant) without being
-// purchasable from this page yet. Add it once I7.1 lands.
-const visiblePaymentPlanIds: PaymentPlanId[] = [PaymentPlanId.FastTrack, PaymentPlanId.Standard, PaymentPlanId.Extended];
+// PRD-002 §6 Q2's content gate (real IDC-specific content before public launch)
+// cleared 2026-09-17 with Phase I7.1 (4 Lessons, 140 published IDC questions) --
+// IDC Pathway is now purchasable from this page. Still deliberately NOT added to
+// `pricingTeaserPlans` (see that array's comment) -- putting it on the public
+// homepage teaser is a separate decision from making it purchasable here.
+const visiblePaymentPlanIds: PaymentPlanId[] = [
+  PaymentPlanId.FastTrack,
+  PaymentPlanId.Standard,
+  PaymentPlanId.Extended,
+  PaymentPlanId.IrelandPathway,
+];
 
 interface PaymentPlanCard {
   name: string;
@@ -58,17 +64,18 @@ export const paymentPlanCards: Record<PaymentPlanId, PaymentPlanCard> = {
     duration: teaserFor('Extended').duration,
     features: teaserFor('Extended').features,
   },
-  // Deliberately NOT sourced from `pricingTeaserPlans` (unlike the other three) -- that
-  // array also feeds the public LandingPage's teaser section, and this plan isn't
-  // publicly visible yet (see visiblePaymentPlanIds above). Still required here for
-  // Record<PaymentPlanId, ...> exhaustiveness even though its card doesn't render.
+  // Deliberately NOT sourced from `pricingTeaserPlans` (unlike the other three) --
+  // that array also feeds the public LandingPage's homepage teaser section, and
+  // putting Ireland there is a separate decision from making it purchasable here
+  // (see visiblePaymentPlanIds above and pricingTeaserPlans's own comment).
   [PaymentPlanId.IrelandPathway]: {
     name: prettyPaymentPlanName(PaymentPlanId.IrelandPathway),
     price: getPlanPrice(PaymentPlanId.IrelandPathway),
-    tagline: 'IDC Ireland only — question bank + video lectures',
+    tagline: 'IDC Ireland only — question bank + Lessons',
     duration: '6 months · IDC Ireland only',
     features: [
       'Full IDC Ireland question bank',
+      'Structured Lessons with gated quizzes',
       'Video lectures as the library launches',
       'Unlimited practice + timed mocks',
       'Progress analytics',
@@ -132,7 +139,13 @@ const PricingPage = () => {
       }
     } catch (error: unknown) {
       console.error(error);
-      if (error instanceof Error) {
+      // IDC Pathway's Stripe price isn't configured yet (PAYMENTS_IRELAND_PATHWAY_PLAN_ID) --
+      // checkout throws a raw "env var undefined" error server-side that must never reach a
+      // real user. Shown as a friendly message instead of the raw error for this plan only;
+      // remove this branch once that env var is set and a real purchase has been verified.
+      if (paymentPlanId === PaymentPlanId.IrelandPathway) {
+        setErrorMessage("IDC Pathway isn't open for purchase just yet -- email us and we'll get you set up.");
+      } else if (error instanceof Error) {
         setErrorMessage(error.message);
       } else {
         setErrorMessage('Error processing payment. Please try again later.');
@@ -184,8 +197,9 @@ const PricingPage = () => {
           </h2>
         </div>
         <p className='mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-muted-foreground'>
-          Fast Track for a booked DHA/MOH date, Standard for a 3-month runway, Extended for Gulf + IDC Ireland
-          together. One-time purchase — full access for the duration, no auto-renewal, every answer checked by a dentist.
+          Fast Track for a booked DHA/MOH date, Standard for a 3-month runway, Extended for every Gulf exam, IDC
+          Pathway for Ireland's own track. One-time purchase — full access for the duration, no auto-renewal, every
+          answer checked by a dentist.
         </p>
         <div className='mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground'>
           <span className='inline-flex items-center gap-1.5'><CheckCircle className='h-4 w-4 text-secondary' /> Free demo first</span>
@@ -212,10 +226,10 @@ const PricingPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            <p className='mt-1.5 text-xs text-muted-foreground'>Extended includes Gulf + IDC Ireland — no choice needed.</p>
+            <p className='mt-1.5 text-xs text-muted-foreground'>Extended (every Gulf exam) and IDC Pathway (Ireland only) don't need a choice here.</p>
           </div>
         )}
-        <div className='isolate mx-auto mt-16 grid max-w-md grid-cols-1 gap-y-8 lg:gap-x-8 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3'>
+        <div className='isolate mx-auto mt-16 grid max-w-md grid-cols-1 gap-y-8 lg:gap-x-8 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-4'>
           {visiblePaymentPlanIds.map((planId) => (
             <Card
               key={planId}
@@ -251,14 +265,19 @@ const PricingPage = () => {
                     </span>
                   )}
                 </div>
-                {planId !== PaymentPlanId.Extended && (selectedExam || examsWithContent[0]) ? (
+                {planId === PaymentPlanId.IrelandPathway ? (
                   <p className='mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground'>
-                    <span aria-hidden='true'>{(selectedExam ?? examsWithContent[0]).flagEmoji}</span>
-                    Scoped to one exam — {(selectedExam ?? examsWithContent[0]).code}
+                    <span aria-hidden='true'>🇮🇪</span>
+                    Scoped to IDC Ireland only
                   </p>
+                ) : planId === PaymentPlanId.Extended ? (
+                  <p className='mt-2 text-xs font-semibold text-muted-foreground'>Every Gulf exam included</p>
                 ) : (
-                  planId === PaymentPlanId.Extended && (
-                    <p className='mt-2 text-xs font-semibold text-muted-foreground'>Gulf + IDC Ireland included</p>
+                  (selectedExam || examsWithContent[0]) && (
+                    <p className='mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground'>
+                      <span aria-hidden='true'>{(selectedExam ?? examsWithContent[0]).flagEmoji}</span>
+                      Scoped to one exam — {(selectedExam ?? examsWithContent[0]).code}
+                    </p>
                   )
                 )}
                 <p className='mt-4 text-sm leading-6 text-muted-foreground'>{paymentPlanCards[planId].tagline}</p>

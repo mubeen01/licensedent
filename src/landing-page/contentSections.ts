@@ -128,8 +128,8 @@ export const features: GridFeature[] = [
     gradient: 'from-secondary to-amber-600',
   },
   {
-    name: 'Gulf + Ireland in one account',
-    description: 'One bank tagged across DHA, MOH, HAAD, SMLE and IDC Ireland — switch tracks without losing progress.',
+    name: 'Gulf + Ireland coverage',
+    description: 'One growing bank spanning DHA, MOH, HAAD, SMLE and IDC Ireland — pick the plan that matches your exam.',
     emoji: '🌍',
     size: 'medium',
     gradient: 'from-teal-500 to-cyan-600',
@@ -393,19 +393,24 @@ export const pricingTeaserPlans: PricingTeaserPlan[] = [
   },
   {
     name: 'Extended',
-    tagline: 'Gulf + Ireland together — 6-month runway',
-    duration: '6 months · all exams',
+    tagline: 'Every Gulf exam, one plan — 6-month runway',
+    duration: '6 months · all Gulf exams',
     price: getPlanPrice(PaymentPlanId.Extended),
     features: [
-      'Every exam: DHA, MOH, HAAD + IDC Ireland',
+      'Every Gulf exam: DHA, HAAD, MOH, SMLE, OMSB, QCHP, KMLE, NHRA, SHA',
       'Recall bank, flashcards & image MCQs',
       'Unlimited practice + timed mocks',
       'Progress analytics, streaks & study plan',
       'Custom Quiz Builder — build your own quiz, timed or untimed',
       'Video lectures as the library launches',
     ],
-    perk: '✨ Best for Ireland + Gulf dual-track prep',
+    perk: '✨ Best for multi-exam Gulf flexibility',
   },
+  // IDC Pathway is deliberately NOT here -- this array also feeds the public
+  // LandingPage's homepage teaser section (`<PricingTeaser plans={pricingTeaserPlans} />`),
+  // and putting Ireland's plan on the homepage is a separate, bigger launch
+  // decision than making it purchasable on /pricing. Its card lives directly
+  // in PricingPage.tsx's `paymentPlanCards`, sourced independently.
 ];
 
 // Testimonial section removed (2026-08-18): it listed placeholder names with
