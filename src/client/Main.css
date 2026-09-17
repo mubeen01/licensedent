@@ -404,10 +404,10 @@
     --card-subtle-foreground: 243 35% 12%;
     --popover: 0 0% 100%;
     --popover-foreground: 243 35% 12%;
-    --primary: 243 75% 59%;
+    --primary: 243 72% 63%;
     --primary-foreground: 0 0% 100%;
-    --primary-muted: 243 60% 55%;
-    --secondary: 262 83% 58%;
+    --primary-muted: 243 60% 58%;
+    --secondary: 262 76% 63%;
     --secondary-foreground: 0 0% 100%;
     --secondary-muted: 262 75% 94%;
     --secondary-muted-foreground: 243 35% 12%;
@@ -421,7 +421,7 @@
     --success-foreground: 0 0% 100%;
     --border: 243 30% 91%;
     --input: 243 30% 91%;
-    --ring: 243 75% 59%;
+    --ring: 243 72% 63%;
   }
 
   .dark {

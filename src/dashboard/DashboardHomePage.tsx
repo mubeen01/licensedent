@@ -36,24 +36,28 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
 
   return (
     <DashboardLayout user={user} pageTitle='Dashboard'>
-      {/* Header */}
+      {/* Header — light surface for both themes; Ireland gets colorful accents, not a solid color fill */}
       <div
         className={cn(
-          'border-b',
-          isIreland
-            ? 'border-transparent bg-gradient-to-br from-primary via-primary to-secondary'
-            : 'border-border bg-background'
+          'relative overflow-hidden border-b border-border',
+          isIreland ? 'bg-gradient-to-br from-primary/[0.07] via-background to-secondary/[0.07]' : 'bg-background'
         )}
       >
-        <div className='max-w-7xl mx-auto px-6 py-10 md:py-12'>
-          <div className='flex flex-wrap items-center gap-2 mb-4'>
+        {isIreland && (
+          <>
+            <div className='pointer-events-none absolute -top-32 -right-20 h-80 w-80 rounded-full bg-primary/20 blur-3xl' />
+            <div className='pointer-events-none absolute -bottom-28 left-1/5 h-64 w-64 rounded-full bg-secondary/20 blur-3xl' />
+          </>
+        )}
+        <div className='relative max-w-7xl mx-auto px-6 py-7 md:py-9'>
+          <div className='flex flex-wrap items-center gap-2 mb-3'>
             <div
               className={cn(
                 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium',
-                isIreland ? 'bg-white/15 text-primary-foreground backdrop-blur-sm' : 'bg-primary/10 text-primary'
+                isIreland ? 'bg-gradient-to-r from-primary/15 to-secondary/15 text-primary' : 'bg-primary/10 text-primary'
               )}
             >
-              <span className={cn('w-1.5 h-1.5 rounded-full mr-2', isIreland ? 'bg-white' : 'bg-primary')} />
+              <span className='w-1.5 h-1.5 rounded-full mr-2 bg-primary' />
               {isIreland
                 ? 'IDC Ireland Licensing Exam Prep'
                 : profile?.exam
@@ -63,12 +67,7 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
                 : 'Gulf Dental Licensing Exam Prep'}
             </div>
             {daysUntilExam !== null && (
-              <div
-                className={cn(
-                  'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium',
-                  isIreland ? 'bg-white/10 text-primary-foreground/90 backdrop-blur-sm' : 'bg-muted text-muted-foreground'
-                )}
-              >
+              <div className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-muted text-muted-foreground'>
                 <CalendarClock className='w-3.5 h-3.5' />
                 {daysUntilExam === 0 ? 'Your exam is today' : `${daysUntilExam} day${daysUntilExam === 1 ? '' : 's'} until your exam`}
               </div>
@@ -77,18 +76,15 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
 
           <h1
             className={cn(
-              'text-2xl md:text-4xl font-semibold tracking-tight mb-2',
-              isIreland ? 'text-primary-foreground' : 'text-foreground'
+              'inline-block text-3xl md:text-5xl font-bold tracking-tight leading-[1.2] pb-1 mb-1',
+              isIreland
+                ? 'bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent'
+                : 'text-foreground'
             )}
           >
             {greeting}, {firstName}
           </h1>
-          <p
-            className={cn(
-              'text-base leading-relaxed max-w-2xl mb-7',
-              isIreland ? 'text-primary-foreground/80' : 'text-muted-foreground'
-            )}
-          >
+          <p className='text-base md:text-lg leading-relaxed max-w-2xl mb-5 text-muted-foreground'>
             {overview && overview.totalAttempted > 0
               ? `You've answered ${overview.totalAttempted} questions at ${overview.accuracy}% accuracy. Keep going.`
               : 'Start practicing to see your accuracy and progress here.'}
@@ -97,19 +93,18 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
           <div className='flex flex-col sm:flex-row gap-3'>
             <WaspRouterLink to={routes.PracticeRoute.to}>
               <Button
-                className={isIreland ? 'bg-white text-primary hover:bg-white/90 shadow-lg' : undefined}
+                className={
+                  isIreland
+                    ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 shadow-md shadow-primary/20 hover:-translate-y-0.5 transition-all'
+                    : undefined
+                }
               >
                 <Rocket className='w-4 h-4 mr-2' />
                 Start Practicing
               </Button>
             </WaspRouterLink>
             <WaspRouterLink to={routes.ProgressRoute.to}>
-              <Button
-                variant='outline'
-                className={
-                  isIreland ? 'bg-white/10 border-white/30 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground' : undefined
-                }
-              >
+              <Button variant='outline'>
                 <Target className='w-4 h-4 mr-2' />
                 View Progress
               </Button>
@@ -118,7 +113,7 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
         </div>
       </div>
 
-      <div className='max-w-7xl mx-auto px-6 py-10 space-y-10'>
+      <div className='max-w-7xl mx-auto px-6 py-8 space-y-8'>
         {/* Streak/XP/badges + personalized study plan */}
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
           <StreakXpCard />
@@ -133,6 +128,7 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
             value={isLoading ? '…' : overview?.totalAttempted ?? 0}
             sub='Questions attempted'
             isIreland={isIreland}
+            accent='primary'
           />
           <StatCard
             icon={Activity}
@@ -140,6 +136,7 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
             value={isLoading ? '…' : overview?.thisWeekAttempted ?? 0}
             sub='Attempted this week'
             isIreland={isIreland}
+            accent='secondary'
           />
           <StatCard
             icon={Award}
@@ -147,6 +144,7 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
             value={isLoading ? '…' : `${overview?.accuracy ?? 0}%`}
             sub='Overall accuracy'
             isIreland={isIreland}
+            accent='success'
           />
           <StatCard
             icon={Layers}
@@ -154,6 +152,7 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
             value={isLoading ? '…' : overview?.subjectsCovered ?? 0}
             sub='Subjects covered'
             isIreland={isIreland}
+            accent='gold'
           />
         </div>
 
@@ -172,10 +171,10 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
                     {overview.recentActivity.map((a) => (
                       <div
                         key={a.id}
-                        className='flex items-center gap-4 p-3 rounded-lg border border-border/70'
+                        className='flex items-center gap-4 p-3 rounded-xl border border-border/70 hover:bg-accent/40 hover:border-border transition-colors'
                       >
                         <div
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                          className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                             a.isCorrect ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
                           }`}
                         >
@@ -206,21 +205,32 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
           {/* Trust card — real claims only, from the landing page's own stats */}
           <Card
             className={cn(
-              'border-primary',
-              isIreland ? 'bg-gradient-to-br from-primary to-secondary' : 'bg-primary'
+              'relative overflow-hidden',
+              isIreland ? 'border-primary/20 bg-gradient-to-br from-primary/[0.06] to-secondary/[0.06]' : 'border-primary/20 bg-primary/5'
             )}
           >
-            <CardContent className='p-6 text-primary-foreground'>
+            <div
+              className={cn(
+                'pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full blur-2xl',
+                isIreland ? 'bg-secondary/15' : 'bg-primary/15'
+              )}
+            />
+            <CardContent className='relative p-6'>
               <div className='flex items-center gap-3 mb-5'>
-                <div className='p-2.5 bg-white/15 rounded-xl'>
+                <div
+                  className={cn(
+                    'p-2.5 rounded-xl',
+                    isIreland ? 'bg-gradient-to-br from-primary/15 to-secondary/15 text-primary' : 'bg-primary/10 text-primary'
+                  )}
+                >
                   <ShieldCheck className='w-5 h-5' />
                 </div>
                 <div>
-                  <h3 className='font-semibold'>Human-Verified</h3>
-                  <p className='text-primary-foreground/75 text-xs'>Never AI-guessed</p>
+                  <h3 className='font-semibold text-foreground'>Human-Verified</h3>
+                  <p className='text-muted-foreground text-xs'>Never AI-guessed</p>
                 </div>
               </div>
-              <p className='text-primary-foreground/85 mb-5 text-sm leading-relaxed'>
+              <p className='text-foreground/80 mb-5 text-sm leading-relaxed'>
                 {bankStats && !isIreland
                   ? `Every answer key is checked by a dentist before it's published — ${bankStats.publishedQuestionCount.toLocaleString()} questions across ${bankStats.subjectCount} subjects and ${bankStats.examCount} Gulf licensing exams.`
                   : "Every answer key is checked by a dentist before it's published — never AI-guessed."}
@@ -228,8 +238,10 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
               {!hasSubscription && (
                 <WaspRouterLink to={routes.PricingPageRoute.to}>
                   <Button
-                    variant='outline'
-                    className='w-full bg-white/10 border-white/25 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground'
+                    className={cn(
+                      'w-full',
+                      isIreland && 'bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90'
+                    )}
                   >
                     <BookOpenCheck className='w-4 h-4 mr-2' />
                     Buy a plan
@@ -244,29 +256,43 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
   );
 }
 
+const STAT_ACCENT_CLASSES = {
+  primary: 'bg-primary/15 text-primary',
+  secondary: 'bg-secondary/15 text-secondary',
+  success: 'bg-success/15 text-success',
+  gold: 'bg-gold/15 text-gold',
+} as const;
+
 function StatCard({
   icon: Icon,
   label,
   value,
   sub,
   isIreland,
+  accent = 'primary',
 }: {
   icon: typeof ListChecks;
   label: string;
   value: string | number;
   sub: string;
   isIreland?: boolean;
+  accent?: keyof typeof STAT_ACCENT_CLASSES;
 }) {
   return (
-    <Card className={isIreland ? 'transition-shadow hover:shadow-lg hover:shadow-primary/5' : undefined}>
+    <Card
+      className={cn(
+        'rounded-2xl transition-all duration-200 hover:-translate-y-0.5',
+        isIreland ? 'hover:shadow-lg hover:shadow-primary/10' : 'hover:shadow-md'
+      )}
+    >
       <CardContent className='p-5'>
-        <div className='flex items-center justify-between mb-3'>
-          <div className={cn('p-2 rounded-lg', isIreland ? 'bg-gradient-to-br from-primary/15 to-secondary/15' : 'bg-primary/10')}>
-            <Icon className='h-4 w-4 text-primary' />
+        <div className='flex items-center justify-between mb-4'>
+          <div className={cn('p-2.5 rounded-xl', STAT_ACCENT_CLASSES[accent])}>
+            <Icon className='h-4 w-4' />
           </div>
           <div className='text-xs font-medium text-muted-foreground uppercase tracking-wide'>{label}</div>
         </div>
-        <div className='text-2xl font-semibold text-foreground mb-0.5'>{value}</div>
+        <div className='text-3xl font-bold text-foreground mb-0.5 tracking-tight'>{value}</div>
         <p className='text-sm text-muted-foreground'>{sub}</p>
       </CardContent>
     </Card>

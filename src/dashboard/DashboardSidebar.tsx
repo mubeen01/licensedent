@@ -154,18 +154,25 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
                 to={item.to}
                 onClick={onClose}
                 className={cn(
-                  'w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors group relative',
+                  'w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all group relative',
                   active
                     ? isIreland
                       ? 'bg-gradient-to-r from-primary/15 to-secondary/10 text-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]'
                       : 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent hover:translate-x-0.5'
                 )}
               >
                 {active && !isIreland && (
                   <span className='absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-primary' />
                 )}
-                <item.icon className='mr-3 h-4 w-4 shrink-0' />
+                <span
+                  className={cn(
+                    'mr-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors',
+                    active && isIreland && 'bg-gradient-to-br from-primary/20 to-secondary/20'
+                  )}
+                >
+                  <item.icon className='h-4 w-4 shrink-0' />
+                </span>
                 <span className='flex-1 text-left truncate'>{item.label}</span>
                 {'badge' in item && item.badge && !active && (
                   <span className='ml-2 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground'>
@@ -182,33 +189,33 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       <div className='p-3 border-t border-border shrink-0'>
         <div
           className={cn(
-            'rounded-lg p-3',
+            'relative overflow-hidden rounded-xl p-3 border',
             isIreland
-              ? 'border border-transparent bg-gradient-to-br from-primary to-secondary shadow-md'
-              : 'border border-border bg-muted/40'
+              ? 'border-primary/15 bg-gradient-to-br from-primary/[0.07] to-secondary/[0.07]'
+              : 'border-border bg-muted/40'
           )}
         >
+          {isIreland && (
+            <div className='pointer-events-none absolute -top-6 -right-6 h-20 w-20 rounded-full bg-secondary/15 blur-2xl' />
+          )}
           <div className='flex items-center justify-between mb-2'>
-            <span className={cn('font-medium text-xs', isIreland ? 'text-primary-foreground/90' : 'text-foreground')}>
-              Exam Access
-            </span>
-            {subscription && (
-              <span className={cn('text-sm font-semibold', isIreland ? 'text-primary-foreground' : 'text-primary')}>
-                {daysRemaining}d
-              </span>
-            )}
+            <span className='font-medium text-xs text-foreground'>Exam Access</span>
+            {subscription && <span className='text-sm font-semibold text-primary'>{daysRemaining}d</span>}
           </div>
 
           {subscription ? (
             <>
-              <div className={cn('w-full rounded-full h-1.5 mb-2 overflow-hidden', isIreland ? 'bg-white/25' : 'bg-muted')}>
+              <div className='w-full rounded-full h-1.5 mb-2 overflow-hidden bg-muted'>
                 <div
-                  className={cn('h-1.5 rounded-full transition-all duration-700', isIreland ? 'bg-white' : 'bg-primary')}
+                  className={cn(
+                    'h-1.5 rounded-full transition-all duration-700',
+                    isIreland ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-primary'
+                  )}
                   style={{ width: `${percentRemaining}%` }}
                 />
               </div>
               <div className='flex items-center justify-between text-xs'>
-                <span className={isIreland ? 'text-primary-foreground/80' : 'text-muted-foreground'}>
+                <span className='text-muted-foreground'>
                   {prettyPaymentPlanName(parsePaymentPlanId(subscription.planType))}
                   {subscription.allExamsAccess
                     ? ' · all exams'
@@ -219,13 +226,7 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
               </div>
             </>
           ) : (
-            <WaspRouterLink
-              to={routes.PricingPageRoute.to}
-              className={cn(
-                'text-xs font-medium hover:underline',
-                isIreland ? 'text-primary-foreground' : 'text-primary'
-              )}
-            >
+            <WaspRouterLink to={routes.PricingPageRoute.to} className='text-xs font-medium text-primary hover:underline'>
               No active plan — buy one →
             </WaspRouterLink>
           )}
