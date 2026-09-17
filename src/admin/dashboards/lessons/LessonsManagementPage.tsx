@@ -23,6 +23,24 @@ import Breadcrumb from '../../layout/Breadcrumb';
 import DefaultLayout from '../../layout/DefaultLayout';
 import LoadingSpinner from '../../layout/LoadingSpinner';
 
+// Accepts whatever a real user pastes -- a full watch/share/embed URL or a
+// bare 11-char id -- so the admin doesn't have to manually strip a URL down
+// to the id LessonsPage's `youtube.com/embed/${youtubeId}` player needs.
+// Falls back to the trimmed input as-is if nothing recognizable matches, so
+// a genuinely bare id (or an unrecognized format) still saves rather than
+// silently becoming empty.
+function extractYoutubeId(input: string): string {
+  const trimmed = input.trim();
+  const patterns = [
+    /(?:youtube\.com\/watch\?(?:.*&)?v=|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtu\.be\/)([A-Za-z0-9_-]{11})/,
+  ];
+  for (const pattern of patterns) {
+    const match = pattern.exec(trimmed);
+    if (match) return match[1];
+  }
+  return trimmed;
+}
+
 type AdminLessonPart = {
   id: string;
   order: number;
@@ -343,7 +361,7 @@ function AddPartForm({
         lessonId,
         title: title.trim(),
         order: parseInt(order, 10) || nextOrder,
-        youtubeId: youtubeId.trim() || null,
+        youtubeId: youtubeId.trim() ? extractYoutubeId(youtubeId) : null,
         durationMinutes: durationMinutes ? parseInt(durationMinutes, 10) : null,
         notesMarkdown: notesMarkdown.trim() || null,
       });
@@ -379,8 +397,13 @@ function AddPartForm({
         </div>
       </div>
       <div>
-        <Label className='text-xs text-muted-foreground'>YouTube ID (leave blank -- "coming soon")</Label>
-        <Input className='mt-1' value={youtubeId} onChange={(e) => setYoutubeId(e.currentTarget.value)} placeholder='dQw4w9WgXcQ' />
+        <Label className='text-xs text-muted-foreground'>YouTube link or ID (leave blank -- "coming soon")</Label>
+        <Input
+          className='mt-1'
+          value={youtubeId}
+          onChange={(e) => setYoutubeId(e.currentTarget.value)}
+          placeholder='https://youtu.be/dQw4w9WgXcQ or dQw4w9WgXcQ'
+        />
       </div>
       <div>
         <Label className='text-xs text-muted-foreground'>Notes (markdown)</Label>
@@ -426,7 +449,7 @@ function PartRow({ part, examId, onSaved }: { part: AdminLessonPart; examId: str
         id: part.id,
         title,
         order: parseInt(order, 10) || part.order,
-        youtubeId: youtubeId.trim() || null,
+        youtubeId: youtubeId.trim() ? extractYoutubeId(youtubeId) : null,
         durationMinutes: durationMinutes ? parseInt(durationMinutes, 10) : null,
         notesMarkdown: notesMarkdown.trim() || null,
       });
@@ -479,8 +502,13 @@ function PartRow({ part, examId, onSaved }: { part: AdminLessonPart; examId: str
             </div>
           </div>
           <div>
-            <Label className='text-xs text-muted-foreground'>YouTube ID</Label>
-            <Input className='mt-1' value={youtubeId} onChange={(e) => setYoutubeId(e.currentTarget.value)} placeholder='dQw4w9WgXcQ' />
+            <Label className='text-xs text-muted-foreground'>YouTube link or ID</Label>
+            <Input
+              className='mt-1'
+              value={youtubeId}
+              onChange={(e) => setYoutubeId(e.currentTarget.value)}
+              placeholder='https://youtu.be/dQw4w9WgXcQ or dQw4w9WgXcQ'
+            />
           </div>
           <div>
             <Label className='text-xs text-muted-foreground'>Notes (markdown)</Label>
