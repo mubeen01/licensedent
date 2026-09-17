@@ -1,6 +1,6 @@
 import { type ApexOptions } from 'apexcharts';
 import { useMemo, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
+import ReactApexChart from '../../../lib/reactApexChart';
 import { getAdminGrowthSeries, useQuery } from 'wasp/client/operations';
 import useColorMode from '../../../client/hooks/useColorMode';
 import LoadingSpinner from '../../layout/LoadingSpinner';

@@ -2,7 +2,7 @@ import { type AuthUser } from 'wasp/auth';
 import { getMyProgress, useQuery } from 'wasp/client/operations';
 import { Link as WaspRouterLink } from 'wasp/client/router';
 import { BarChart3, Target } from 'lucide-react';
-import ReactApexChart from 'react-apexcharts';
+import ReactApexChart from '../lib/reactApexChart';
 import { type ApexOptions } from 'apexcharts';
 import DashboardLayout from './DashboardLayout';
 import { Card, CardContent } from '../components/ui/card';

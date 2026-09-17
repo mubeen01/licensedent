@@ -1,6 +1,6 @@
 import { ApexOptions } from 'apexcharts';
 import { useEffect, useMemo, useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
+import ReactApexChart from '../../../lib/reactApexChart';
 import { type DailyStatsProps } from '../../../analytics/stats';
 
 const options: ApexOptions = {

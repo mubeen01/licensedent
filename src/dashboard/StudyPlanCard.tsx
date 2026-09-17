@@ -1,7 +1,7 @@
 import { type ApexOptions } from 'apexcharts';
 import { CalendarClock, ChevronRight, Pencil, Target } from 'lucide-react';
 import { useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
+import ReactApexChart from '../lib/reactApexChart';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { getMyStudyPlan, getReadinessScore, updateTargetExamDate, useQuery } from 'wasp/client/operations';
 import { Button } from '../components/ui/button';

@@ -1,6 +1,6 @@
 import { type ApexOptions } from 'apexcharts';
 import { useMemo } from 'react';
-import ReactApexChart from 'react-apexcharts';
+import ReactApexChart from '../../../lib/reactApexChart';
 import { useNavigate } from 'react-router';
 import { getSubjectsForReview, useQuery } from 'wasp/client/operations';
 import useColorMode from '../../../client/hooks/useColorMode';
