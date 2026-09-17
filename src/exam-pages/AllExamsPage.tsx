@@ -5,10 +5,8 @@ import { getPublicExams, useQuery } from 'wasp/client/operations';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import { Button } from '../components/ui/button';
 import SeoHead, { SITE_ORIGIN } from '../client/components/SeoHead';
-import Footer from '../landing-page/components/Footer';
 import ScrollToTop from '../landing-page/components/ScrollToTop';
 import SectionTitle from '../landing-page/components/SectionTitle';
-import { footerNavigation } from '../landing-page/contentSections';
 import { dhaExamGuide } from './dhaContent';
 import { examGuideRoute } from './examGuideRoute';
 import { haadExamGuide } from './haadContent';
@@ -59,7 +57,6 @@ export default function AllExamsPage() {
         <ExamsIndexGrid />
         <ClosingCta />
       </main>
-      <Footer footerNavigation={footerNavigation} />
       <ScrollToTop />
     </div>
   );

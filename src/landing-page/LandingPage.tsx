@@ -3,7 +3,6 @@ import CTABanner from './components/CTABanner';
 import ExamsGrid from './components/ExamsGrid';
 import FAQ from './components/FAQ';
 import FeaturesGrid from './components/FeaturesGrid';
-import Footer from './components/Footer';
 import Hero from './components/Hero';
 import JourneyMap from './components/JourneyMap';
 import PracticeModes from './components/PracticeModes';
@@ -24,7 +23,6 @@ import {
   demoQuestions,
   faqs,
   features,
-  footerNavigation,
   practiceModes,
   pricingTeaserPlans,
   studyTools,
@@ -132,7 +130,6 @@ export default function LandingPage() {
         <CTABanner questionCount={bankStats?.publishedQuestionCount} examCount={bankStats?.examCount} />
       </main>
 
-      <Footer footerNavigation={footerNavigation} />
       <ScrollToTop />
     </div>
   );

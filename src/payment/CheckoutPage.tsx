@@ -1,23 +1,22 @@
+import { CheckCircle2, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router';
-import { routes } from 'wasp/client/router';
+import { useLocation, useNavigate } from 'react-router';
+import { Link as WaspRouterLink, routes } from 'wasp/client/router';
+import SeoHead from '../client/components/SeoHead';
+import { Button } from '../components/ui/button';
+import { Card, CardContent } from '../components/ui/card';
+
+type PaymentStatus = 'loading' | 'paid' | 'canceled';
 
 export default function CheckoutPage() {
-  const [paymentStatus, setPaymentStatus] = useState('loading');
-
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('loading');
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    function delayedRedirect() {
-      return setTimeout(() => {
-        navigate(routes.AccountRoute.to);
-      }, 4000);
-    }
-
     const queryParams = new URLSearchParams(location.search);
-    const isSuccess = queryParams.get('success');
     const isCanceled = queryParams.get('canceled');
+    const isSuccess = queryParams.get('success');
 
     if (isCanceled) {
       setPaymentStatus('canceled');
@@ -25,31 +24,51 @@ export default function CheckoutPage() {
       setPaymentStatus('paid');
     } else {
       navigate(routes.AccountRoute.to);
+      return;
     }
-    delayedRedirect();
-    return () => {
-      clearTimeout(delayedRedirect());
-    };
-  }, [location]);
+
+    const timer = setTimeout(() => navigate(routes.AccountRoute.to), 4000);
+    return () => clearTimeout(timer);
+  }, [location, navigate]);
 
   return (
-    <div className='flex min-h-full flex-col justify-center mt-10 sm:px-6 lg:px-8'>
-      <div className='sm:mx-auto sm:w-full sm:max-w-md'>
-        <div className='py-8 px-4 shadow-xl ring-1 ring-gray-900/10 dark:ring-gray-100/10 sm:rounded-lg sm:px-10'>
-          <h1>
-            {paymentStatus === 'paid'
-              ? '🥳 Payment Successful!'
-              : paymentStatus === 'canceled'
-                ? '😢 Payment Canceled'
-                : paymentStatus === 'error' && '🙄 Payment Error'}
-          </h1>
-          {paymentStatus !== 'loading' && (
-            <span className='text-center'>
-              You are being redirected to your account page... <br />
-            </span>
+    <div className='flex min-h-[70vh] flex-col items-center justify-center bg-background px-6 py-16 text-foreground'>
+      <SeoHead
+        title='Checkout — LicenseDent'
+        description='Confirming your LicenseDent subscription payment.'
+        path='/checkout'
+      />
+      <Card className='w-full max-w-md text-center'>
+        <CardContent className='flex flex-col items-center gap-4 p-10'>
+          {paymentStatus === 'loading' && (
+            <>
+              <div className='h-10 w-10 animate-spin rounded-full border-2 border-primary/30 border-t-primary' />
+              <p className='text-sm text-muted-foreground'>Confirming your payment…</p>
+            </>
           )}
-        </div>
-      </div>
+          {paymentStatus === 'paid' && (
+            <>
+              <div className='flex h-14 w-14 items-center justify-center rounded-full bg-success/10'>
+                <CheckCircle2 className='h-8 w-8 text-success' />
+              </div>
+              <h1 className='text-xl font-bold text-foreground'>Payment successful</h1>
+              <p className='text-sm text-muted-foreground'>Your plan is active. Taking you to your account…</p>
+            </>
+          )}
+          {paymentStatus === 'canceled' && (
+            <>
+              <div className='flex h-14 w-14 items-center justify-center rounded-full bg-muted'>
+                <XCircle className='h-8 w-8 text-muted-foreground' />
+              </div>
+              <h1 className='text-xl font-bold text-foreground'>Payment canceled</h1>
+              <p className='text-sm text-muted-foreground'>No charge was made. Taking you back to your account…</p>
+            </>
+          )}
+          <Button asChild variant='outline' size='sm' className='mt-2'>
+            <WaspRouterLink to={routes.AccountRoute.to}>Go to account now</WaspRouterLink>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

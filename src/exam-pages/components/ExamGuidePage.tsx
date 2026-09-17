@@ -26,10 +26,8 @@ import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../components/ui/accordion';
 import { Button } from '../../components/ui/button';
 import SeoHead, { SITE_ORIGIN } from '../../client/components/SeoHead';
-import Footer from '../../landing-page/components/Footer';
 import ScrollToTop from '../../landing-page/components/ScrollToTop';
 import SectionTitle from '../../landing-page/components/SectionTitle';
-import { footerNavigation } from '../../landing-page/contentSections';
 import { accentPalettes } from '../accentPalette';
 import type { ExamGuideConfig, RoadmapIcon, RuleIcon } from '../examGuideTypes';
 
@@ -110,7 +108,6 @@ export default function ExamGuidePage({ config }: { config: ExamGuideConfig }) {
         <FaqSection config={config} accentClasses={accent} />
         <ClosingCta config={config} accentClasses={accent} />
       </main>
-      <Footer footerNavigation={footerNavigation} />
       <ScrollToTop />
     </div>
   );

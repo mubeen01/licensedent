@@ -8,6 +8,8 @@ import NavBar from './components/NavBar/NavBar';
 import { demoNavigationitems, marketingNavigationItems } from './components/NavBar/constants';
 import CookieConsentBanner from './components/cookie-consent/Banner';
 import OrganizationJsonLd from './components/OrganizationJsonLd';
+import Footer from '../landing-page/components/Footer';
+import { footerNavigation } from '../landing-page/contentSections';
 
 /**
  * use this component to wrap all child components
@@ -102,6 +104,11 @@ export default function App() {
             <div className='mx-auto max-w-(--breakpoint-2xl)'>
               <Outlet />
             </div>
+            {/* Same gate as the NavBar above: every marketing/public page (landing,
+                pricing, legal, exam guides) gets one shared footer here instead of
+                each page importing its own -- Pricing and Legal previously rendered
+                with no footer at all because they never called it themselves. */}
+            {shouldDisplayAppNavBar && <Footer footerNavigation={footerNavigation} />}
           </>
         )}
       </div>

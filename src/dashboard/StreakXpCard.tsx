@@ -12,8 +12,8 @@ export default function StreakXpCard() {
       <CardContent className='p-6'>
         <div className='flex flex-col sm:flex-row sm:items-center gap-6 mb-6'>
           <div className='flex items-center gap-4'>
-            <div className='p-3 bg-orange-500/10 rounded-xl shrink-0'>
-              <Flame className='h-5 w-5 text-orange-500' />
+            <div className='p-3 bg-gold/10 rounded-xl shrink-0'>
+              <Flame className='h-5 w-5 text-gold' />
             </div>
             <div>
               <p className='text-2xl font-semibold text-foreground'>
