@@ -4,7 +4,7 @@ import { useParams } from 'react-router';
 import { type AuthUser } from 'wasp/auth';
 import { getMockExamResults, useQuery } from 'wasp/client/operations';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
-import { cn } from '../lib/utils';
+import { cn, optionLetter } from '../lib/utils';
 import DashboardLayout from '../dashboard/DashboardLayout';
 import ProtectedContent from '../client/components/ProtectedContent';
 
@@ -88,7 +88,7 @@ function MockExamResultsPage({ user }: { user: AuthUser }) {
                       <p className='text-base font-medium text-foreground leading-relaxed'>{item.stem}</p>
 
                       <div className='flex flex-col gap-2'>
-                        {options.map((opt) => {
+                        {options.map((opt, optIndex) => {
                           const isSelected = item.selectedKey === opt.key;
                           const isCorrectOne = opt.key === item.correctKey;
                           return (
@@ -103,7 +103,7 @@ function MockExamResultsPage({ user }: { user: AuthUser }) {
                                   : 'border-border'
                               )}
                             >
-                              <span className='font-mono font-semibold shrink-0'>{opt.key}.</span>
+                              <span className='font-mono font-semibold shrink-0'>{optionLetter(optIndex)}.</span>
                               <span className='flex-1'>{opt.text}</span>
                               {isCorrectOne && <CheckCircle2 className='h-4 w-4 shrink-0' />}
                               {isSelected && !isCorrectOne && <XCircle className='h-4 w-4 shrink-0' />}

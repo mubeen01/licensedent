@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Button } from '../components/ui/button';
 import SeoHead from '../client/components/SeoHead';
-import { cn } from '../lib/utils';
+import { cn, optionLetter } from '../lib/utils';
 import { demoExamQuestions, type DemoExamQuestion } from './demoExamQuestions';
 
 const EXAM_DURATION_SECONDS = 15 * 60;
@@ -177,7 +177,7 @@ export default function DemoExamPage() {
           <p className='text-base font-medium leading-7 text-foreground'>{question.stem}</p>
 
           <div className='mt-6 space-y-2.5'>
-            {question.options.map((opt) => {
+            {question.options.map((opt, optIndex) => {
               const isSelected = opt.key === selected;
               return (
                 <button
@@ -194,7 +194,7 @@ export default function DemoExamPage() {
                       isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     )}
                   >
-                    {opt.key}
+                    {optionLetter(optIndex)}
                   </span>
                   <span className='flex-1 text-foreground'>{opt.text}</span>
                 </button>

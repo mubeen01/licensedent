@@ -96,6 +96,21 @@ export const getCustomerPortalUrl: GetCustomerPortalUrl<void, string | null> = a
     throw new HttpError(401, 'Only authenticated users are allowed to perform this operation');
   }
 
+  // The portal URL is Stripe's own generic customer-lookup link -- it only
+  // works for someone Stripe actually has a customer record for (set at real
+  // checkout, see stripe/paymentProcessor.ts's createCheckoutSession). An
+  // account whose access was granted manually (admin grant, no real Stripe
+  // purchase) has no such record; sending them into that portal is a dead
+  // end (Stripe can't find their email), not a working "manage billing"
+  // flow. Returning null here lets the client show that honestly instead.
+  const dbUser = await context.entities.User.findUnique({
+    where: { id: context.user.id },
+    select: { paymentProcessorUserId: true },
+  });
+  if (!dbUser?.paymentProcessorUserId) {
+    return null;
+  }
+
   return paymentProcessor.fetchCustomerPortalUrl({
     userId: context.user.id,
     prismaUserDelegate: context.entities.User,

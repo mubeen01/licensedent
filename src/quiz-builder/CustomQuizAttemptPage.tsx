@@ -6,7 +6,7 @@ import { getCustomQuizAttempt, saveCustomQuizAnswer, submitCustomQuizAttempt, us
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import { Button } from '../components/ui/button';
 import { Checkbox } from '../components/ui/checkbox';
-import { cn } from '../lib/utils';
+import { cn, optionLetter } from '../lib/utils';
 import ProtectedContent from '../client/components/ProtectedContent';
 
 type Option = { key: string; text: string };
@@ -167,7 +167,7 @@ function CustomQuizAttemptPage({ user }: { user: AuthUser }) {
           )}
 
           <div className='flex flex-col gap-2.5'>
-            {options.map((opt) => {
+            {options.map((opt, optIndex) => {
               const isSelected = currentAnswer.selectedKey === opt.key;
               return (
                 <button
@@ -178,7 +178,7 @@ function CustomQuizAttemptPage({ user }: { user: AuthUser }) {
                     isSelected ? 'border-primary bg-accent' : 'border-border hover:bg-accent/50'
                   )}
                 >
-                  <span className='font-mono font-semibold text-muted-foreground shrink-0'>{opt.key}.</span>
+                  <span className='font-mono font-semibold text-muted-foreground shrink-0'>{optionLetter(optIndex)}.</span>
                   <span className='flex-1'>{opt.text}</span>
                 </button>
               );

@@ -6,7 +6,7 @@ import { getLessonPartQuizResults, useQuery } from 'wasp/client/operations';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import ProtectedContent from '../client/components/ProtectedContent';
 import DashboardLayout from '../dashboard/DashboardLayout';
-import { cn } from '../lib/utils';
+import { cn, optionLetter } from '../lib/utils';
 
 function LessonPartQuizResultsPage({ user }: { user: AuthUser }) {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -80,7 +80,7 @@ function LessonPartQuizResultsPage({ user }: { user: AuthUser }) {
                     <p className='text-base font-medium text-foreground leading-relaxed'>{item.stem}</p>
 
                     <div className='flex flex-col gap-2'>
-                      {item.options.map((opt) => {
+                      {item.options.map((opt, optIndex) => {
                         const isSelected = item.selectedKey === opt.key;
                         const isCorrectOne = opt.key === item.correctKey;
                         return (
@@ -95,7 +95,7 @@ function LessonPartQuizResultsPage({ user }: { user: AuthUser }) {
                                 : 'border-border'
                             )}
                           >
-                            <span className='font-mono font-semibold shrink-0'>{opt.key}.</span>
+                            <span className='font-mono font-semibold shrink-0'>{optionLetter(optIndex)}.</span>
                             <span className='flex-1'>{opt.text}</span>
                             {isCorrectOne && <CheckCircle2 className='h-4 w-4 shrink-0' />}
                             {isSelected && !isCorrectOne && <XCircle className='h-4 w-4 shrink-0' />}

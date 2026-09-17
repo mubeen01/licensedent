@@ -2,16 +2,21 @@ import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Plus, Search, Trash2 } 
 import { useState } from 'react';
 import { type AuthUser } from 'wasp/auth';
 import {
+  approveQuestion,
   assignQuestionToLessonPart,
   createLesson,
   createLessonPart,
   getExamsForAdmin,
   getLessonPartQuestions,
   getLessonsForAdmin,
+  getQuestionsForReview,
+  getSubjectsForExam,
+  importQuestionsFromText,
   searchPublishedQuestionsForExam,
   unassignQuestionFromLessonPart,
   updateLesson,
   updateLessonPart,
+  updateReviewQuestion,
   useQuery,
 } from 'wasp/client/operations';
 import { Button } from '../../../components/ui/button';
@@ -671,6 +676,182 @@ function QuestionAssignmentPanel({
           ))}
         </div>
       )}
+
+      <QuickAddMcqsForm
+        examId={examId}
+        lessonPartId={lessonPartId}
+        onAdded={() => {
+          refetchAssigned();
+          onChanged();
+        }}
+      />
+    </div>
+  );
+}
+
+const MCQ_PASTE_PLACEHOLDER = `1- 22-year-old, short cold 3 sec, no night pain. Best plan?
+A. Root canal treatment immediately
+B. Adjust occlusion, desensitise, review**
+C. Extraction
+D. No treatment
+* Short, non-lingering cold with no percussion pain is reversible pulpitis -- manage conservatively and review.
+
+2- Next question...
+A. ...
+B. ...**
+C. ...
+D. ...
+* Explanation.`;
+
+// Lets an admin paste new MCQs (same plain-text format as the Import
+// Questions page) and get them imported, reviewed (difficulty set),
+// approved, and assigned to THIS Part in one step -- previously the only
+// path was Import Questions -> manual review queue -> come back here and
+// search for it, which is fine for a big/mixed batch but heavy friction for
+// "add a few more questions to this one Part." Cleanly-parsed questions
+// (no flagReason) are auto-approved with the chosen difficulty; anything
+// the parser flags is left in the normal review queue, not silently
+// dropped -- this is still real human-in-the-loop review, just fast-pathed
+// for the common case where the pasted text already parses perfectly.
+function QuickAddMcqsForm({
+  examId,
+  lessonPartId,
+  onAdded,
+}: {
+  examId: string;
+  lessonPartId: string;
+  onAdded: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const { data: subjects } = useQuery(getSubjectsForExam, { examId }, { enabled: isOpen });
+  const [subjectId, setSubjectId] = useState('');
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [text, setText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [summary, setSummary] = useState<{ added: number; flagged: number; duplicates: number } | null>(null);
+
+  async function handleSubmit() {
+    if (!subjectId || !text.trim()) {
+      setError('Pick a subject and paste at least one MCQ');
+      return;
+    }
+    setIsSubmitting(true);
+    setError(null);
+    setSummary(null);
+    try {
+      const result = await importQuestionsFromText({
+        examId,
+        subjectMode: 'single',
+        subjectId,
+        fileName: 'Quick add via Lessons page',
+        text,
+        skipAiSuggestions: true,
+      });
+
+      const created = await getQuestionsForReview({
+        importBatchId: result.batchId,
+        status: 'unreviewed',
+        needsTagging: false,
+        missingAiDraft: false,
+        sortBy: 'oldest',
+        skip: 0,
+        take: 100,
+      });
+      const clean = created.filter((q) => q.status === 'pending');
+
+      for (const q of clean) {
+        await updateReviewQuestion({ id: q.id, difficulty });
+        await approveQuestion({ id: q.id });
+        await assignQuestionToLessonPart({ lessonPartId, questionId: q.id });
+      }
+
+      setSummary({ added: clean.length, flagged: result.flaggedCount, duplicates: result.skippedDuplicate });
+      setText('');
+      onAdded();
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to add questions');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  if (!isOpen) {
+    return (
+      <Button size='sm' variant='outline' className='self-start' onClick={() => setIsOpen(true)}>
+        <Plus className='h-3.5 w-3.5 mr-1.5' />
+        Add new MCQs
+      </Button>
+    );
+  }
+
+  return (
+    <div className='rounded-lg border border-dashed border-primary/40 bg-background p-3 flex flex-col gap-2.5'>
+      <p className='text-xs font-semibold text-foreground'>
+        Paste new MCQs (same format as Import Questions: mark the correct option with{' '}
+        <code className='font-mono'>**</code>, explanation on a <code className='font-mono'>*</code> line)
+      </p>
+      <div className='grid grid-cols-1 gap-2.5 sm:grid-cols-2'>
+        <div>
+          <Label className='text-xs text-muted-foreground'>Subject *</Label>
+          <select
+            className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
+            value={subjectId}
+            onChange={(e) => setSubjectId(e.currentTarget.value)}
+          >
+            <option value=''>Select subject…</option>
+            {(subjects ?? []).map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <Label className='text-xs text-muted-foreground'>Difficulty</Label>
+          <select
+            className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.currentTarget.value as 'easy' | 'medium' | 'hard')}
+          >
+            <option value='easy'>Easy</option>
+            <option value='medium'>Medium</option>
+            <option value='hard'>Hard</option>
+          </select>
+        </div>
+      </div>
+      <Textarea
+        className='font-mono text-xs'
+        rows={8}
+        value={text}
+        onChange={(e) => setText(e.currentTarget.value)}
+        placeholder={MCQ_PASTE_PLACEHOLDER}
+      />
+      {error && <p className='text-xs text-destructive'>{error}</p>}
+      {summary && (
+        <p className='text-xs text-muted-foreground'>
+          Added + assigned {summary.added}.
+          {summary.flagged > 0 && ` ${summary.flagged} didn't parse cleanly -- review them in Import Questions.`}
+          {summary.duplicates > 0 && ` ${summary.duplicates} skipped as likely duplicates.`}
+        </p>
+      )}
+      <div className='flex items-center justify-between gap-4 pt-1'>
+        <Button
+          size='sm'
+          variant='ghost'
+          onClick={() => {
+            setIsOpen(false);
+            setText('');
+            setError(null);
+            setSummary(null);
+          }}
+        >
+          Close
+        </Button>
+        <Button size='sm' disabled={isSubmitting} onClick={handleSubmit}>
+          {isSubmitting ? 'Adding…' : 'Add + assign to this Part'}
+        </Button>
+      </div>
     </div>
   );
 }

@@ -62,22 +62,29 @@ export function CustomerPortalButton() {
   } = useQuery(getCustomerPortalUrl);
 
   const handleClick = () => {
-    if (customerPortalUrlError) {
-      console.error('Error fetching customer portal url');
-    }
-
     if (customerPortalUrl) {
       window.open(customerPortalUrl, '_blank');
-    } else {
-      console.error('Customer portal URL is not available');
     }
   };
+
+  // null (not loading, no error) means this account has no real Stripe
+  // customer record -- e.g. access was granted manually by an admin rather
+  // than through a real purchase. Sending them into Stripe's portal would be
+  // a dead end (Stripe has never heard of their email), so say so plainly
+  // instead of showing a button that silently does nothing.
+  if (!isCustomerPortalUrlLoading && !customerPortalUrlError && !customerPortalUrl) {
+    return (
+      <p className='ml-4 shrink-0 sm:col-span-1 sm:mt-0 text-xs text-muted-foreground'>
+        Access was granted manually — email us to make billing changes.
+      </p>
+    );
+  }
 
   return (
     <div className='ml-4 shrink-0 sm:col-span-1 sm:mt-0'>
       <Button
         onClick={handleClick}
-        disabled={isCustomerPortalUrlLoading}
+        disabled={isCustomerPortalUrlLoading || !customerPortalUrl}
         variant='outline'
         size='sm'
         className='font-medium text-sm'

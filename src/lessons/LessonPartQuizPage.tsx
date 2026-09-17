@@ -6,7 +6,7 @@ import { getLessonPartQuizAttempt, saveLessonPartQuizAnswer, submitLessonPartQui
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import ProtectedContent from '../client/components/ProtectedContent';
 import { Button } from '../components/ui/button';
-import { cn } from '../lib/utils';
+import { cn, optionLetter } from '../lib/utils';
 
 function LessonPartQuizPage({ user }: { user: AuthUser }) {
   const { attemptId } = useParams<{ attemptId: string }>();
@@ -100,7 +100,7 @@ function LessonPartQuizPage({ user }: { user: AuthUser }) {
             )}
 
             <div className='flex flex-col gap-2.5'>
-              {current.options.map((opt) => {
+              {current.options.map((opt, optIndex) => {
                 const isSelected = selectedKey === opt.key;
                 return (
                   <button
@@ -111,7 +111,7 @@ function LessonPartQuizPage({ user }: { user: AuthUser }) {
                       isSelected ? 'border-primary bg-accent' : 'border-border hover:bg-accent/50'
                     )}
                   >
-                    <span className='font-mono font-semibold text-muted-foreground shrink-0'>{opt.key}.</span>
+                    <span className='font-mono font-semibold text-muted-foreground shrink-0'>{optionLetter(optIndex)}.</span>
                     <span className='flex-1'>{opt.text}</span>
                   </button>
                 );

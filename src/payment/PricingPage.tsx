@@ -166,7 +166,9 @@ const PricingPage = () => {
     }
 
     if (!customerPortalUrl) {
-      setErrorMessage(`Customer Portal does not exist for user ${user.id}`);
+      // null (not an error) means this account has no real Stripe customer
+      // record -- access was granted manually, not through a real purchase.
+      setErrorMessage("This plan was granted manually, so there's no billing portal for it -- email us for changes.");
       return;
     }
 
