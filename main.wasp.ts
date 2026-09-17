@@ -252,10 +252,18 @@ export default app({
     "<meta property='og:site_name' content='LicenseDent' />",
     "<meta property='og:url' content='https://licensedent.com' />",
     "<meta property='og:description' content='Practice-question bank, timed mock tests and subject-wise revision for DHA, HAAD, MOH, SMLE and IDC Ireland dental licensing exams.' />",
-    "<meta property='og:image' content='https://licensedent.com/logo/licensedent-logo-primary.svg' />",
-    "<meta name='twitter:image' content='https://licensedent.com/logo/licensedent-logo-primary.svg' />",
-    "<meta name='twitter:image:width' content='800' />",
-    "<meta name='twitter:image:height' content='400' />",
+    // A raster PNG, not the licensedent-logo-primary.svg it used to point
+    // at -- Twitter/X, Facebook and LinkedIn's unfurl crawlers don't render
+    // SVG for og:image/twitter:image at all, so link previews were silently
+    // showing no image whatsoever. Rendered from that same source SVG via
+    // @resvg/resvg-js (scratch-installed, not a project dependency); real
+    // dimensions below (1200x348, the source's own ~3.44:1 aspect ratio --
+    // wider than the "ideal" 1.91:1 large-card ratio, but a real working
+    // image beats a correctly-proportioned one nobody's crawler can render).
+    "<meta property='og:image' content='https://licensedent.com/logo/og-image.png' />",
+    "<meta name='twitter:image' content='https://licensedent.com/logo/og-image.png' />",
+    "<meta name='twitter:image:width' content='1200' />",
+    "<meta name='twitter:image:height' content='348' />",
     "<meta name='twitter:card' content='summary_large_image' />",
     // TODO: You can put your Plausible analytics scripts below (https://docs.opensaas.sh/guides/analytics/):
     // NOTE: Plausible does not use Cookies, so you can simply add the scripts here.

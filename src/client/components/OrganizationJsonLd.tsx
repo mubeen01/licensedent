@@ -16,7 +16,11 @@ export default function OrganizationJsonLd() {
     '@type': 'EducationalOrganization',
     name: 'LicenseDent',
     url: SITE_ORIGIN,
-    logo: `${SITE_ORIGIN}/logo/licensedent-icon.svg`,
+    // Google's Logo structured data requires the same formats as Google
+    // Images (JPEG/PNG/WEBP/GIF, at least 112x112px) -- SVG isn't supported
+    // there, unlike the favicon <link> tag which does accept it. Points at
+    // the 180x180 PNG generated for apple-touch-icon instead of the SVG icon.
+    logo: `${SITE_ORIGIN}/logo/apple-touch-icon.png`,
     description:
       'Human-verified practice questions, timed mock tests and subject-wise revision for Gulf and Ireland dental licensing exams. Never AI-guessed.',
   };
