@@ -279,6 +279,15 @@ model Question {
   customQuizAttemptItems    CustomQuizAttemptItem[]
   lessonParts               LessonPart[]
   lessonPartQuizAttemptItems LessonPartQuizAttemptItem[]
+
+  // Zero indexes existed beyond the primary key before this -- every hot
+  // admin query (getQuestionsForReview, getSubjectsForReview,
+  // getQuestionBankStats) filters/groups on these column combinations
+  // against a ~9,000-row table with no index to use, doing a full seq scan
+  // every time. Purely additive: no query behavior changes, only speed.
+  @@index([subjectId, status])
+  @@index([importBatchId, status])
+  @@index([status, difficulty])
 }
 
 // Snapshot of a Question's prior content, written whenever an already-

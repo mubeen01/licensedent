@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { type AdminUserNote, type Subscription, type User, type UserProfile } from 'wasp/entities';
 import { createProviderId, createUser, findAuthIdentity, sanitizeAndSerializeProviderData } from 'wasp/server/auth';
 import { createPasswordResetLink, sendPasswordResetEmail } from 'wasp/server/auth/email/utils';
-import { HttpError } from 'wasp/server';
+import { HttpError, prisma } from 'wasp/server';
 import {
   type AddUserNote,
   type DeleteUserNote,
@@ -173,6 +173,17 @@ export const toggleUserDisabled: ToggleUserDisabled<ToggleUserDisabledInput, voi
 
   const before = await context.entities.User.findUniqueOrThrow({ where: { id } });
   await context.entities.User.update({ where: { id }, data: { isDisabled } });
+
+  // Setting isDisabled alone only blocks the NEXT login (onBeforeLoginHook) --
+  // a session opened before the disable stays valid until it naturally
+  // expires otherwise. Kill every session tied to this user's Auth record so
+  // "disabled" actually means signed out immediately, matching what the
+  // admin UI already tells the admin will happen. Session isn't one of our
+  // own schema.prisma entities (Wasp's auth feature injects it), so this
+  // uses the raw prisma client rather than context.entities.
+  if (isDisabled) {
+    await prisma.session.deleteMany({ where: { auth: { userId: id } } });
+  }
 
   await logAdminAction(context, {
     action: isDisabled ? 'user.disable' : 'user.enable',

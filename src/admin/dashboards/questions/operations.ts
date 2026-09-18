@@ -713,6 +713,14 @@ export const approveQuestion: ApproveQuestion<ApproveQuestionInput, Question> = 
   if (!question) {
     throw new HttpError(404, 'Question not found');
   }
+  // Same status gate its own bulk counterpart already enforces. Without
+  // this, a sequential re-approve of an already-published question (a slow
+  // double-click after the first call already succeeded, or an old browser
+  // tab) would still pass every validation below and re-run -- silently
+  // re-incrementing the ImportBatch counters a second time.
+  if (question.status !== 'pending' && question.status !== 'flagged') {
+    throw new HttpError(400, 'This question was already reviewed -- refresh to see its current state');
+  }
 
   // Approve publishes as "human-verified" -- so it only publishes content the
   // reviewer has set in the REAL fields. An AI suggestion is never promoted
@@ -745,26 +753,31 @@ export const approveQuestion: ApproveQuestion<ApproveQuestionInput, Question> = 
     throw new HttpError(400, 'Cannot approve a question with no difficulty tag set');
   }
 
-  const [updated] = await prisma.$transaction([
-    context.entities.Question.update({
-      where: { id },
+  // Guard the transition atomically, not read-then-write: two reviewers (or
+  // one double-click racing a slow network) can both pass the validation
+  // above on the same pending question. Without this, both branches would
+  // run -- publishing twice is harmless, but the ImportBatch counters below
+  // would be permanently double-incremented with no self-healing path.
+  return prisma.$transaction(async (tx) => {
+    const { count } = await tx.question.updateMany({
+      where: { id, status: question.status },
       data: {
         status: 'published',
         verifiedById: context.user!.id,
         verifiedAt: new Date(),
       },
-    }),
-    ...(question.importBatchId
-      ? [
-          context.entities.ImportBatch.update({
-            where: { id: question.importBatchId },
-            data: { totalReviewed: { increment: 1 }, totalPublished: { increment: 1 } },
-          }),
-        ]
-      : []),
-  ]);
-
-  return updated;
+    });
+    if (count === 0) {
+      throw new HttpError(409, 'This question was just reviewed by someone else -- refresh to see its current state');
+    }
+    if (question.importBatchId) {
+      await tx.importBatch.update({
+        where: { id: question.importBatchId },
+        data: { totalReviewed: { increment: 1 }, totalPublished: { increment: 1 } },
+      });
+    }
+    return tx.question.findUniqueOrThrow({ where: { id } });
+  });
 };
 
 const unpublishQuestionInputSchema = z.object({ id: z.string().nonempty() });
@@ -831,25 +844,36 @@ export const rejectQuestion: RejectQuestion<RejectQuestionInput, { id: string }>
   if (!question) {
     throw new HttpError(404, 'Question not found');
   }
+  // Same status gate its own bulk counterpart already enforces (bulk reject
+  // skips anything not pending/flagged) -- this single-question path had no
+  // such check at all, so a stray call could "reject" an already-published
+  // question outside the normal Unpublish flow.
+  if (question.status !== 'pending' && question.status !== 'flagged') {
+    throw new HttpError(400, 'Only a question still awaiting review can be rejected -- unpublish it first if it needs to come back for review');
+  }
 
-  await prisma.$transaction([
-    context.entities.Question.update({
-      where: { id },
+  // Guarded the same way approveQuestion is: atomically re-check status so
+  // two racing reject calls (or a race with an approve) can't both run and
+  // double-increment totalReviewed.
+  await prisma.$transaction(async (tx) => {
+    const { count } = await tx.question.updateMany({
+      where: { id, status: question.status },
       data: {
         status: 'rejected',
         rejectedById: context.user!.id,
         rejectedAt: new Date(),
       },
-    }),
-    ...(question.importBatchId
-      ? [
-          context.entities.ImportBatch.update({
-            where: { id: question.importBatchId },
-            data: { totalReviewed: { increment: 1 } },
-          }),
-        ]
-      : []),
-  ]);
+    });
+    if (count === 0) {
+      throw new HttpError(409, 'This question was just reviewed by someone else -- refresh to see its current state');
+    }
+    if (question.importBatchId) {
+      await tx.importBatch.update({
+        where: { id: question.importBatchId },
+        data: { totalReviewed: { increment: 1 } },
+      });
+    }
+  });
 
   return { id };
 };
@@ -891,6 +915,13 @@ export const deleteQuestion: DeleteQuestion<DeleteQuestionInput, { id: string }>
         ]
       : []),
   ]);
+
+  await logAdminAction(context, {
+    action: 'question.delete',
+    entityType: 'Question',
+    entityId: id,
+    details: { stem: question.stem.slice(0, 200), status: question.status, subjectId: question.subjectId },
+  });
 
   return { id };
 };
@@ -1242,9 +1273,22 @@ export const bulkQuestionAction: BulkQuestionAction<BulkQuestionActionInput, Bul
   }
 
   if (args.action === 'tag') {
-    if (questions.length > 0) {
+    // Tagging is independent of review state EXCEPT for one thing: a
+    // published question can never be left with difficulty:null -- the same
+    // invariant updateReviewQuestion and approveQuestion both enforce. This
+    // action has no status gate otherwise, so that one case must be filtered
+    // out here explicitly rather than relying on a blanket status check.
+    const eligible = questions.filter((q) => {
+      if (args.difficulty === null && q.status === 'published') {
+        skipped.push({ id: q.id, reason: "can't clear the difficulty tag on a published question -- unpublish it first" });
+        return false;
+      }
+      return true;
+    });
+
+    if (eligible.length > 0) {
       await context.entities.Question.updateMany({
-        where: { id: { in: questions.map((q) => q.id) } },
+        where: { id: { in: eligible.map((q) => q.id) } },
         data: {
           ...(args.difficulty !== undefined ? { difficulty: args.difficulty } : {}),
           ...(args.isHighYield !== undefined ? { isHighYield: args.isHighYield } : {}),
@@ -1258,14 +1302,14 @@ export const bulkQuestionAction: BulkQuestionAction<BulkQuestionActionInput, Bul
       entityType: 'Question',
       entityId: '(bulk)',
       details: {
-        ...summaryDetails(questions),
+        ...summaryDetails(eligible),
         difficulty: args.difficulty,
         isHighYield: args.isHighYield,
         isCaseBased: args.isCaseBased,
       },
     });
 
-    return { action: 'tag', attempted: args.questionIds.length, succeeded: questions.length, skipped };
+    return { action: 'tag', attempted: args.questionIds.length, succeeded: eligible.length, skipped };
   }
 
   // args.action === 'move'
@@ -1359,6 +1403,32 @@ type ImportSummary = {
 // reviewable/AI-suggestible individually later.
 const MAX_AI_SUGGESTIONS_PER_IMPORT = 60;
 
+// Deliberately loose -- this is a candidate PRE-FILTER only, not the actual
+// duplicate decision. `question_normalized_stem` (added by the
+// add_question_stem_trgm_index migration) mirrors normalizeStem() in SQL;
+// the trigram index on it narrows ~9,000+ existing rows down to a small
+// candidate set, which is then run through the exact same, unchanged
+// isDuplicate()/similarity() bigram check the rest of this file always
+// used -- so what counts as a duplicate never changes, only how the
+// candidate list is found. This threshold only needs to be low enough that
+// it never excludes a stem the real check (at DUPLICATE_SIMILARITY_THRESHOLD,
+// 0.95) would have flagged; trigram similarity runs lower than the bigram
+// score for the same pair (calibrated empirically against real question
+// stems), so 0.3 leaves a wide safety margin.
+const DUPLICATE_PREFILTER_THRESHOLD = 0.3;
+const DUPLICATE_PREFILTER_LIMIT = 200;
+
+async function findDuplicateCandidatesInBank(stem: string): Promise<string[]> {
+  const rows = await prisma.$queryRaw<{ norm: string }[]>`
+    SELECT question_normalized_stem(stem) AS norm
+    FROM "Question"
+    WHERE similarity(question_normalized_stem(stem), question_normalized_stem(${stem})) > ${DUPLICATE_PREFILTER_THRESHOLD}
+    ORDER BY similarity(question_normalized_stem(stem), question_normalized_stem(${stem})) DESC
+    LIMIT ${DUPLICATE_PREFILTER_LIMIT}
+  `;
+  return rows.map((r) => r.norm);
+}
+
 export const importQuestionsFromText: ImportQuestionsFromText<ImportQuestionsFromTextInput, ImportSummary> = async (
   rawArgs,
   context
@@ -1399,8 +1469,10 @@ export const importQuestionsFromText: ImportQuestionsFromText<ImportQuestionsFro
   }
   const subject = await context.entities.Subject.findUniqueOrThrow({ where: { id: subjectId } });
 
-  const existingQuestions = await context.entities.Question.findMany({ select: { stem: true } });
-  const existingNorms = existingQuestions.map((q) => normalizeStem(q.stem));
+  // Within-run dedup only (a batch is at most a few hundred entries) -- the
+  // existing bank (thousands of rows) is checked per-candidate via
+  // findDuplicateCandidatesInBank below instead of loading every stem here.
+  const batchNorms: string[] = [];
 
   const batch = await context.entities.ImportBatch.create({
     data: {
@@ -1426,7 +1498,8 @@ export const importQuestionsFromText: ImportQuestionsFromText<ImportQuestionsFro
     }
 
     const norm = normalizeStem(stem);
-    if (isDuplicate(norm, existingNorms, args.duplicateThreshold)) {
+    const bankCandidates = await findDuplicateCandidatesInBank(stem);
+    if (isDuplicate(norm, [...bankCandidates, ...batchNorms], args.duplicateThreshold)) {
       skippedDuplicate += 1;
       continue;
     }
@@ -1445,7 +1518,7 @@ export const importQuestionsFromText: ImportQuestionsFromText<ImportQuestionsFro
       },
     });
 
-    existingNorms.push(norm);
+    batchNorms.push(norm);
     inserted += 1;
     if (status === 'pending') {
       pendingCount += 1;
