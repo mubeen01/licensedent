@@ -1,6 +1,6 @@
 import { type AdminAuditLog, type User } from 'wasp/entities';
 import { HttpError } from 'wasp/server';
-import { type GetAdminAuditLog } from 'wasp/server/operations';
+import { type GetAdminAuditLog, type GetAuditLogEntityTypes } from 'wasp/server/operations';
 import * as z from 'zod';
 import { ensureArgsSchemaOrThrowHttpError } from '../../../server/validation';
 
@@ -40,4 +40,18 @@ export const getAdminAuditLog: GetAdminAuditLog<GetAdminAuditLogInput, AdminAudi
     take: args.take,
     include: { admin: { select: { id: true, email: true, username: true } } },
   });
+};
+
+// Backs the entityType filter dropdown on the Audit Log page -- queried
+// live (not hardcoded) so it always matches whatever entity types have
+// actually been logged, rather than drifting out of sync as new
+// logAdminAction call sites are added elsewhere in the admin panel.
+export const getAuditLogEntityTypes: GetAuditLogEntityTypes<void, string[]> = async (_args, context) => {
+  ensureAdmin(context.user);
+  const rows = await context.entities.AdminAuditLog.findMany({
+    distinct: ['entityType'],
+    select: { entityType: true },
+    orderBy: { entityType: 'asc' },
+  });
+  return rows.map((r) => r.entityType);
 };

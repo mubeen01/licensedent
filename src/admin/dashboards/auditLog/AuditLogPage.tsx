@@ -1,19 +1,62 @@
 import { useState } from 'react';
 import { type AuthUser } from 'wasp/auth';
-import { getAdminAuditLog, useQuery } from 'wasp/client/operations';
+import { getAdminAuditLog, getAuditLogEntityTypes, useQuery } from 'wasp/client/operations';
+import { Input } from '../../../components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import Breadcrumb from '../../layout/Breadcrumb';
 import DefaultLayout from '../../layout/DefaultLayout';
 import LoadingSpinner from '../../layout/LoadingSpinner';
 
 const PAGE_SIZE = 50;
+const ALL_ENTITY_TYPES = '__all__';
 
 function AuditLogPage({ user }: { user: AuthUser }) {
   const [skip, setSkip] = useState(0);
-  const { data: entries, isLoading } = useQuery(getAdminAuditLog, { skip, take: PAGE_SIZE });
+  const [entityType, setEntityType] = useState('');
+  const [entityId, setEntityId] = useState('');
+  const { data: entityTypes } = useQuery(getAuditLogEntityTypes);
+  const { data: entries, isLoading } = useQuery(getAdminAuditLog, {
+    skip,
+    take: PAGE_SIZE,
+    ...(entityType ? { entityType } : {}),
+    ...(entityId.trim() ? { entityId: entityId.trim() } : {}),
+  });
+
+  function changeEntityType(value: string) {
+    setEntityType(value === ALL_ENTITY_TYPES ? '' : value);
+    setSkip(0);
+  }
+
+  function changeEntityId(value: string) {
+    setEntityId(value);
+    setSkip(0);
+  }
 
   return (
     <DefaultLayout user={user}>
       <Breadcrumb pageName='Audit Log' />
+
+      <div className='mb-4 flex flex-wrap items-center gap-3'>
+        <Select value={entityType || ALL_ENTITY_TYPES} onValueChange={changeEntityType}>
+          <SelectTrigger className='w-48'>
+            <SelectValue placeholder='All entity types' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL_ENTITY_TYPES}>All entity types</SelectItem>
+            {entityTypes?.map((type) => (
+              <SelectItem key={type} value={type}>
+                {type}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          value={entityId}
+          onChange={(e) => changeEntityId(e.currentTarget.value)}
+          placeholder='Filter by entity id…'
+          className='w-64'
+        />
+      </div>
 
       <div className='rounded-2xl border border-border bg-card shadow-xs'>
         {isLoading && (
@@ -23,7 +66,11 @@ function AuditLogPage({ user }: { user: AuthUser }) {
         )}
 
         {!isLoading && (!entries || entries.length === 0) && (
-          <p className='p-6 text-sm text-muted-foreground'>No admin actions recorded yet.</p>
+          <p className='p-6 text-sm text-muted-foreground'>
+            {entityType || entityId
+              ? 'No admin actions match these filters.'
+              : 'No admin actions recorded yet.'}
+          </p>
         )}
 
         {!isLoading && entries && entries.length > 0 && (

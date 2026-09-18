@@ -8,6 +8,7 @@ import {
   type MarkMessageReplied,
 } from 'wasp/server/operations';
 import * as z from 'zod';
+import { logAdminAction } from '../../../server/adminAudit';
 import { ensureArgsSchemaOrThrowHttpError } from '../../../server/validation';
 
 function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<T> {
@@ -65,15 +66,30 @@ type MessageIdInput = z.infer<typeof messageIdInputSchema>;
 export const markMessageRead: MarkMessageRead<MessageIdInput, void> = async (rawArgs, context) => {
   ensureAdmin(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(messageIdInputSchema, rawArgs);
-  await context.entities.ContactFormMessage.update({ where: { id: args.id }, data: { isRead: true } });
+  const message = await context.entities.ContactFormMessage.update({
+    where: { id: args.id },
+    data: { isRead: true },
+  });
+  await logAdminAction(context, {
+    action: 'message.markRead',
+    entityType: 'ContactFormMessage',
+    entityId: args.id,
+    details: { userId: message.userId, content: message.content.slice(0, 200) },
+  });
 };
 
 export const markMessageReplied: MarkMessageReplied<MessageIdInput, void> = async (rawArgs, context) => {
   ensureAdmin(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(messageIdInputSchema, rawArgs);
-  await context.entities.ContactFormMessage.update({
+  const message = await context.entities.ContactFormMessage.update({
     where: { id: args.id },
     data: { isRead: true, repliedAt: new Date() },
+  });
+  await logAdminAction(context, {
+    action: 'message.markReplied',
+    entityType: 'ContactFormMessage',
+    entityId: args.id,
+    details: { userId: message.userId, content: message.content.slice(0, 200) },
   });
 };
 

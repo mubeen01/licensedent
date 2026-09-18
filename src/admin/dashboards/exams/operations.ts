@@ -40,19 +40,37 @@ export const updateExam: UpdateExam<UpdateExamInput, void> = async (rawArgs, con
   ensureAdmin(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(updateExamInputSchema, rawArgs);
 
-  await context.entities.Exam.update({
-    where: { id: args.id },
-    data: {
-      name: args.name,
-      code: args.code,
-      country: args.country,
-      flagEmoji: args.flagEmoji,
-      authorityLabel: args.authorityLabel,
-      description: args.description,
-      isActive: args.isActive,
-      ...(args.standalonePackOnly !== undefined ? { standalonePackOnly: args.standalonePackOnly } : {}),
-    },
-  });
+  const before = await context.entities.Exam.findUniqueOrThrow({ where: { id: args.id } });
+
+  const nextValues = {
+    name: args.name,
+    code: args.code,
+    country: args.country,
+    flagEmoji: args.flagEmoji,
+    authorityLabel: args.authorityLabel,
+    description: args.description,
+    isActive: args.isActive,
+    ...(args.standalonePackOnly !== undefined ? { standalonePackOnly: args.standalonePackOnly } : {}),
+  };
+
+  await context.entities.Exam.update({ where: { id: args.id }, data: nextValues });
+
+  // Only log fields that actually changed -- this edit form always submits
+  // every field, so logging unconditionally would fill the audit trail with
+  // no-op "updates" every time an admin opens and re-saves the form without
+  // changing anything.
+  const changes: Record<string, { before: unknown; after: unknown }> = {};
+  for (const key of Object.keys(nextValues) as (keyof typeof nextValues)[]) {
+    if (before[key] !== nextValues[key]) changes[key] = { before: before[key], after: nextValues[key] };
+  }
+  if (Object.keys(changes).length > 0) {
+    await logAdminAction(context, {
+      action: 'exam.update',
+      entityType: 'Exam',
+      entityId: args.id,
+      details: { name: args.name, changes },
+    });
+  }
 };
 
 const createExamInputSchema = z.object({

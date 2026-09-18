@@ -101,7 +101,7 @@ import {
 import AdminQuestions from './src/admin/dashboards/questions/QuestionsReviewPage' with { type: 'ref' }
 import AdminImportQuestions from './src/admin/dashboards/questions/ImportQuestionsPage' with { type: 'ref' }
 import AdminAuditLog from './src/admin/dashboards/auditLog/AuditLogPage' with { type: 'ref' }
-import { getAdminAuditLog } from './src/admin/dashboards/auditLog/operations' with { type: 'ref' }
+import { getAdminAuditLog, getAuditLogEntityTypes } from './src/admin/dashboards/auditLog/operations' with { type: 'ref' }
 import { NotFoundPage } from './src/client/components/NotFoundPage' with { type: 'ref' }
 
 // Question Review
@@ -442,6 +442,7 @@ export default app({
 
     route('AdminAuditLogRoute', '/admin/audit-log', page(AdminAuditLog, { authRequired: true })),
     query(getAdminAuditLog, { entities: ['AdminAuditLog', 'User'] }),
+    query(getAuditLogEntityTypes, { entities: ['AdminAuditLog'] }),
 
     route('NotFoundRoute', '*', page(NotFoundPage)),
 
