@@ -9,6 +9,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Alert, AlertDescription } from '../components/ui/alert';
+import SeoHead from '../client/components/SeoHead';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -34,9 +35,7 @@ export default function Login() {
     setIsLoading(true);
     try {
       await login({ email: cleanEmail, password });
-      const redirectTo = localStorage.getItem('redirectAfterLogin') || routes.DashboardHomeRoute.to;
-      localStorage.removeItem('redirectAfterLogin');
-      navigate(redirectTo);
+      navigate(routes.DashboardHomeRoute.to);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Could not log in. Please try again.');
     } finally {
@@ -46,6 +45,7 @@ export default function Login() {
 
   return (
     <AuthPageLayout>
+      <SeoHead title='Log In — LicenseDent' description='Log in to your LicenseDent account.' path='/login' noindex />
       <h2 className='text-2xl font-semibold tracking-tight text-foreground mb-1.5'>Welcome back</h2>
       <p className='text-sm text-muted-foreground mb-7'>Log in to keep your practice streak going.</p>
 

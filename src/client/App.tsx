@@ -23,10 +23,18 @@ export default function App() {
 
   const navigationItems = isMarketingPage ? marketingNavigationItems : demoNavigationitems;
 
+  // Every standalone auth page uses AuthPageLayout's own full-height, self-
+  // branded split screen -- the marketing NavBar/Footer must never wrap
+  // around it (double branding, duplicated chrome).
+  const STANDALONE_AUTH_PATHS = [
+    routes.LoginRoute.build(),
+    routes.SignupRoute.build(),
+    routes.RequestPasswordResetRoute.build(),
+    routes.PasswordResetRoute.build(),
+    routes.EmailVerificationRoute.build(),
+  ];
   const shouldDisplayAppNavBar = useMemo(() => {
-    return (
-      location.pathname !== routes.LoginRoute.build() && location.pathname !== routes.SignupRoute.build()
-    );
+    return !STANDALONE_AUTH_PATHS.includes(location.pathname);
   }, [location]);
 
   // Every logged-in "app" area (student dashboard + admin panel) has its own

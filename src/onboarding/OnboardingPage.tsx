@@ -15,6 +15,7 @@ import { todayISODate } from '../dashboard/greeting';
 import { COUNTRIES } from './countries';
 
 const DRAFT_KEY = 'licensedent:onboarding-draft';
+const TOTAL_STEPS = 3;
 
 const QUALIFICATIONS = ['BDS', 'DDS', 'BDentSc', 'DMD', 'BChD', 'Other'] as const;
 
@@ -55,9 +56,6 @@ function loadDraft(): { formData: FormData; currentStep: number } {
 }
 
 const STEP_LABELS = ['Your exam goal', 'Your background', 'Where you’re from'];
-
-const inputClassName =
-  'block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary';
 
 function RequiredMark() {
   return <span className='text-destructive'>*</span>;
@@ -118,7 +116,7 @@ function OnboardingPage({ user }: { user: AuthUser }) {
 
   function handleNext() {
     if (!validateStep(currentStep)) return;
-    setCurrentStep((s) => Math.min(3, s + 1));
+    setCurrentStep((s) => Math.min(TOTAL_STEPS, s + 1));
   }
 
   function handleBack() {
@@ -141,8 +139,8 @@ function OnboardingPage({ user }: { user: AuthUser }) {
       });
       localStorage.removeItem(DRAFT_KEY);
       navigate(routes.DashboardHomeRoute.to);
-    } catch (e: any) {
-      setSubmitError(e?.message ?? 'Something went wrong -- please try again.');
+    } catch (e: unknown) {
+      setSubmitError(e instanceof Error ? e.message : 'Something went wrong -- please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -167,7 +165,7 @@ function OnboardingPage({ user }: { user: AuthUser }) {
           </h1>
           <span className='text-sm font-medium text-muted-foreground'>Step {currentStep} of 3</span>
         </div>
-        <Progress value={currentStep * 33.33} className='mb-6' />
+        <Progress value={(currentStep / TOTAL_STEPS) * 100} className='mb-6' />
 
         <div className='flex items-center justify-center gap-8 mb-6'>
           {STEP_LABELS.map((label, i) => {
@@ -203,7 +201,7 @@ function OnboardingPage({ user }: { user: AuthUser }) {
           {currentStep === 1 && (
             <div className='flex flex-col gap-5'>
               <div>
-                <Label>
+                <Label htmlFor='examId'>
                   Which licensing exam are you preparing for? <RequiredMark />
                 </Label>
                 <Select
@@ -211,7 +209,7 @@ function OnboardingPage({ user }: { user: AuthUser }) {
                   onValueChange={(v) => set('examId', v)}
                   disabled={isIreland}
                 >
-                  <SelectTrigger className='w-full mt-1.5'>
+                  <SelectTrigger id='examId' className='w-full mt-1.5'>
                     <SelectValue placeholder={examsLoading ? 'Loading exams…' : 'Select an exam'} />
                   </SelectTrigger>
                   <SelectContent>
@@ -227,15 +225,16 @@ function OnboardingPage({ user }: { user: AuthUser }) {
                 )}
               </div>
               <div>
-                <Label>
+                <Label htmlFor='targetExamDate'>
                   When are you targeting to write the exam? <RequiredMark />
                 </Label>
-                <input
+                <Input
+                  id='targetExamDate'
                   type='date'
                   min={todayISODate()}
                   value={formData.targetExamDate}
                   onChange={(e) => set('targetExamDate', e.target.value)}
-                  className={cn(inputClassName, 'mt-1.5')}
+                  className='mt-1.5'
                 />
                 {formData.targetExamDate && formData.targetExamDate < todayISODate() && (
                   <p className='mt-1.5 text-xs text-destructive'>Your exam date needs to be today or later.</p>
@@ -247,10 +246,11 @@ function OnboardingPage({ user }: { user: AuthUser }) {
           {currentStep === 2 && (
             <div className='flex flex-col gap-5'>
               <div>
-                <Label>
+                <Label htmlFor='fullName'>
                   Full name <RequiredMark />
                 </Label>
                 <Input
+                  id='fullName'
                   className='mt-1.5'
                   value={formData.fullName}
                   onChange={(e) => set('fullName', e.currentTarget.value)}
@@ -258,10 +258,11 @@ function OnboardingPage({ user }: { user: AuthUser }) {
                 />
               </div>
               <div>
-                <Label>
+                <Label htmlFor='yearsOfExperience'>
                   Years of experience <RequiredMark />
                 </Label>
                 <Input
+                  id='yearsOfExperience'
                   type='number'
                   min={0}
                   max={60}
@@ -272,11 +273,11 @@ function OnboardingPage({ user }: { user: AuthUser }) {
                 />
               </div>
               <div>
-                <Label>
+                <Label htmlFor='qualificationOption'>
                   Qualification <RequiredMark />
                 </Label>
                 <Select value={formData.qualificationOption} onValueChange={(v) => set('qualificationOption', v)}>
-                  <SelectTrigger className='w-full mt-1.5'>
+                  <SelectTrigger id='qualificationOption' className='w-full mt-1.5'>
                     <SelectValue placeholder='Select your qualification' />
                   </SelectTrigger>
                   <SelectContent>
@@ -289,6 +290,7 @@ function OnboardingPage({ user }: { user: AuthUser }) {
                 </Select>
                 {formData.qualificationOption === 'Other' && (
                   <Input
+                    aria-label='Your qualification'
                     className='mt-2'
                     value={formData.qualificationOther}
                     onChange={(e) => set('qualificationOther', e.currentTarget.value)}
@@ -302,11 +304,11 @@ function OnboardingPage({ user }: { user: AuthUser }) {
           {currentStep === 3 && (
             <div className='flex flex-col gap-5'>
               <div>
-                <Label>
+                <Label htmlFor='country'>
                   Which country are you from? <RequiredMark />
                 </Label>
                 <Select value={formData.country} onValueChange={(v) => set('country', v)}>
-                  <SelectTrigger className='w-full mt-1.5'>
+                  <SelectTrigger id='country' className='w-full mt-1.5'>
                     <SelectValue placeholder='Select your country' />
                   </SelectTrigger>
                   <SelectContent>
@@ -319,8 +321,9 @@ function OnboardingPage({ user }: { user: AuthUser }) {
                 </Select>
               </div>
               <div>
-                <Label>Address (optional)</Label>
+                <Label htmlFor='address'>Address (optional)</Label>
                 <Textarea
+                  id='address'
                   className='mt-1.5'
                   rows={3}
                   value={formData.address}

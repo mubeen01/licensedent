@@ -8,6 +8,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Alert, AlertDescription } from '../components/ui/alert';
+import SeoHead from '../client/components/SeoHead';
 
 export function Signup() {
   const [email, setEmail] = useState('');
@@ -48,6 +49,7 @@ export function Signup() {
   if (signedUp) {
     return (
       <AuthPageLayout>
+        <SeoHead title='Sign Up — LicenseDent' description='Create your LicenseDent account.' path='/signup' noindex />
         <div className='text-center'>
           <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10'>
             <Mail className='h-5 w-5 text-primary' aria-hidden='true' />
@@ -67,6 +69,7 @@ export function Signup() {
 
   return (
     <AuthPageLayout>
+      <SeoHead title='Sign Up — LicenseDent' description='Create your LicenseDent account.' path='/signup' noindex />
       <h2 className='text-2xl font-semibold tracking-tight text-foreground mb-1.5'>Create your account</h2>
       <p className='text-sm text-muted-foreground mb-7'>Start practicing for your Gulf licensing exam today.</p>
 
