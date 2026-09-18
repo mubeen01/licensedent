@@ -1,9 +1,12 @@
-import { type Lesson, type LessonPart } from 'wasp/entities';
+import { type Lesson, type LessonPart, type Subject } from 'wasp/entities';
 import { HttpError } from 'wasp/server';
 import {
   type AssignQuestionToLessonPart,
   type CreateLesson,
   type CreateLessonPart,
+  type CreateSubjectForExam,
+  type DeleteLesson,
+  type DeleteLessonPart,
   type GetLessonPartQuestions,
   type GetLessonsForAdmin,
   type SearchPublishedQuestionsForExam,
@@ -42,7 +45,8 @@ type AdminLesson = Lesson & {
   examName: string;
   examFlagEmoji: string | null;
   examStandalonePackOnly: boolean;
-  subjectNames: string[];
+  subjectName: string | null;
+  questionSubjectNames: string[];
   parts: AdminLessonPart[];
 };
 
@@ -53,6 +57,7 @@ export const getLessonsForAdmin: GetLessonsForAdmin<void, AdminLesson[]> = async
     orderBy: [{ examId: 'asc' }, { order: 'asc' }],
     include: {
       exam: { select: { name: true, flagEmoji: true, standalonePackOnly: true } },
+      subject: { select: { name: true } },
       parts: {
         orderBy: { order: 'asc' },
         include: { questions: { select: { id: true, subject: { select: { name: true } } } } },
@@ -65,10 +70,12 @@ export const getLessonsForAdmin: GetLessonsForAdmin<void, AdminLesson[]> = async
     examName: lesson.exam.name,
     examFlagEmoji: lesson.exam.flagEmoji,
     examStandalonePackOnly: lesson.exam.standalonePackOnly,
+    subjectName: lesson.subject?.name ?? null,
     // Which Subject(s) this Lesson's assigned questions actually cover --
-    // read-only, computed from real data rather than a separate field to
-    // keep in sync, since a Lesson has no subject of its own (Question does).
-    subjectNames: Array.from(
+    // computed from real data, purely informational (e.g. to flag a Lesson
+    // whose declared subject doesn't match what its questions are tagged
+    // as) -- the declared subjectId above is the one used for grouping.
+    questionSubjectNames: Array.from(
       new Set(lesson.parts.flatMap((part) => part.questions.map((q) => q.subject.name)))
     ).sort(),
     parts: lesson.parts.map((part) => ({ ...part, questionCount: part.questions.length })),
@@ -79,8 +86,23 @@ export const getLessonsForAdmin: GetLessonsForAdmin<void, AdminLesson[]> = async
 /*  Lesson CRUD                                                                */
 /* -------------------------------------------------------------------------- */
 
+async function ensureSubjectMatchesExam(
+  context: { entities: { Subject: { findUnique: (args: any) => Promise<{ examId: string } | null> } } },
+  subjectId: string,
+  examId: string
+) {
+  const subject = await context.entities.Subject.findUnique({ where: { id: subjectId } });
+  if (!subject) {
+    throw new HttpError(400, 'Subject not found');
+  }
+  if (subject.examId !== examId) {
+    throw new HttpError(400, "This subject doesn't belong to the selected exam");
+  }
+}
+
 const createLessonInputSchema = z.object({
   examId: z.string().nonempty(),
+  subjectId: z.string().nonempty().nullable().optional(),
   title: z.string().trim().nonempty(),
   order: z.number().int().min(1),
   passThresholdPercent: z.number().int().min(1).max(100),
@@ -90,6 +112,10 @@ type CreateLessonInput = z.infer<typeof createLessonInputSchema>;
 export const createLesson: CreateLesson<CreateLessonInput, Lesson> = async (rawArgs, context) => {
   ensureAdmin(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(createLessonInputSchema, rawArgs);
+
+  if (args.subjectId) {
+    await ensureSubjectMatchesExam(context, args.subjectId, args.examId);
+  }
 
   const baseSlug = slugify(args.title);
   let slug = baseSlug;
@@ -102,6 +128,7 @@ export const createLesson: CreateLesson<CreateLessonInput, Lesson> = async (rawA
   const created = await context.entities.Lesson.create({
     data: {
       examId: args.examId,
+      subjectId: args.subjectId ?? null,
       title: args.title,
       slug,
       order: args.order,
@@ -112,13 +139,14 @@ export const createLesson: CreateLesson<CreateLessonInput, Lesson> = async (rawA
     action: 'lesson.create',
     entityType: 'Lesson',
     entityId: created.id,
-    details: { title: args.title, examId: args.examId },
+    details: { title: args.title, examId: args.examId, subjectId: args.subjectId ?? null },
   });
   return created;
 };
 
 const updateLessonInputSchema = z.object({
   id: z.string().nonempty(),
+  subjectId: z.string().nonempty().nullable().optional(),
   title: z.string().trim().nonempty(),
   order: z.number().int().min(1),
   passThresholdPercent: z.number().int().min(1).max(100),
@@ -130,6 +158,11 @@ export const updateLesson: UpdateLesson<UpdateLessonInput, void> = async (rawArg
   ensureAdmin(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(updateLessonInputSchema, rawArgs);
 
+  if (args.subjectId !== undefined && args.subjectId !== null) {
+    const lesson = await context.entities.Lesson.findUniqueOrThrow({ where: { id: args.id } });
+    await ensureSubjectMatchesExam(context, args.subjectId, lesson.examId);
+  }
+
   await context.entities.Lesson.update({
     where: { id: args.id },
     data: {
@@ -137,7 +170,26 @@ export const updateLesson: UpdateLesson<UpdateLessonInput, void> = async (rawArg
       order: args.order,
       passThresholdPercent: args.passThresholdPercent,
       isActive: args.isActive,
+      ...(args.subjectId !== undefined ? { subjectId: args.subjectId } : {}),
     },
+  });
+};
+
+export const deleteLesson: DeleteLesson<{ id: string }, void> = async (rawArgs, context) => {
+  ensureAdmin(context.user);
+  const args = ensureArgsSchemaOrThrowHttpError(z.object({ id: z.string().nonempty() }), rawArgs);
+
+  const lesson = await context.entities.Lesson.findUniqueOrThrow({ where: { id: args.id } });
+  // Parts (and their quiz attempts) cascade via the schema's onDelete:
+  // Cascade on LessonPart.lesson / LessonPartQuizAttempt.lessonPart -- this
+  // is a real destructive delete, not an isActive-style archive, matching
+  // what the admin UI asks for ("delete the lesson").
+  await context.entities.Lesson.delete({ where: { id: args.id } });
+  await logAdminAction(context, {
+    action: 'lesson.delete',
+    entityType: 'Lesson',
+    entityId: args.id,
+    details: { title: lesson.title, examId: lesson.examId },
   });
 };
 
@@ -216,6 +268,20 @@ export const updateLessonPart: UpdateLessonPart<UpdateLessonPartInput, void> = a
       sourceBook: args.sourceBook || null,
       sourcePages: args.sourcePages || null,
     },
+  });
+};
+
+export const deleteLessonPart: DeleteLessonPart<{ id: string }, void> = async (rawArgs, context) => {
+  ensureAdmin(context.user);
+  const args = ensureArgsSchemaOrThrowHttpError(z.object({ id: z.string().nonempty() }), rawArgs);
+
+  const part = await context.entities.LessonPart.findUniqueOrThrow({ where: { id: args.id } });
+  await context.entities.LessonPart.delete({ where: { id: args.id } });
+  await logAdminAction(context, {
+    action: 'lessonPart.delete',
+    entityType: 'LessonPart',
+    entityId: args.id,
+    details: { lessonId: part.lessonId, title: part.title },
   });
 };
 
@@ -342,4 +408,41 @@ export const unassignQuestionFromLessonPart: UnassignQuestionFromLessonPart<
     where: { id: args.lessonPartId },
     data: { questions: { disconnect: { id: args.questionId } } },
   });
+};
+
+/* -------------------------------------------------------------------------- */
+/*  Subjects, for organizing the /admin/lessons page into per-subject tabs.    */
+/*  Deliberately its own action rather than reusing the Questions Review      */
+/*  page's `createSubject` -- that one always lands new subjects under the   */
+/*  shared "general_dentist" exam (subjects there aren't really exam-scoped,  */
+/*  Question.exams is), whereas a Lesson always belongs to one specific exam  */
+/*  (Ireland, DHA, ...) so a Lesson's subject must be scoped to that exam.    */
+/* -------------------------------------------------------------------------- */
+
+const createSubjectForExamInputSchema = z.object({
+  examId: z.string().nonempty(),
+  name: z.string().trim().nonempty(),
+});
+type CreateSubjectForExamInput = z.infer<typeof createSubjectForExamInputSchema>;
+
+export const createSubjectForExam: CreateSubjectForExam<CreateSubjectForExamInput, Subject> = async (
+  rawArgs,
+  context
+) => {
+  ensureAdmin(context.user);
+  const args = ensureArgsSchemaOrThrowHttpError(createSubjectForExamInputSchema, rawArgs);
+
+  const existing = await context.entities.Subject.findFirst({ where: { name: args.name, examId: args.examId } });
+  if (existing) {
+    throw new HttpError(400, `A subject named "${args.name}" already exists for this exam.`);
+  }
+
+  const created = await context.entities.Subject.create({ data: { name: args.name, examId: args.examId } });
+  await logAdminAction(context, {
+    action: 'subject.create',
+    entityType: 'Subject',
+    entityId: created.id,
+    details: { name: args.name, examId: args.examId },
+  });
+  return created;
 };

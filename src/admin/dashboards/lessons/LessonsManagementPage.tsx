@@ -1,11 +1,14 @@
 import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Plus, Search, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { type AuthUser } from 'wasp/auth';
 import {
   approveQuestion,
   assignQuestionToLessonPart,
   createLesson,
   createLessonPart,
+  createSubjectForExam,
+  deleteLesson,
+  deleteLessonPart,
   getExamsForAdmin,
   getLessonPartQuestions,
   getLessonsForAdmin,
@@ -28,6 +31,7 @@ import { cn } from '../../../lib/utils';
 import Breadcrumb from '../../layout/Breadcrumb';
 import DefaultLayout from '../../layout/DefaultLayout';
 import LoadingSpinner from '../../layout/LoadingSpinner';
+import { useConfirm } from '../questions/ConfirmDialog';
 
 // Accepts whatever a real user pastes -- a full watch/share/embed URL or a
 // bare 11-char id -- so the admin doesn't have to manually strip a URL down
@@ -47,6 +51,13 @@ function extractYoutubeId(input: string): string {
   return trimmed;
 }
 
+type ConfirmFn = (options: {
+  title: string;
+  description: string;
+  confirmLabel?: string;
+  variant?: 'default' | 'destructive';
+}) => Promise<boolean>;
+
 type AdminLessonPart = {
   id: string;
   order: number;
@@ -64,18 +75,77 @@ type AdminLesson = {
   examName: string;
   examFlagEmoji: string | null;
   examStandalonePackOnly: boolean;
-  subjectNames: string[];
+  subjectId: string | null;
+  subjectName: string | null;
+  questionSubjectNames: string[];
   title: string;
   order: number;
   passThresholdPercent: number;
   isActive: boolean;
   parts: AdminLessonPart[];
 };
-type AdminExamOption = { id: string; name: string; flagEmoji: string | null; standalonePackOnly: boolean };
+type AdminSubjectOption = { id: string; name: string; isActive: boolean; examId: string };
 
 function LessonsManagementPage({ user }: { user: AuthUser }) {
   const { data: lessons, isLoading, refetch } = useQuery(getLessonsForAdmin);
   const { data: exams } = useQuery(getExamsForAdmin);
+  const { confirm, ConfirmDialog } = useConfirm();
+
+  const [selectedExamId, setSelectedExamId] = useState<string>('');
+  const [selectedSubjectTab, setSelectedSubjectTab] = useState<string>('all');
+
+  const lessonCountByExam = useMemo(() => {
+    const counts = new Map<string, number>();
+    (lessons ?? []).forEach((l) => counts.set(l.examId, (counts.get(l.examId) ?? 0) + 1));
+    return counts;
+  }, [lessons]);
+
+  // Default to whichever exam already has the most Lessons (today, Ireland)
+  // rather than always the alphabetically-first exam -- that's almost always
+  // where an admin lands here wanting to work.
+  useEffect(() => {
+    if (selectedExamId || !exams || exams.length === 0) return;
+    if (lessons && lessons.length > 0) {
+      const top = [...lessonCountByExam.entries()].sort((a, b) => b[1] - a[1])[0];
+      setSelectedExamId(top[0]);
+    } else {
+      setSelectedExamId(exams[0].id);
+    }
+  }, [exams, lessons, lessonCountByExam, selectedExamId]);
+
+  const { data: subjects, refetch: refetchSubjects } = useQuery(
+    getSubjectsForExam,
+    { examId: selectedExamId },
+    { enabled: !!selectedExamId }
+  );
+
+  const examLessons = useMemo(
+    () => (lessons ?? []).filter((l) => l.examId === selectedExamId).sort((a, b) => a.order - b.order),
+    [lessons, selectedExamId]
+  );
+
+  const subjectTabs = useMemo(() => {
+    const tabs: { key: string; label: string; count: number }[] = [
+      { key: 'all', label: 'All lessons', count: examLessons.length },
+    ];
+    (subjects ?? []).forEach((s) => {
+      tabs.push({ key: s.id, label: s.name, count: examLessons.filter((l) => l.subjectId === s.id).length });
+    });
+    const unassignedCount = examLessons.filter((l) => !l.subjectId).length;
+    if (unassignedCount > 0) {
+      tabs.push({ key: 'unassigned', label: 'Unassigned', count: unassignedCount });
+    }
+    return tabs;
+  }, [subjects, examLessons]);
+
+  const visibleLessons = examLessons.filter((l) => {
+    if (selectedSubjectTab === 'all') return true;
+    if (selectedSubjectTab === 'unassigned') return !l.subjectId;
+    return l.subjectId === selectedSubjectTab;
+  });
+
+  const currentSubjectFilter =
+    selectedSubjectTab !== 'all' && selectedSubjectTab !== 'unassigned' ? selectedSubjectTab : null;
 
   return (
     <DefaultLayout user={user}>
@@ -83,48 +153,225 @@ function LessonsManagementPage({ user }: { user: AuthUser }) {
       <p className='-mt-4 mb-6 text-sm text-muted-foreground'>
         Structured video + notes + gating-quiz content (PRD-002 Phase I5). A student must score at or above a
         Lesson's pass threshold on a Part's quiz before the next Part unlocks. Quiz questions are the normal Question
-        bank -- only already-<strong>published</strong>, exam-matching questions can be attached to a Part.
+        bank -- only already-<strong>published</strong>, exam-matching questions can be attached to a Part. Lessons
+        are organized by Subject below -- add a Subject first (e.g. Endodontics), then add Lessons under it.
       </p>
 
-      <AddLessonCard exams={exams ?? []} onCreated={refetch} />
+      {exams && exams.length > 0 && (
+        <div className='mb-4 flex flex-wrap gap-2'>
+          {exams.map((e) => (
+            <button
+              key={e.id}
+              onClick={() => {
+                setSelectedExamId(e.id);
+                setSelectedSubjectTab('all');
+              }}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors',
+                selectedExamId === e.id
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-muted-foreground hover:bg-muted'
+              )}
+            >
+              {e.flagEmoji} {e.name}
+              <span className={cn('rounded-full px-1.5 text-xs', selectedExamId === e.id ? 'bg-primary/15' : 'bg-muted')}>
+                {lessonCountByExam.get(e.id) ?? 0}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
 
-      {isLoading && <LoadingSpinner />}
+      {selectedExamId && (
+        <>
+          <SubjectTabsRow
+            key={`tabs-${selectedExamId}`}
+            examId={selectedExamId}
+            tabs={subjectTabs}
+            selected={selectedSubjectTab}
+            onSelect={setSelectedSubjectTab}
+            onSubjectCreated={refetchSubjects}
+          />
 
-      <div className='mt-4 flex flex-col gap-4'>
-        {lessons?.map((lesson) => (
-          <LessonCard key={lesson.id} lesson={lesson} onSaved={refetch} />
-        ))}
-      </div>
+          <AddLessonCard
+            key={`add-${selectedExamId}`}
+            examId={selectedExamId}
+            subjects={subjects ?? []}
+            defaultSubjectId={currentSubjectFilter}
+            onCreated={refetch}
+            onSubjectCreated={refetchSubjects}
+          />
+
+          {isLoading && <LoadingSpinner />}
+
+          <div className='mt-4 flex flex-col gap-4'>
+            {visibleLessons.map((lesson) => (
+              <LessonCard key={lesson.id} lesson={lesson} subjects={subjects ?? []} onSaved={refetch} confirm={confirm} />
+            ))}
+            {!isLoading && visibleLessons.length === 0 && (
+              <p className='rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground'>
+                No lessons yet {currentSubjectFilter ? 'for this subject' : 'for this exam'}. Use "Add lesson" above
+                to create the first one.
+              </p>
+            )}
+          </div>
+        </>
+      )}
+      {ConfirmDialog}
     </DefaultLayout>
   );
 }
 
-function AddLessonCard({
-  exams,
-  onCreated,
+function SubjectTabsRow({
+  examId,
+  tabs,
+  selected,
+  onSelect,
+  onSubjectCreated,
 }: {
-  exams: AdminExamOption[];
+  examId: string;
+  tabs: { key: string; label: string; count: number }[];
+  selected: string;
+  onSelect: (key: string) => void;
+  onSubjectCreated: () => void;
+}) {
+  const [isAdding, setIsAdding] = useState(false);
+  const [name, setName] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleCreate() {
+    if (!name.trim()) return;
+    setIsCreating(true);
+    setError(null);
+    try {
+      const created = await createSubjectForExam({ examId, name: name.trim() });
+      setName('');
+      setIsAdding(false);
+      onSubjectCreated();
+      onSelect(created.id);
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to create subject');
+    } finally {
+      setIsCreating(false);
+    }
+  }
+
+  return (
+    <div className='mb-4 flex flex-col gap-2 border-b border-border pb-3'>
+      <div className='flex flex-wrap items-center gap-2'>
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => onSelect(t.key)}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+              selected === t.key
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted/70'
+            )}
+          >
+            {t.label}
+            <span
+              className={cn('rounded-full px-1.5 text-xs', selected === t.key ? 'bg-primary-foreground/20' : 'bg-background/60')}
+            >
+              {t.count}
+            </span>
+          </button>
+        ))}
+
+        {isAdding ? (
+          <div className='flex items-center gap-1.5'>
+            <Input
+              autoFocus
+              className='h-8 w-48 text-sm'
+              placeholder='New subject name'
+              value={name}
+              onChange={(e) => setName(e.currentTarget.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+            />
+            <Button size='sm' className='h-8' disabled={isCreating} onClick={handleCreate}>
+              {isCreating ? '…' : 'Add'}
+            </Button>
+            <Button
+              size='sm'
+              variant='ghost'
+              className='h-8'
+              onClick={() => {
+                setIsAdding(false);
+                setName('');
+                setError(null);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        ) : (
+          <Button size='sm' variant='outline' className='h-8 rounded-full' onClick={() => setIsAdding(true)}>
+            <Plus className='h-3.5 w-3.5 mr-1' />
+            Add subject
+          </Button>
+        )}
+      </div>
+      {error && <p className='text-xs text-destructive'>{error}</p>}
+    </div>
+  );
+}
+
+function AddLessonCard({
+  examId,
+  subjects,
+  defaultSubjectId,
+  onCreated,
+  onSubjectCreated,
+}: {
+  examId: string;
+  subjects: AdminSubjectOption[];
+  defaultSubjectId: string | null;
   onCreated: () => void;
+  onSubjectCreated: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [examId, setExamId] = useState('');
+  const [subjectId, setSubjectId] = useState(defaultSubjectId ?? '');
   const [title, setTitle] = useState('');
   const [order, setOrder] = useState('1');
   const [passThresholdPercent, setPassThresholdPercent] = useState('70');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAddingSubject, setIsAddingSubject] = useState(false);
+  const [newSubjectName, setNewSubjectName] = useState('');
+  const [isCreatingSubject, setIsCreatingSubject] = useState(false);
 
   function reset() {
-    setExamId('');
+    setSubjectId(defaultSubjectId ?? '');
     setTitle('');
     setOrder('1');
     setPassThresholdPercent('70');
     setError(null);
+    setIsAddingSubject(false);
+    setNewSubjectName('');
+  }
+
+  async function handleCreateSubject() {
+    if (!newSubjectName.trim()) return;
+    setIsCreatingSubject(true);
+    setError(null);
+    try {
+      const created = await createSubjectForExam({ examId, name: newSubjectName.trim() });
+      onSubjectCreated();
+      setSubjectId(created.id);
+      setNewSubjectName('');
+      setIsAddingSubject(false);
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to create subject');
+    } finally {
+      setIsCreatingSubject(false);
+    }
   }
 
   async function handleCreate() {
-    if (!examId || !title.trim()) {
-      setError('Exam and title are required');
+    if (!title.trim()) {
+      setError('Title is required');
       return;
     }
     setIsCreating(true);
@@ -132,6 +379,7 @@ function AddLessonCard({
     try {
       await createLesson({
         examId,
+        subjectId: subjectId || null,
         title: title.trim(),
         order: parseInt(order, 10) || 1,
         passThresholdPercent: parseInt(passThresholdPercent, 10) || 70,
@@ -160,32 +408,42 @@ function AddLessonCard({
       <p className='font-semibold text-foreground'>New lesson</p>
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         <div>
-          <Label className='text-xs text-muted-foreground'>Exam * (which dashboard this Lesson appears on)</Label>
-          <select
-            className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
-            value={examId}
-            onChange={(e) => setExamId(e.currentTarget.value)}
-          >
-            <option value=''>Select exam…</option>
-            <optgroup label='Standalone (own dashboard, e.g. Ireland)'>
-              {exams
-                .filter((e) => e.standalonePackOnly)
-                .map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.flagEmoji ?? ''} {e.name}
-                  </option>
-                ))}
-            </optgroup>
-            <optgroup label='Gulf (shared, all-exams dashboard)'>
-              {exams
-                .filter((e) => !e.standalonePackOnly)
-                .map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.flagEmoji ?? ''} {e.name}
-                  </option>
-                ))}
-            </optgroup>
-          </select>
+          <Label className='text-xs text-muted-foreground'>Subject (for organizing this page)</Label>
+          {isAddingSubject ? (
+            <div className='mt-1 flex items-center gap-1.5'>
+              <Input
+                autoFocus
+                className='h-9 text-sm'
+                placeholder='New subject name'
+                value={newSubjectName}
+                onChange={(e) => setNewSubjectName(e.currentTarget.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateSubject()}
+              />
+              <Button size='sm' className='h-9' disabled={isCreatingSubject} onClick={handleCreateSubject}>
+                {isCreatingSubject ? '…' : 'Add'}
+              </Button>
+            </div>
+          ) : (
+            <select
+              className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
+              value={subjectId}
+              onChange={(e) => {
+                if (e.currentTarget.value === '__new__') {
+                  setIsAddingSubject(true);
+                } else {
+                  setSubjectId(e.currentTarget.value);
+                }
+              }}
+            >
+              <option value=''>No subject</option>
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+              <option value='__new__'>+ New subject…</option>
+            </select>
+          )}
         </div>
         <div>
           <Label className='text-xs text-muted-foreground'>Title *</Label>
@@ -234,12 +492,24 @@ function AddLessonCard({
   );
 }
 
-function LessonCard({ lesson, onSaved }: { lesson: AdminLesson; onSaved: () => void }) {
+function LessonCard({
+  lesson,
+  subjects,
+  onSaved,
+  confirm,
+}: {
+  lesson: AdminLesson;
+  subjects: AdminSubjectOption[];
+  onSaved: () => void;
+  confirm: ConfirmFn;
+}) {
   const [title, setTitle] = useState(lesson.title);
   const [order, setOrder] = useState(String(lesson.order));
+  const [subjectId, setSubjectId] = useState(lesson.subjectId ?? '');
   const [passThresholdPercent, setPassThresholdPercent] = useState(String(lesson.passThresholdPercent));
   const [isActive, setIsActive] = useState(lesson.isActive);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justSaved, setJustSaved] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
@@ -247,6 +517,7 @@ function LessonCard({ lesson, onSaved }: { lesson: AdminLesson; onSaved: () => v
   const isDirty =
     title !== lesson.title ||
     order !== String(lesson.order) ||
+    subjectId !== (lesson.subjectId ?? '') ||
     passThresholdPercent !== String(lesson.passThresholdPercent) ||
     isActive !== lesson.isActive;
 
@@ -257,6 +528,7 @@ function LessonCard({ lesson, onSaved }: { lesson: AdminLesson; onSaved: () => v
       await updateLesson({
         id: lesson.id,
         title,
+        subjectId: subjectId || null,
         order: parseInt(order, 10) || 1,
         passThresholdPercent: parseInt(passThresholdPercent, 10) || 70,
         isActive,
@@ -271,8 +543,39 @@ function LessonCard({ lesson, onSaved }: { lesson: AdminLesson; onSaved: () => v
     }
   }
 
+  async function handleDelete() {
+    const ok = await confirm({
+      title: `Delete "${lesson.title}"?`,
+      description: `This permanently deletes the lesson, all ${lesson.parts.length} of its part${
+        lesson.parts.length === 1 ? '' : 's'
+      } (notes + video links), and any student quiz attempts on them. Assigned questions stay in the question bank. This cannot be undone.`,
+      confirmLabel: 'Delete lesson',
+      variant: 'destructive',
+    });
+    if (!ok) return;
+    setIsDeleting(true);
+    setError(null);
+    try {
+      await deleteLesson({ id: lesson.id });
+      onSaved();
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to delete lesson');
+      setIsDeleting(false);
+    }
+  }
+
+  // Extra Subject(s) the Lesson's assigned questions are actually tagged
+  // with, beyond its declared Subject -- a QA signal (mistagged question, or
+  // a Lesson still missing its Subject) rather than something to act on here.
+  const mismatchedSubjectNames = lesson.questionSubjectNames.filter((n) => n !== lesson.subjectName);
+
   return (
-    <div className='rounded-2xl border border-border bg-card shadow-xs p-5 md:p-6 flex flex-col gap-4'>
+    <div
+      className={cn(
+        'rounded-2xl border border-border bg-card shadow-xs p-5 md:p-6 flex flex-col gap-4',
+        isDeleting && 'opacity-50 pointer-events-none'
+      )}
+    >
       <div className='flex items-center justify-between gap-4'>
         <div className='flex items-center gap-3'>
           <span className='flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-linear-to-br from-primary/10 to-secondary/10 shadow-xs'>
@@ -292,9 +595,22 @@ function LessonCard({ lesson, onSaved }: { lesson: AdminLesson; onSaved: () => v
                 {lesson.examFlagEmoji} {lesson.examName}
                 {lesson.examStandalonePackOnly ? ' · own dashboard' : ' · Gulf dashboard'}
               </span>
-              {lesson.subjectNames.map((name) => (
-                <span key={name} className='inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground'>
-                  {name}
+              {lesson.subjectName ? (
+                <span className='inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground'>
+                  {lesson.subjectName}
+                </span>
+              ) : (
+                <span className='inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400'>
+                  No subject set
+                </span>
+              )}
+              {mismatchedSubjectNames.map((name) => (
+                <span
+                  key={name}
+                  title="This Lesson's questions are tagged to a different subject than the one set above"
+                  className='inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400'
+                >
+                  questions: {name}
                 </span>
               ))}
               <span className='text-xs text-muted-foreground'>
@@ -303,18 +619,45 @@ function LessonCard({ lesson, onSaved }: { lesson: AdminLesson; onSaved: () => v
             </div>
           </div>
         </div>
-        <div className='flex items-center gap-2'>
-          <Label htmlFor={`active-${lesson.id}`} className='text-sm text-muted-foreground'>
-            Active
-          </Label>
-          <Switch id={`active-${lesson.id}`} checked={isActive} onCheckedChange={setIsActive} />
+        <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-2'>
+            <Label htmlFor={`active-${lesson.id}`} className='text-sm text-muted-foreground'>
+              Active
+            </Label>
+            <Switch id={`active-${lesson.id}`} checked={isActive} onCheckedChange={setIsActive} />
+          </div>
+          <Button
+            size='sm'
+            variant='ghost'
+            className='text-muted-foreground hover:text-destructive'
+            disabled={isDeleting}
+            onClick={handleDelete}
+            title='Delete lesson'
+          >
+            <Trash2 className='h-4 w-4' />
+          </Button>
         </div>
       </div>
 
-      <div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         <div>
           <Label className='text-xs text-muted-foreground'>Title</Label>
           <Input className='mt-1' value={title} onChange={(e) => setTitle(e.currentTarget.value)} />
+        </div>
+        <div>
+          <Label className='text-xs text-muted-foreground'>Subject</Label>
+          <select
+            className='mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm'
+            value={subjectId}
+            onChange={(e) => setSubjectId(e.currentTarget.value)}
+          >
+            <option value=''>No subject</option>
+            {subjects.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <Label className='text-xs text-muted-foreground'>Order</Label>
@@ -349,7 +692,7 @@ function LessonCard({ lesson, onSaved }: { lesson: AdminLesson; onSaved: () => v
 
       <div className='flex flex-col gap-3'>
         {lesson.parts.map((part) => (
-          <PartRow key={part.id} part={part} examId={lesson.examId} onSaved={onSaved} />
+          <PartRow key={part.id} part={part} examId={lesson.examId} onSaved={onSaved} confirm={confirm} />
         ))}
 
         {showAddPart ? (
@@ -486,7 +829,17 @@ function AddPartForm({
   );
 }
 
-function PartRow({ part, examId, onSaved }: { part: AdminLessonPart; examId: string; onSaved: () => void }) {
+function PartRow({
+  part,
+  examId,
+  onSaved,
+  confirm,
+}: {
+  part: AdminLessonPart;
+  examId: string;
+  onSaved: () => void;
+  confirm: ConfirmFn;
+}) {
   const [expanded, setExpanded] = useState(false);
   const [title, setTitle] = useState(part.title);
   const [order, setOrder] = useState(String(part.order));
@@ -496,6 +849,7 @@ function PartRow({ part, examId, onSaved }: { part: AdminLessonPart; examId: str
   const [sourceBook, setSourceBook] = useState(part.sourceBook ?? '');
   const [sourcePages, setSourcePages] = useState(part.sourcePages ?? '');
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isDirty =
@@ -529,13 +883,36 @@ function PartRow({ part, examId, onSaved }: { part: AdminLessonPart; examId: str
     }
   }
 
+  async function handleDelete() {
+    const ok = await confirm({
+      title: `Delete "${part.title}"?`,
+      description: `This permanently deletes this part and its ${part.questionCount} assigned question link${
+        part.questionCount === 1 ? '' : 's'
+      } (the questions themselves stay in the question bank). Any student quiz attempts on this part are also deleted. This cannot be undone.`,
+      confirmLabel: 'Delete part',
+      variant: 'destructive',
+    });
+    if (!ok) return;
+    setIsDeleting(true);
+    setError(null);
+    try {
+      await deleteLessonPart({ id: part.id });
+      onSaved();
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to delete part');
+      setIsDeleting(false);
+    }
+  }
+
   return (
-    <div className='rounded-xl border border-border bg-background/60 p-4 flex flex-col gap-3'>
-      <button
-        className='flex items-center justify-between gap-3 text-left'
-        onClick={() => setExpanded((v) => !v)}
-      >
-        <div className='flex items-center gap-2'>
+    <div
+      className={cn(
+        'rounded-xl border border-border bg-background/60 p-4 flex flex-col gap-3',
+        isDeleting && 'opacity-50 pointer-events-none'
+      )}
+    >
+      <div className='flex items-center justify-between gap-3'>
+        <button className='flex flex-1 items-center gap-2 text-left' onClick={() => setExpanded((v) => !v)}>
           <span className='rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground'>
             Part {part.order}
           </span>
@@ -543,9 +920,19 @@ function PartRow({ part, examId, onSaved }: { part: AdminLessonPart; examId: str
           <span className='text-xs text-muted-foreground'>
             {part.questionCount} question{part.questionCount === 1 ? '' : 's'} · {part.youtubeId ? 'video set' : 'coming soon'}
           </span>
-        </div>
-        {expanded ? <ChevronUp className='h-4 w-4 text-muted-foreground' /> : <ChevronDown className='h-4 w-4 text-muted-foreground' />}
-      </button>
+        </button>
+        <button
+          className='shrink-0 text-muted-foreground hover:text-destructive'
+          disabled={isDeleting}
+          onClick={handleDelete}
+          title='Delete part'
+        >
+          <Trash2 className='h-4 w-4' />
+        </button>
+        <button onClick={() => setExpanded((v) => !v)}>
+          {expanded ? <ChevronUp className='h-4 w-4 text-muted-foreground' /> : <ChevronDown className='h-4 w-4 text-muted-foreground' />}
+        </button>
+      </div>
 
       {expanded && (
         <div className='flex flex-col gap-4 pt-2 border-t border-border'>

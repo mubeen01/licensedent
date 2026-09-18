@@ -88,12 +88,15 @@ import {
   getLessonsForAdmin,
   createLesson,
   updateLesson,
+  deleteLesson,
   createLessonPart,
   updateLessonPart,
+  deleteLessonPart,
   searchPublishedQuestionsForExam,
   getLessonPartQuestions,
   assignQuestionToLessonPart,
   unassignQuestionFromLessonPart,
+  createSubjectForExam,
 } from './src/admin/dashboards/lessons/operations' with { type: 'ref' }
 import AdminQuestions from './src/admin/dashboards/questions/QuestionsReviewPage' with { type: 'ref' }
 import AdminImportQuestions from './src/admin/dashboards/questions/ImportQuestionsPage' with { type: 'ref' }
@@ -420,15 +423,18 @@ export default app({
     action(createExam, { entities: ['Exam'] }),
 
     route('AdminLessonsRoute', '/admin/lessons', page(AdminLessons, { authRequired: true })),
-    query(getLessonsForAdmin, { entities: ['Lesson', 'LessonPart', 'Question'] }),
-    action(createLesson, { entities: ['Lesson'] }),
-    action(updateLesson, { entities: ['Lesson'] }),
+    query(getLessonsForAdmin, { entities: ['Lesson', 'LessonPart', 'Question', 'Subject'] }),
+    action(createLesson, { entities: ['Lesson', 'Subject'] }),
+    action(updateLesson, { entities: ['Lesson', 'Subject'] }),
+    action(deleteLesson, { entities: ['Lesson'] }),
     action(createLessonPart, { entities: ['LessonPart'] }),
     action(updateLessonPart, { entities: ['LessonPart'] }),
+    action(deleteLessonPart, { entities: ['LessonPart'] }),
     query(searchPublishedQuestionsForExam, { entities: ['Question'] }),
     query(getLessonPartQuestions, { entities: ['LessonPart'] }),
     action(assignQuestionToLessonPart, { entities: ['LessonPart', 'Question'] }),
     action(unassignQuestionFromLessonPart, { entities: ['LessonPart'] }),
+    action(createSubjectForExam, { entities: ['Subject'] }),
 
     route('AdminQuestionsRoute', '/admin/questions', page(AdminQuestions, { authRequired: true })),
     route('AdminImportQuestionsRoute', '/admin/questions/import', page(AdminImportQuestions, { authRequired: true })),

@@ -206,6 +206,7 @@ model Subject {
   examId                    String
 
   questions                 Question[]
+  lessons                   Lesson[]
 }
 
 model Question {
@@ -615,6 +616,14 @@ model Lesson {
 
   exam                      Exam         @relation(fields: [examId], references: [id])
   examId                    String
+
+  // Which Subject this Lesson belongs to for admin organization (grouping
+  // the /admin/lessons page into per-subject tabs). Nullable: predates this
+  // field, and a Lesson-vs-Subject pairing is deliberately independent of
+  // the exam-wide Subject list used for Question tagging elsewhere, though
+  // in practice they're usually the same rows.
+  subject                   Subject?     @relation(fields: [subjectId], references: [id])
+  subjectId                 String?
 
   parts                     LessonPart[]
 }
