@@ -1,5 +1,5 @@
 import { type Lesson, type LessonPart, type Subject } from 'wasp/entities';
-import { HttpError } from 'wasp/server';
+import { HttpError, prisma } from 'wasp/server';
 import {
   type AssignQuestionToLessonPart,
   type CreateLesson,
@@ -9,6 +9,8 @@ import {
   type DeleteLessonPart,
   type GetLessonPartQuestions,
   type GetLessonsForAdmin,
+  type ReorderLesson,
+  type ReorderLessonPart,
   type SearchPublishedQuestionsForExam,
   type UnassignQuestionFromLessonPart,
   type UpdateLesson,
@@ -193,6 +195,34 @@ export const deleteLesson: DeleteLesson<{ id: string }, void> = async (rawArgs, 
   });
 };
 
+const reorderLessonInputSchema = z.object({ id: z.string().nonempty(), otherId: z.string().nonempty() });
+type ReorderLessonInput = z.infer<typeof reorderLessonInputSchema>;
+
+// Swaps two Lessons' `order` values -- backs the admin page's move up/down
+// arrows. `Lesson.order` has no DB-level uniqueness constraint (unlike
+// LessonPart, see below), so a direct swap is always safe. The frontend
+// picks which two ids to swap (the visible neighbor in its current subject
+// tab), so this only needs to validate they're actually reorderable
+// together, not recompute "adjacent" itself.
+export const reorderLesson: ReorderLesson<ReorderLessonInput, void> = async (rawArgs, context) => {
+  ensureAdmin(context.user);
+  const args = ensureArgsSchemaOrThrowHttpError(reorderLessonInputSchema, rawArgs);
+  if (args.id === args.otherId) return;
+
+  const [a, b] = await Promise.all([
+    context.entities.Lesson.findUniqueOrThrow({ where: { id: args.id } }),
+    context.entities.Lesson.findUniqueOrThrow({ where: { id: args.otherId } }),
+  ]);
+  if (a.examId !== b.examId) {
+    throw new HttpError(400, 'Can only reorder lessons within the same exam');
+  }
+
+  await prisma.$transaction([
+    context.entities.Lesson.update({ where: { id: a.id }, data: { order: b.order } }),
+    context.entities.Lesson.update({ where: { id: b.id }, data: { order: a.order } }),
+  ]);
+};
+
 /* -------------------------------------------------------------------------- */
 /*  LessonPart CRUD                                                            */
 /* -------------------------------------------------------------------------- */
@@ -257,6 +287,25 @@ export const updateLessonPart: UpdateLessonPart<UpdateLessonPartInput, void> = a
   ensureAdmin(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(updateLessonPartInputSchema, rawArgs);
 
+  const current = await context.entities.LessonPart.findUniqueOrThrow({ where: { id: args.id } });
+
+  // Same check createLessonPart already does -- without it, a manually typed
+  // order number that collides with a sibling part surfaced as a raw
+  // "Unique constraint failed" Prisma error instead of a usable message.
+  // (Reordering via the move up/down arrows goes through reorderLessonPart
+  // below instead, which never hits this path.)
+  if (args.order !== current.order) {
+    const collision = await context.entities.LessonPart.findUnique({
+      where: { lessonId_order: { lessonId: current.lessonId, order: args.order } },
+    });
+    if (collision) {
+      throw new HttpError(
+        400,
+        `Part ${args.order} already exists for this lesson -- use the reorder arrows instead, or pick a different number`
+      );
+    }
+  }
+
   await context.entities.LessonPart.update({
     where: { id: args.id },
     data: {
@@ -269,6 +318,37 @@ export const updateLessonPart: UpdateLessonPart<UpdateLessonPartInput, void> = a
       sourcePages: args.sourcePages || null,
     },
   });
+};
+
+const reorderLessonPartInputSchema = z.object({ id: z.string().nonempty(), otherId: z.string().nonempty() });
+type ReorderLessonPartInput = z.infer<typeof reorderLessonPartInputSchema>;
+
+// Swaps two Parts' `order` values within the same Lesson -- backs the admin
+// page's move up/down arrows. Unlike Lesson, LessonPart has a DB-level
+// unique constraint on (lessonId, order), so a naive two-row swap would
+// violate it mid-transaction (row A's target value is row B's current
+// value, and vice versa -- whichever update runs first collides). Routed
+// through a temporary out-of-range sentinel instead.
+const REORDER_SENTINEL_ORDER = -1;
+
+export const reorderLessonPart: ReorderLessonPart<ReorderLessonPartInput, void> = async (rawArgs, context) => {
+  ensureAdmin(context.user);
+  const args = ensureArgsSchemaOrThrowHttpError(reorderLessonPartInputSchema, rawArgs);
+  if (args.id === args.otherId) return;
+
+  const [a, b] = await Promise.all([
+    context.entities.LessonPart.findUniqueOrThrow({ where: { id: args.id } }),
+    context.entities.LessonPart.findUniqueOrThrow({ where: { id: args.otherId } }),
+  ]);
+  if (a.lessonId !== b.lessonId) {
+    throw new HttpError(400, 'Can only reorder parts within the same lesson');
+  }
+
+  await prisma.$transaction([
+    context.entities.LessonPart.update({ where: { id: a.id }, data: { order: REORDER_SENTINEL_ORDER } }),
+    context.entities.LessonPart.update({ where: { id: b.id }, data: { order: a.order } }),
+    context.entities.LessonPart.update({ where: { id: a.id }, data: { order: b.order } }),
+  ]);
 };
 
 export const deleteLessonPart: DeleteLessonPart<{ id: string }, void> = async (rawArgs, context) => {

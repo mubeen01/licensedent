@@ -1,5 +1,6 @@
-import { BookOpen, CheckCircle2, ChevronDown, ChevronUp, Plus, Search, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, BookOpen, CheckCircle2, ChevronDown, ChevronUp, Eye, Plus, Search, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { type AuthUser } from 'wasp/auth';
 import {
   approveQuestion,
@@ -15,6 +16,8 @@ import {
   getQuestionsForReview,
   getSubjectsForExam,
   importQuestionsFromText,
+  reorderLesson,
+  reorderLessonPart,
   searchPublishedQuestionsForExam,
   unassignQuestionFromLessonPart,
   updateLesson,
@@ -205,8 +208,16 @@ function LessonsManagementPage({ user }: { user: AuthUser }) {
           {isLoading && <LoadingSpinner />}
 
           <div className='mt-4 flex flex-col gap-4'>
-            {visibleLessons.map((lesson) => (
-              <LessonCard key={lesson.id} lesson={lesson} subjects={subjects ?? []} onSaved={refetch} confirm={confirm} />
+            {visibleLessons.map((lesson, index) => (
+              <LessonCard
+                key={lesson.id}
+                lesson={lesson}
+                subjects={subjects ?? []}
+                onSaved={refetch}
+                confirm={confirm}
+                prevId={index > 0 ? visibleLessons[index - 1].id : null}
+                nextId={index < visibleLessons.length - 1 ? visibleLessons[index + 1].id : null}
+              />
             ))}
             {!isLoading && visibleLessons.length === 0 && (
               <p className='rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground'>
@@ -497,11 +508,15 @@ function LessonCard({
   subjects,
   onSaved,
   confirm,
+  prevId,
+  nextId,
 }: {
   lesson: AdminLesson;
   subjects: AdminSubjectOption[];
   onSaved: () => void;
   confirm: ConfirmFn;
+  prevId: string | null;
+  nextId: string | null;
 }) {
   const [title, setTitle] = useState(lesson.title);
   const [order, setOrder] = useState(String(lesson.order));
@@ -510,9 +525,27 @@ function LessonCard({
   const [isActive, setIsActive] = useState(lesson.isActive);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justSaved, setJustSaved] = useState(false);
   const [showAddPart, setShowAddPart] = useState(false);
+
+  // Swaps `order` with the given neighbor lesson -- the neighbor is whichever
+  // lesson sits next to this one in the currently visible (subject-filtered)
+  // list, not necessarily adjacent in the exam's raw order sequence.
+  async function handleReorder(otherId: string | null) {
+    if (!otherId) return;
+    setIsReordering(true);
+    setError(null);
+    try {
+      await reorderLesson({ id: lesson.id, otherId });
+      onSaved();
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to reorder');
+    } finally {
+      setIsReordering(false);
+    }
+  }
 
   const isDirty =
     title !== lesson.title ||
@@ -620,6 +653,28 @@ function LessonCard({
           </div>
         </div>
         <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-1'>
+            <Button
+              size='sm'
+              variant='ghost'
+              className='h-8 w-8 p-0 text-muted-foreground'
+              disabled={isReordering || !prevId}
+              onClick={() => handleReorder(prevId)}
+              title='Move up'
+            >
+              <ArrowUp className='h-4 w-4' />
+            </Button>
+            <Button
+              size='sm'
+              variant='ghost'
+              className='h-8 w-8 p-0 text-muted-foreground'
+              disabled={isReordering || !nextId}
+              onClick={() => handleReorder(nextId)}
+              title='Move down'
+            >
+              <ArrowDown className='h-4 w-4' />
+            </Button>
+          </div>
           <div className='flex items-center gap-2'>
             <Label htmlFor={`active-${lesson.id}`} className='text-sm text-muted-foreground'>
               Active
@@ -691,8 +746,16 @@ function LessonCard({
       </div>
 
       <div className='flex flex-col gap-3'>
-        {lesson.parts.map((part) => (
-          <PartRow key={part.id} part={part} examId={lesson.examId} onSaved={onSaved} confirm={confirm} />
+        {lesson.parts.map((part, index) => (
+          <PartRow
+            key={part.id}
+            part={part}
+            examId={lesson.examId}
+            onSaved={onSaved}
+            confirm={confirm}
+            prevId={index > 0 ? lesson.parts[index - 1].id : null}
+            nextId={index < lesson.parts.length - 1 ? lesson.parts[index + 1].id : null}
+          />
         ))}
 
         {showAddPart ? (
@@ -834,13 +897,18 @@ function PartRow({
   examId,
   onSaved,
   confirm,
+  prevId,
+  nextId,
 }: {
   part: AdminLessonPart;
   examId: string;
   onSaved: () => void;
   confirm: ConfirmFn;
+  prevId: string | null;
+  nextId: string | null;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
   const [title, setTitle] = useState(part.title);
   const [order, setOrder] = useState(String(part.order));
   const [youtubeId, setYoutubeId] = useState(part.youtubeId ?? '');
@@ -850,7 +918,22 @@ function PartRow({
   const [sourcePages, setSourcePages] = useState(part.sourcePages ?? '');
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function handleReorder(otherId: string | null) {
+    if (!otherId) return;
+    setIsReordering(true);
+    setError(null);
+    try {
+      await reorderLessonPart({ id: part.id, otherId });
+      onSaved();
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to reorder');
+    } finally {
+      setIsReordering(false);
+    }
+  }
 
   const isDirty =
     title !== part.title ||
@@ -921,6 +1004,31 @@ function PartRow({
             {part.questionCount} question{part.questionCount === 1 ? '' : 's'} · {part.youtubeId ? 'video set' : 'coming soon'}
           </span>
         </button>
+        <div className='flex shrink-0 items-center gap-0.5'>
+          <button
+            className='p-1 text-muted-foreground hover:text-foreground disabled:opacity-30'
+            disabled={isReordering || !prevId}
+            onClick={() => handleReorder(prevId)}
+            title='Move up'
+          >
+            <ArrowUp className='h-3.5 w-3.5' />
+          </button>
+          <button
+            className='p-1 text-muted-foreground hover:text-foreground disabled:opacity-30'
+            disabled={isReordering || !nextId}
+            onClick={() => handleReorder(nextId)}
+            title='Move down'
+          >
+            <ArrowDown className='h-3.5 w-3.5' />
+          </button>
+        </div>
+        <button
+          className={cn('shrink-0 text-muted-foreground hover:text-foreground', previewing && 'text-primary')}
+          onClick={() => setPreviewing((v) => !v)}
+          title='Preview what students see'
+        >
+          <Eye className='h-4 w-4' />
+        </button>
         <button
           className='shrink-0 text-muted-foreground hover:text-destructive'
           disabled={isDeleting}
@@ -933,6 +1041,35 @@ function PartRow({
           {expanded ? <ChevronUp className='h-4 w-4 text-muted-foreground' /> : <ChevronDown className='h-4 w-4 text-muted-foreground' />}
         </button>
       </div>
+
+      {previewing && (
+        <div className='flex flex-col gap-3 rounded-lg border border-dashed border-primary/40 bg-muted/30 p-3'>
+          <p className='text-xs font-semibold uppercase tracking-wide text-muted-foreground'>
+            Student preview -- exactly what /lessons renders for this part
+          </p>
+          {part.youtubeId ? (
+            <div className='aspect-video w-full overflow-hidden rounded-lg bg-black'>
+              <iframe
+                className='h-full w-full'
+                src={`https://www.youtube.com/embed/${part.youtubeId}`}
+                title={part.title}
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className='flex h-32 items-center justify-center rounded-lg bg-linear-to-br from-primary/80 to-secondary/80 text-white'>
+              <span className='rounded-full bg-black/30 px-3 py-1 text-xs font-semibold'>Video coming soon</span>
+            </div>
+          )}
+          {part.notesMarkdown ? (
+            <div className='prose prose-sm dark:prose-invert max-w-none rounded-lg bg-background p-4 leading-relaxed prose-headings:mt-3 prose-headings:mb-1.5 prose-p:my-1.5 prose-ul:my-1.5 prose-li:my-0.5 first:prose-headings:mt-0'>
+              <ReactMarkdown>{part.notesMarkdown}</ReactMarkdown>
+            </div>
+          ) : (
+            <p className='text-xs text-muted-foreground'>No notes yet -- nothing renders below the video for students.</p>
+          )}
+        </div>
+      )}
 
       {expanded && (
         <div className='flex flex-col gap-4 pt-2 border-t border-border'>

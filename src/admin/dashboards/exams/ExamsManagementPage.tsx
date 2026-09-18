@@ -42,7 +42,9 @@ function AddExamCard({ onCreated }: { onCreated: () => void }) {
   const [code, setCode] = useState('');
   const [country, setCountry] = useState('');
   const [flagEmoji, setFlagEmoji] = useState('');
+  const [authorityLabel, setAuthorityLabel] = useState('');
   const [description, setDescription] = useState('');
+  const [colorGradient, setColorGradient] = useState('');
   const [standalonePackOnly, setStandalonePackOnly] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +54,9 @@ function AddExamCard({ onCreated }: { onCreated: () => void }) {
     setCode('');
     setCountry('');
     setFlagEmoji('');
+    setAuthorityLabel('');
     setDescription('');
+    setColorGradient('');
     setStandalonePackOnly(false);
     setError(null);
   }
@@ -70,7 +74,9 @@ function AddExamCard({ onCreated }: { onCreated: () => void }) {
         code: code || null,
         country: country || null,
         flagEmoji: flagEmoji || null,
+        authorityLabel: authorityLabel || null,
         description: description || null,
+        colorGradient: colorGradient || null,
         isActive: true,
         standalonePackOnly,
       });
@@ -113,10 +119,36 @@ function AddExamCard({ onCreated }: { onCreated: () => void }) {
           <Label className='text-xs text-muted-foreground'>Flag emoji</Label>
           <Input className='mt-1' value={flagEmoji} onChange={(e) => setFlagEmoji(e.currentTarget.value)} placeholder='🇪🇬' />
         </div>
+        <div>
+          <Label className='text-xs text-muted-foreground'>Authority label</Label>
+          <Input
+            className='mt-1'
+            value={authorityLabel}
+            onChange={(e) => setAuthorityLabel(e.currentTarget.value)}
+            placeholder='Egyptian Dental Syndicate'
+          />
+        </div>
       </div>
       <div>
         <Label className='text-xs text-muted-foreground'>Description</Label>
         <Input className='mt-1' value={description} onChange={(e) => setDescription(e.currentTarget.value)} />
+      </div>
+      <div>
+        <Label className='text-xs text-muted-foreground'>
+          Card gradient (Tailwind classes, e.g. "from-amber-500 to-amber-400")
+        </Label>
+        <div className='mt-1 flex items-center gap-2'>
+          <Input
+            value={colorGradient}
+            onChange={(e) => setColorGradient(e.currentTarget.value)}
+            placeholder='from-primary to-secondary'
+            className='flex-1'
+          />
+          <span
+            className={`h-9 w-16 shrink-0 rounded-md bg-linear-to-r ${colorGradient || 'from-primary to-secondary'} shadow-xs`}
+            title='Preview'
+          />
+        </div>
       </div>
       <div className='flex items-center gap-2'>
         <Switch id='standalone-pack-only-new' checked={standalonePackOnly} onCheckedChange={setStandalonePackOnly} />
@@ -151,7 +183,9 @@ function ExamRow({ exam, onSaved }: { exam: Exam; onSaved: () => void }) {
   const [code, setCode] = useState(exam.code ?? '');
   const [country, setCountry] = useState(exam.country ?? '');
   const [flagEmoji, setFlagEmoji] = useState(exam.flagEmoji ?? '');
+  const [authorityLabel, setAuthorityLabel] = useState(exam.authorityLabel ?? '');
   const [description, setDescription] = useState(exam.description ?? '');
+  const [colorGradient, setColorGradient] = useState(exam.colorGradient ?? '');
   const [isActive, setIsActive] = useState(exam.isActive);
   const [standalonePackOnly, setStandalonePackOnly] = useState(exam.standalonePackOnly);
   const [isSaving, setIsSaving] = useState(false);
@@ -163,7 +197,9 @@ function ExamRow({ exam, onSaved }: { exam: Exam; onSaved: () => void }) {
     code !== (exam.code ?? '') ||
     country !== (exam.country ?? '') ||
     flagEmoji !== (exam.flagEmoji ?? '') ||
+    authorityLabel !== (exam.authorityLabel ?? '') ||
     description !== (exam.description ?? '') ||
+    colorGradient !== (exam.colorGradient ?? '') ||
     isActive !== exam.isActive ||
     standalonePackOnly !== exam.standalonePackOnly;
 
@@ -177,8 +213,9 @@ function ExamRow({ exam, onSaved }: { exam: Exam; onSaved: () => void }) {
         code: code || null,
         country: country || null,
         flagEmoji: flagEmoji || null,
-        authorityLabel: exam.authorityLabel,
+        authorityLabel: authorityLabel || null,
         description: description || null,
+        colorGradient: colorGradient || null,
         isActive,
         standalonePackOnly,
       });
@@ -251,11 +288,38 @@ function ExamRow({ exam, onSaved }: { exam: Exam; onSaved: () => void }) {
             placeholder='🇦🇪'
           />
         </div>
+        <div>
+          <Label className='text-xs text-muted-foreground'>Authority label</Label>
+          <Input
+            className='mt-1'
+            value={authorityLabel}
+            onChange={(e) => setAuthorityLabel(e.currentTarget.value)}
+            placeholder='Dubai Health Authority'
+          />
+        </div>
       </div>
 
       <div>
         <Label className='text-xs text-muted-foreground'>Description</Label>
         <Input className='mt-1' value={description} onChange={(e) => setDescription(e.currentTarget.value)} />
+      </div>
+
+      <div>
+        <Label className='text-xs text-muted-foreground'>
+          Card gradient (Tailwind classes, e.g. "from-amber-500 to-amber-400")
+        </Label>
+        <div className='mt-1 flex items-center gap-2'>
+          <Input
+            value={colorGradient}
+            onChange={(e) => setColorGradient(e.currentTarget.value)}
+            placeholder='from-primary to-secondary'
+            className='flex-1'
+          />
+          <span
+            className={`h-9 w-16 shrink-0 rounded-md bg-linear-to-r ${colorGradient || 'from-primary to-secondary'} shadow-xs`}
+            title='Preview'
+          />
+        </div>
       </div>
 
       <div className='flex items-center justify-between gap-4 pt-2 border-t border-border'>

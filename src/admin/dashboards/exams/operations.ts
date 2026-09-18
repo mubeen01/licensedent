@@ -31,6 +31,7 @@ const updateExamInputSchema = z.object({
   flagEmoji: z.string().nullable().optional(),
   authorityLabel: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
+  colorGradient: z.string().nullable().optional(),
   isActive: z.boolean(),
   standalonePackOnly: z.boolean().optional(),
 });
@@ -49,6 +50,7 @@ export const updateExam: UpdateExam<UpdateExamInput, void> = async (rawArgs, con
     flagEmoji: args.flagEmoji,
     authorityLabel: args.authorityLabel,
     description: args.description,
+    colorGradient: args.colorGradient,
     isActive: args.isActive,
     ...(args.standalonePackOnly !== undefined ? { standalonePackOnly: args.standalonePackOnly } : {}),
   };
@@ -80,6 +82,7 @@ const createExamInputSchema = z.object({
   flagEmoji: z.string().trim().nullable().optional(),
   authorityLabel: z.string().trim().nullable().optional(),
   description: z.string().trim().nullable().optional(),
+  colorGradient: z.string().trim().nullable().optional(),
   isActive: z.boolean().optional(),
   standalonePackOnly: z.boolean().optional(),
 });
@@ -115,6 +118,7 @@ export const createExam: CreateExam<CreateExamInput, Exam> = async (rawArgs, con
       flagEmoji: args.flagEmoji || null,
       authorityLabel: args.authorityLabel || null,
       description: args.description || null,
+      colorGradient: args.colorGradient || null,
       isActive: args.isActive ?? true,
       standalonePackOnly: args.standalonePackOnly ?? false,
     },

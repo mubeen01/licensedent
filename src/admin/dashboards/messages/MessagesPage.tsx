@@ -1,4 +1,5 @@
-import { CheckCheck, Inbox, Mail, MailOpen } from 'lucide-react';
+import { Check, CheckCheck, Copy, Inbox, Mail, MailOpen } from 'lucide-react';
+import { useState } from 'react';
 import { type AuthUser } from 'wasp/auth';
 import { getContactFormMessages, markMessageRead, markMessageReplied, useQuery } from 'wasp/client/operations';
 import { Button } from '../../../components/ui/button';
@@ -6,8 +7,11 @@ import Breadcrumb from '../../layout/Breadcrumb';
 import DefaultLayout from '../../layout/DefaultLayout';
 import LoadingSpinner from '../../layout/LoadingSpinner';
 
+const PAGE_SIZE = 50;
+
 function AdminMessages({ user }: { user: AuthUser }) {
-  const { data: messages, isLoading, refetch } = useQuery(getContactFormMessages);
+  const [skip, setSkip] = useState(0);
+  const { data: messages, isLoading, refetch } = useQuery(getContactFormMessages, { skip, take: PAGE_SIZE });
 
   async function handleMarkRead(id: string) {
     await markMessageRead({ id });
@@ -41,15 +45,22 @@ function AdminMessages({ user }: { user: AuthUser }) {
         {messages?.map((m) => (
           <div key={m.id} className='rounded-2xl border border-border bg-card shadow-xs hover:shadow-md transition-shadow p-5 flex flex-col gap-3'>
             <div className='flex items-start justify-between gap-4'>
-              <div className='flex items-center gap-2'>
+              <div className='flex flex-wrap items-center gap-2'>
                 {m.isRead ? (
-                  <MailOpen className='h-4 w-4 text-muted-foreground' />
+                  <MailOpen className='h-4 w-4 text-muted-foreground shrink-0' />
                 ) : (
-                  <Mail className='h-4 w-4 text-primary' />
+                  <Mail className='h-4 w-4 text-primary shrink-0' />
                 )}
-                <span className={m.isRead ? 'text-sm text-muted-foreground' : 'text-sm font-bold text-foreground'}>
-                  {m.user.username || m.user.email || 'Unknown user'}
-                </span>
+                {m.user.username && (
+                  <span className={m.isRead ? 'text-sm text-muted-foreground' : 'text-sm font-bold text-foreground'}>
+                    {m.user.username}
+                  </span>
+                )}
+                {m.user.email ? (
+                  <EmailBadge email={m.user.email} emphasize={!m.isRead && !m.user.username} />
+                ) : (
+                  !m.user.username && <span className='text-sm text-muted-foreground'>Unknown user</span>
+                )}
                 {!m.isRead && (
                   <span className='rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary'>
                     New
@@ -84,7 +95,63 @@ function AdminMessages({ user }: { user: AuthUser }) {
           </div>
         ))}
       </div>
+
+      {messages && messages.length > 0 && (
+        <div className='flex items-center justify-between pt-4'>
+          <button
+            className='text-sm text-muted-foreground hover:text-foreground disabled:opacity-40'
+            disabled={skip === 0}
+            onClick={() => setSkip((s) => Math.max(0, s - PAGE_SIZE))}
+          >
+            &larr; Previous
+          </button>
+          <button
+            className='text-sm text-muted-foreground hover:text-foreground disabled:opacity-40'
+            disabled={messages.length < PAGE_SIZE}
+            onClick={() => setSkip((s) => s + PAGE_SIZE)}
+          >
+            Next &rarr;
+          </button>
+        </div>
+      )}
     </DefaultLayout>
+  );
+}
+
+// Always visible regardless of whether the sender also has a username --
+// this is the one thing an admin actually needs to reply by hand, and it
+// was previously hidden whenever a username existed.
+function EmailBadge({ email, emphasize }: { email: string; emphasize: boolean }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy(e: React.MouseEvent) {
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard access can fail (permissions, non-secure context) -- the
+      // mailto link right next to this still works either way.
+    }
+  }
+
+  return (
+    <span className='inline-flex items-center gap-1'>
+      <a
+        href={`mailto:${email}`}
+        className={emphasize ? 'text-sm font-bold text-foreground hover:underline' : 'text-xs text-muted-foreground hover:underline'}
+      >
+        {email}
+      </a>
+      <button
+        onClick={handleCopy}
+        title='Copy email'
+        className='text-muted-foreground hover:text-foreground'
+      >
+        {copied ? <Check className='h-3 w-3 text-success' /> : <Copy className='h-3 w-3' />}
+      </button>
+    </span>
   );
 }
 

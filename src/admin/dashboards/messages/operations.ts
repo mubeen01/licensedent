@@ -48,15 +48,26 @@ export type ContactFormMessageWithSender = ContactFormMessage & {
   user: { email: string | null; username: string | null };
 };
 
+const getContactFormMessagesInputSchema = z.object({
+  skip: z.number().int().min(0).default(0),
+  take: z.number().int().min(1).max(100).default(50),
+});
+type GetContactFormMessagesInput = z.infer<typeof getContactFormMessagesInputSchema>;
+
 // Admin inbox list -- unread first, then newest first within each group.
-export const getContactFormMessages: GetContactFormMessages<void, ContactFormMessageWithSender[]> = async (
-  _args,
-  context
-) => {
+// Paginated (matching the Audit Log page's 50-row paging) -- previously
+// loaded every message in the table on every visit, unbounded.
+export const getContactFormMessages: GetContactFormMessages<
+  GetContactFormMessagesInput | void,
+  ContactFormMessageWithSender[]
+> = async (rawArgs, context) => {
   ensureAdmin(context.user);
+  const args = ensureArgsSchemaOrThrowHttpError(getContactFormMessagesInputSchema, rawArgs ?? {});
   return context.entities.ContactFormMessage.findMany({
     include: { user: { select: { email: true, username: true } } },
     orderBy: [{ isRead: 'asc' }, { createdAt: 'desc' }],
+    skip: args.skip,
+    take: args.take,
   });
 };
 
