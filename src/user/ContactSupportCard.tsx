@@ -2,7 +2,6 @@ import { CheckCircle2, MessageCircleMore } from 'lucide-react';
 import { useState } from 'react';
 import { createContactFormMessage } from 'wasp/client/operations';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Textarea } from '../components/ui/textarea';
 
 export default function ContactSupportCard() {
@@ -27,14 +26,12 @@ export default function ContactSupportCard() {
   }
 
   return (
-    <Card className='shadow-xl overflow-hidden'>
-      <CardHeader>
-        <CardTitle className='flex items-center gap-2 text-base'>
-          <MessageCircleMore className='w-5 h-5 text-primary' />
-          Contact support
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className='card-elevated p-6'>
+      <h3 className='flex items-center gap-2 text-base font-semibold text-foreground mb-4'>
+        <MessageCircleMore className='w-5 h-5 text-primary' />
+        Contact support
+      </h3>
+      <div>
         {sent ? (
           <div className='flex items-center gap-2 text-sm font-medium text-success'>
             <CheckCircle2 className='h-4 w-4' />
@@ -57,7 +54,7 @@ export default function ContactSupportCard() {
             </Button>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

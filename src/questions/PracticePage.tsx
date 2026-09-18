@@ -30,7 +30,7 @@ function PracticePage({ user }: { user: AuthUser }) {
         )}
 
         {stage.name === 'complete' && (
-          <div className='overflow-hidden rounded-2xl border border-border bg-card shadow-lg text-center'>
+          <div className='card-elevated overflow-hidden text-center'>
             <div className='bg-linear-to-r from-primary via-primary to-secondary p-8 md:p-10 text-primary-foreground flex flex-col items-center gap-3'>
               <PartyPopper className='h-8 w-8' />
               <h2 className='text-xl font-black'>Practice complete</h2>

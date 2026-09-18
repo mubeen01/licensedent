@@ -44,7 +44,7 @@ export default function PracticeSetup({
 
   if (!subjects || subjects.length === 0) {
     return (
-      <div className='rounded-2xl border border-border bg-card shadow-sm p-8 text-center text-sm text-muted-foreground'>
+      <div className='card-elevated p-8 text-center text-sm text-muted-foreground'>
         No published questions available yet. Check back soon.
       </div>
     );
@@ -104,10 +104,10 @@ export default function PracticeSetup({
                 key={s.id}
                 onClick={() => toggleSubject(s.id)}
                 className={cn(
-                  'group relative flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-all duration-200',
+                  'group relative flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-all duration-200 bg-linear-to-br',
                   isSelected
-                    ? 'border-primary bg-primary/5 shadow-md'
-                    : 'border-border bg-card hover:border-primary/30 hover:shadow-xs'
+                    ? 'border-primary from-primary/10 to-secondary/5 shadow-lg shadow-primary/10 -translate-y-0.5'
+                    : 'border-border from-card to-card-subtle/40 hover:border-primary/30 hover:shadow-md hover:-translate-y-0.5'
                 )}
               >
                 <span
@@ -128,7 +128,7 @@ export default function PracticeSetup({
         </div>
       </div>
 
-      <div className='rounded-2xl border border-border bg-card shadow-sm p-6 flex flex-col gap-5'>
+      <div className='card-elevated p-6 flex flex-col gap-5'>
         <div>
           <p className='text-sm font-bold uppercase tracking-wide text-muted-foreground mb-3'>
             Number of questions

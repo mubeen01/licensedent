@@ -5,7 +5,6 @@ import { completeOnboarding, getMyDashboardScope, getPublicExams, useQuery } fro
 import { useNavigate } from 'react-router';
 import { routes } from 'wasp/client/router';
 import { Button } from '../components/ui/button';
-import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Progress } from '../components/ui/progress';
@@ -150,12 +149,22 @@ function OnboardingPage({ user }: { user: AuthUser }) {
   }
 
   return (
-    <div className='min-h-screen bg-linear-to-br from-primary/5 via-secondary/5 to-gold/5 flex items-center justify-center p-4 md:p-8'>
-      <div className='w-full max-w-2xl'>
-        <p className='text-center text-sm font-semibold text-muted-foreground mb-6'>LicenseDent</p>
+    <div className='relative min-h-screen overflow-hidden bg-linear-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4 md:p-8'>
+      <div className='pointer-events-none absolute -top-32 -left-20 h-96 w-96 rounded-full bg-primary/15 blur-3xl' />
+      <div className='pointer-events-none absolute -bottom-32 -right-20 h-96 w-96 rounded-full bg-secondary/15 blur-3xl' />
+
+      <div className='relative w-full max-w-2xl'>
+        <div className='flex items-center justify-center gap-2.5 mb-8'>
+          <div className='w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0 shadow-xs ring-2 ring-primary/25 ring-offset-1 ring-offset-background'>
+            <img src='/logo/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
+          </div>
+          <p className='text-sm font-semibold text-foreground'>LicenseDent</p>
+        </div>
 
         <div className='flex items-center justify-between mb-2'>
-          <h1 className='text-xl font-black text-foreground'>Let's set up your prep</h1>
+          <h1 className='text-2xl font-black tracking-tight bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent'>
+            Let's set up your prep
+          </h1>
           <span className='text-sm font-medium text-muted-foreground'>Step {currentStep} of 3</span>
         </div>
         <Progress value={currentStep * 33.33} className='mb-6' />
@@ -169,8 +178,8 @@ function OnboardingPage({ user }: { user: AuthUser }) {
               <div key={label} className='flex flex-col items-center gap-1.5'>
                 <div
                   className={cn(
-                    'flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold',
-                    isCurrent && 'bg-primary text-primary-foreground',
+                    'flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all',
+                    isCurrent && 'bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-md shadow-primary/30',
                     isDone && 'bg-success text-success-foreground',
                     !isCurrent && !isDone && 'bg-muted text-muted-foreground'
                   )}
@@ -190,7 +199,7 @@ function OnboardingPage({ user }: { user: AuthUser }) {
           })}
         </div>
 
-        <Card className='p-8'>
+        <div className='card-elevated p-8'>
           {currentStep === 1 && (
             <div className='flex flex-col gap-5'>
               <div>
@@ -338,7 +347,7 @@ function OnboardingPage({ user }: { user: AuthUser }) {
               </Button>
             )}
           </div>
-        </Card>
+        </div>
 
         <p className='text-center text-xs text-muted-foreground mt-4'>
           This helps us personalize your dashboard and practice plan.

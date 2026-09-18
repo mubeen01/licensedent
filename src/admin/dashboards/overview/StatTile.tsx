@@ -1,6 +1,5 @@
 import { type LucideIcon, Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router';
-import { Card, CardContent, CardHeader } from '../../../components/ui/card';
 import { cn } from '../../../lib/utils';
 
 type Accent = 'primary' | 'secondary' | 'success' | 'warning' | 'destructive' | 'gold';
@@ -44,13 +43,8 @@ export default function StatTile({
     deltaDirection === null || deltaDirection === 'flat' ? null : deltaDirection === deltaGoodDirection;
 
   const card = (
-    <Card
-      className={cn(
-        'rounded-2xl border-border/80 shadow-xs transition-all duration-200',
-        href && 'hover:-translate-y-1 hover:shadow-lg cursor-pointer'
-      )}
-    >
-      <CardHeader className='pb-2 flex-row items-center justify-between space-y-0'>
+    <div className={cn('card-elevated p-5', href && 'card-elevated-hover cursor-pointer')}>
+      <div className='flex items-center justify-between pb-2'>
         <div className={cn('flex h-12 w-12 items-center justify-center rounded-2xl', bg, text)}>
           <Icon className='size-6' />
         </div>
@@ -71,15 +65,13 @@ export default function StatTile({
             {Math.abs(deltaPercent!).toFixed(0)}%
           </span>
         )}
-      </CardHeader>
-      <CardContent>
-        <h4 className={cn('text-title-md font-bold tabular-nums', text)}>
-          {isLoading ? '…' : typeof value === 'number' ? value.toLocaleString() : value}
-        </h4>
-        <span className='text-sm font-medium text-muted-foreground'>{label}</span>
-        {sub && <p className='mt-1 text-xs text-muted-foreground'>{sub}</p>}
-      </CardContent>
-    </Card>
+      </div>
+      <h4 className={cn('text-title-md font-bold tabular-nums', text)}>
+        {isLoading ? '…' : typeof value === 'number' ? value.toLocaleString() : value}
+      </h4>
+      <span className='text-sm font-medium text-muted-foreground'>{label}</span>
+      {sub && <p className='mt-1 text-xs text-muted-foreground'>{sub}</p>}
+    </div>
   );
 
   return href ? (

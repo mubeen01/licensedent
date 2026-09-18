@@ -1,7 +1,6 @@
 import { ClipboardCheck, GraduationCap, History, type LucideIcon, MessageCircleMore, Tags, Upload, Users } from 'lucide-react';
 import { Link } from 'react-router';
 import { getAdminOverviewStats, getSubjectsForReview, useQuery } from 'wasp/client/operations';
-import { Card } from '../../../components/ui/card';
 import { cn } from '../../../lib/utils';
 
 type Action = {
@@ -52,7 +51,7 @@ export default function QuickActions() {
   };
 
   return (
-    <Card className='rounded-2xl border-border/80 shadow-xs p-5 md:p-6'>
+    <div className='card-elevated p-5 md:p-6'>
       <h3 className='text-sm font-bold text-foreground mb-4'>Quick actions</h3>
       <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3'>
         {actions.map((action) => {
@@ -83,6 +82,6 @@ export default function QuickActions() {
           );
         })}
       </div>
-    </Card>
+    </div>
   );
 }

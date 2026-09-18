@@ -5,7 +5,6 @@ import ReactApexChart from '../lib/reactApexChart';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { getMyStudyPlan, getReadinessScore, updateTargetExamDate, useQuery } from 'wasp/client/operations';
 import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import { todayISODate } from './greeting';
 
@@ -35,25 +34,21 @@ export default function StudyPlanCard() {
 
   if (isLoadingPlan) {
     return (
-      <Card>
-        <CardContent className='p-8'>
-          <LoadingSpinner />
-        </CardContent>
-      </Card>
+      <div className='card-elevated p-8'>
+        <LoadingSpinner />
+      </div>
     );
   }
 
   if (!plan?.hasTargetDate || isEditingDate) {
     return (
-      <Card>
-        <CardContent className='p-6 md:p-8'>
-          <ExamDateForm
-            defaultValue={plan?.targetExamDate}
-            onSaved={() => setIsEditingDate(false)}
-            onCancel={plan?.hasTargetDate ? () => setIsEditingDate(false) : undefined}
-          />
-        </CardContent>
-      </Card>
+      <div className='card-elevated p-6 md:p-8'>
+        <ExamDateForm
+          defaultValue={plan?.targetExamDate}
+          onSaved={() => setIsEditingDate(false)}
+          onCancel={plan?.hasTargetDate ? () => setIsEditingDate(false) : undefined}
+        />
+      </div>
     );
   }
 
@@ -73,8 +68,7 @@ export default function StudyPlanCard() {
   };
 
   return (
-    <Card>
-      <CardContent className='p-6 md:p-8'>
+    <div className='card-elevated p-6 md:p-8'>
         <div className='flex items-start justify-between mb-4'>
           <div className='flex items-center gap-2'>
             <CalendarClock className='w-4 h-4 text-muted-foreground' />
@@ -138,8 +132,7 @@ export default function StudyPlanCard() {
             Great coverage across every subject — keep up regular practice and mock exams.
           </p>
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 }
 

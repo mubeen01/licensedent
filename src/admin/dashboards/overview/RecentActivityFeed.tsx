@@ -1,7 +1,6 @@
 import { CreditCard, History, MessageCircle, UserPlus } from 'lucide-react';
 import { Link } from 'react-router';
 import { getAdminRecentActivity, useQuery } from 'wasp/client/operations';
-import { Card } from '../../../components/ui/card';
 import { cn } from '../../../lib/utils';
 import LoadingSpinner from '../../layout/LoadingSpinner';
 
@@ -31,7 +30,7 @@ export default function RecentActivityFeed() {
   const { data: events, isLoading } = useQuery(getAdminRecentActivity);
 
   return (
-    <Card className='rounded-2xl border-border/80 shadow-xs p-5 md:p-6 h-full flex flex-col'>
+    <div className='card-elevated p-5 md:p-6 h-full flex flex-col'>
       <div className='flex items-center justify-between mb-4'>
         <h3 className='text-sm font-bold text-foreground'>Recent activity</h3>
       </div>
@@ -74,6 +73,6 @@ export default function RecentActivityFeed() {
           })}
         </ul>
       )}
-    </Card>
+    </div>
   );
 }
