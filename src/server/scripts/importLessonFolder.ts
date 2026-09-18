@@ -257,7 +257,13 @@ export async function importLessonFolder(prismaClient: PrismaClient) {
     console.log(`[lesson] "${LESSON_TITLE}" not found${dryRun ? ' (dry-run: would create)' : ''}`);
     if (!dryRun) {
       lesson = await createLesson(
-        { examId: exam.id, title: LESSON_TITLE, order: parseInt(LESSON_ORDER, 10), passThresholdPercent: 70 },
+        {
+          examId: exam.id,
+          subjectId: subject?.id ?? null,
+          title: LESSON_TITLE,
+          order: parseInt(LESSON_ORDER, 10),
+          passThresholdPercent: 70,
+        },
         context
       );
     }
