@@ -247,24 +247,14 @@ export default app({
     "<meta name='author' content='LicenseDent' />",
     "<meta name='keywords' content='DHA exam prep, HAAD exam, IDC Ireland exam, dental licensing exam, dentist mock test, DHA MCQs, LicenseDent' />",
 
-    "<meta property='og:type' content='website' />",
-    "<meta property='og:title' content='LicenseDent - Gulf + Ireland Dental Licensing Exam Prep' />",
-    "<meta property='og:site_name' content='LicenseDent' />",
-    "<meta property='og:url' content='https://licensedent.com' />",
-    "<meta property='og:description' content='Practice-question bank, timed mock tests and subject-wise revision for DHA, HAAD, MOH, SMLE and IDC Ireland dental licensing exams.' />",
-    // A raster PNG, not the licensedent-logo-primary.svg it used to point
-    // at -- Twitter/X, Facebook and LinkedIn's unfurl crawlers don't render
-    // SVG for og:image/twitter:image at all, so link previews were silently
-    // showing no image whatsoever. Rendered from that same source SVG via
-    // @resvg/resvg-js (scratch-installed, not a project dependency); real
-    // dimensions below (1200x348, the source's own ~3.44:1 aspect ratio --
-    // wider than the "ideal" 1.91:1 large-card ratio, but a real working
-    // image beats a correctly-proportioned one nobody's crawler can render).
-    "<meta property='og:image' content='https://licensedent.com/logo/og-image.png' />",
-    "<meta name='twitter:image' content='https://licensedent.com/logo/og-image.png' />",
-    "<meta name='twitter:image:width' content='1200' />",
-    "<meta name='twitter:image:height' content='348' />",
-    "<meta name='twitter:card' content='summary_large_image' />",
+    // Open Graph/Twitter tags used to be static here (homepage copy only),
+    // duplicating what SeoHead.tsx now renders per-page -- confirmed via a
+    // live curl that both sets landed in the same document, static one
+    // first. Since most OG/Twitter card parsers take the first matching
+    // tag, that meant every page's own og:title/description/url was
+    // silently ignored in favor of the homepage's. Removed here entirely;
+    // SeoHead.tsx (rendered on every public/auth/checkout page) is now the
+    // only source of these tags, with real per-page values.
     // TODO: You can put your Plausible analytics scripts below (https://docs.opensaas.sh/guides/analytics/):
     // NOTE: Plausible does not use Cookies, so you can simply add the scripts here.
     // Google, on the other hand, does, so you must instead add the script dynamically

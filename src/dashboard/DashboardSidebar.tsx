@@ -112,7 +112,7 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       <div className='flex items-center justify-between px-5 py-4 border-b border-border shrink-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent'>
         <WaspRouterLink to='/' className='flex items-center space-x-2.5'>
           <div className='w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0 shadow-xs ring-2 ring-primary/25 ring-offset-1 ring-offset-background'>
-            <img src='/logo/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
+            <img src='/logo/licensedent-icon.svg' alt='LicenseDent' width={512} height={512} className='h-full w-full object-cover' />
           </div>
           <div>
             <h1 className='text-sm font-semibold text-foreground leading-tight'>LicenseDent</h1>

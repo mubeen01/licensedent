@@ -218,6 +218,6 @@ const NavLogo = ({ isScrolled }: { isScrolled: boolean }) => (
     })}
     aria-hidden='true'
   >
-    <img src='/logo/licensedent-icon.svg' alt='' className='size-full object-cover' />
+    <img src='/logo/licensedent-icon.svg' alt='' width={512} height={512} className='size-full object-cover' />
   </span>
 );

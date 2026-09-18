@@ -154,7 +154,7 @@ function OnboardingPage({ user }: { user: AuthUser }) {
       <div className='relative w-full max-w-2xl'>
         <div className='flex items-center justify-center gap-2.5 mb-8'>
           <div className='w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0 shadow-xs ring-2 ring-primary/25 ring-offset-1 ring-offset-background'>
-            <img src='/logo/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
+            <img src='/logo/licensedent-icon.svg' alt='LicenseDent' width={512} height={512} className='h-full w-full object-cover' />
           </div>
           <p className='text-sm font-semibold text-foreground'>LicenseDent</p>
         </div>

@@ -31,7 +31,7 @@ export default function Footer({
           <div className='col-span-2 md:col-span-5 md:pr-8'>
             <WaspRouterLink to={routes.LandingPageRoute.to} className='flex items-center gap-2'>
               <span className='flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl shadow-xs'>
-                <img src='/logo/licensedent-icon.svg' alt='LicenseDent' className='h-full w-full object-cover' />
+                <img src='/logo/licensedent-icon.svg' alt='LicenseDent' width={512} height={512} className='h-full w-full object-cover' />
               </span>
               <span className='text-lg font-bold text-foreground'>LicenseDent</span>
             </WaspRouterLink>

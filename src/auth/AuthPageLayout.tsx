@@ -30,7 +30,7 @@ export function AuthPageLayout({ children }: { children: ReactNode }) {
           aria-hidden='true'
         />
         <div className='relative flex items-center gap-3'>
-          <img src='/logo/licensedent-icon.svg' alt='LicenseDent' className='h-10 w-10 rounded-xl shadow-xs' />
+          <img src='/logo/licensedent-icon.svg' alt='LicenseDent' width={512} height={512} className='h-10 w-10 rounded-xl shadow-xs' />
           <span className='text-2xl font-bold'>LicenseDent</span>
         </div>
         <div className='relative max-w-md'>

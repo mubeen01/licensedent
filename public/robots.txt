@@ -6,5 +6,23 @@
 User-agent: *
 Allow: /
 
+# Defense-in-depth alongside each of these routes' own noindex meta tag
+# (SeoHead's `noindex` prop) -- none of these are ever linked from the
+# sitemap, but this stops a crawler from indexing them even if it ever
+# discovers a link (internal nav, a leaked URL, etc). Every authRequired
+# route prefix from main.wasp.ts.
+Disallow: /account
+Disallow: /admin
+Disallow: /billing
+Disallow: /checkout
+Disallow: /dashboard
+Disallow: /lessons
+Disallow: /mock-exams
+Disallow: /onboarding
+Disallow: /practice
+Disallow: /progress
+Disallow: /quiz-builder
+Disallow: /video-lectures
+
 Sitemap: https://licensedent.com/sitemap.xml
 Sitemap: https://licensedent.com/blog/sitemap-index.xml

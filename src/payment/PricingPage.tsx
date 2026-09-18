@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { cn } from '../lib/utils';
 import { pricingTeaserPlans } from '../landing-page/contentSections';
 import { PaymentPlanId, getPlanPrice, paymentPlans, prettyPaymentPlanName, SubscriptionStatus } from './plans';
-import SeoHead from '../client/components/SeoHead';
+import SeoHead, { SITE_ORIGIN } from '../client/components/SeoHead';
 
 const bestDealPaymentPlanId: PaymentPlanId = PaymentPlanId.Standard;
 
@@ -80,6 +80,27 @@ export const paymentPlanCards: Record<PaymentPlanId, PaymentPlanCard> = {
       'Progress analytics',
     ],
   },
+};
+
+// Product/Offer JSON-LD for the plans actually on sale -- excludes IDC
+// Pathway (not purchasable yet, see visiblePaymentPlanIds' own comment).
+// Wasp's SDK build (not just tsc) will throw on non-serializable content,
+// so this stays plain data, no functions.
+const offerJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: 'LicenseDent Exam Prep Plan',
+  description: 'One-time-purchase dental licensing exam prep plans -- question bank, mock tests and progress analytics.',
+  offers: (
+    [PaymentPlanId.FastTrack, PaymentPlanId.Standard, PaymentPlanId.Extended] as const
+  ).map((planId) => ({
+    '@type': 'Offer',
+    name: paymentPlanCards[planId].name,
+    price: getPlanPrice(planId).replace(/[^0-9.]/g, ''),
+    priceCurrency: 'USD',
+    url: `${SITE_ORIGIN}/pricing`,
+    availability: 'https://schema.org/InStock',
+  })),
 };
 
 const PricingPage = () => {
@@ -176,6 +197,7 @@ const PricingPage = () => {
         title='Pricing — Plans for Gulf & Ireland Dental Exam Prep | LicenseDent'
         description='Fast Track, Standard and Extended plans for DHA, HAAD, MOH, SMLE, OMSB, QCHP, KMLE, NHRA, SHA and IDC Ireland exam prep. Human-verified content, no ads.'
         path='/pricing'
+        extraJsonLd={[offerJsonLd]}
       />
       <div className='pointer-events-none absolute inset-0 -z-10' aria-hidden='true'>
         <div className='absolute -top-24 left-1/4 h-96 w-96 rounded-full bg-primary/15 blur-3xl' />
@@ -185,7 +207,7 @@ const PricingPage = () => {
         <div id='pricing' className='mx-auto max-w-4xl text-center'>
           <div className='flex justify-center'>
             <span className='inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary'>
-              <img src='/logo/licensedent-icon.svg' alt='' className='h-5 w-5 rounded-md' />
+              <img src='/logo/licensedent-icon.svg' alt='' width={512} height={512} className='h-5 w-5 rounded-md' />
               LicenseDent · Gulf + Ireland · dentist-verified
             </span>
           </div>
