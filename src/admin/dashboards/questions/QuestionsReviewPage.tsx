@@ -23,6 +23,7 @@ import {
   getImportBatches,
   getQuestionBankStats,
   getQuestionById,
+  getQuestionIdsForReview,
   getQuestionsForReview,
   getSubjectsForReview,
   updateSubject,
@@ -49,6 +50,7 @@ import QuestionReviewCard, { type QuestionReviewCardHandle } from './QuestionRev
 import QuestionRow from './QuestionRow';
 import QuestionSearchBar from './QuestionSearchBar';
 import ReviewerActivityTile from './ReviewerActivityTile';
+import { showUndoToast } from './undoToast';
 import { useReviewShortcuts } from './useReviewShortcuts';
 
 const PAGE_SIZE = 20;
@@ -89,6 +91,7 @@ function QuestionsReviewPage({ user }: { user: AuthUser }) {
   // subject/batch switch, view switch, or page turn, so it can never silently
   // carry over to a different filter than the one the admin was looking at.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isSelectingAllMatching, setIsSelectingAllMatching] = useState(false);
   const [isBulkActing, setIsBulkActing] = useState(false);
   const [moveTargetSubjectId, setMoveTargetSubjectId] = useState('');
   const [bulkTagDifficulty, setBulkTagDifficulty] = useState('');
@@ -245,6 +248,36 @@ function QuestionsReviewPage({ user }: { user: AuthUser }) {
     });
   }
 
+  // Bulk actions previously topped out at whatever fit on one 20-row page --
+  // small against a bank that can run into the thousands for one subject.
+  // This fetches every id matching the exact same filter currently on
+  // screen (server-capped at MAX_BULK_QUESTION_IDS, same cap
+  // bulkQuestionAction itself enforces) and selects all of them at once, so
+  // the existing bulk-action buttons below just work across the whole
+  // filtered set instead of only the current page.
+  async function handleSelectAllMatching() {
+    if (!selection) return;
+    setIsSelectingAllMatching(true);
+    setBulkResult(null);
+    try {
+      const result = await getQuestionIdsForReview(
+        selection.kind === 'subject'
+          ? { subjectId: selection.id, status: view, needsTagging: needsTaggingOnly, missingAiDraft: missingAiDraftOnly }
+          : { importBatchId: selection.id, status: view, needsTagging: needsTaggingOnly, missingAiDraft: missingAiDraftOnly }
+      );
+      setSelectedIds(new Set(result.ids));
+      if (result.totalCount > result.ids.length) {
+        setBulkResult(
+          `Selected the first ${result.ids.length} of ${result.totalCount} matching questions -- bulk actions are capped at ${result.ids.length} at a time.`
+        );
+      }
+    } catch (e: any) {
+      setBulkResult(e?.message ?? 'Failed to select all matching questions');
+    } finally {
+      setIsSelectingAllMatching(false);
+    }
+  }
+
   // Moves the detail pane to the question right after the one that was just
   // acted on (or the one before, if that was the last on the page) -- so
   // Approve/Reject/Delete/Send-back-to-review can be chained via keyboard
@@ -314,6 +347,9 @@ function QuestionsReviewPage({ user }: { user: AuthUser }) {
       onReject: () => isReviewOpen && detailCardRef.current?.reject(),
       onSave: () => isReviewOpen && detailCardRef.current?.save(),
       onFocusSearch: () => searchInputRef.current?.focus(),
+      onSetDifficulty: (level) => isReviewOpen && detailCardRef.current?.setDifficulty(level),
+      onToggleHighYield: () => isReviewOpen && detailCardRef.current?.toggleHighYield(),
+      onToggleCaseBased: () => isReviewOpen && detailCardRef.current?.toggleCaseBased(),
     },
     !!selection
   );
@@ -333,6 +369,43 @@ function QuestionsReviewPage({ user }: { user: AuthUser }) {
   }
 
   const { confirm: confirmBulk, ConfirmDialog: BulkConfirmDialog } = useConfirm();
+
+  type BulkActionResult = Awaited<ReturnType<typeof bulkQuestionAction>>;
+
+  // Constructs and runs the inverse of a just-completed bulk action from the
+  // `undo` info bulkQuestionAction returned -- see BulkUndoInfo in
+  // operations.ts for why delete/draftAi/acceptAiSuggestions/tag don't offer
+  // this (nothing to restore, or would need a per-question value snapshot).
+  async function undoBulkAction(undo: NonNullable<BulkActionResult['undo']>) {
+    switch (undo.kind) {
+      case 'approve':
+      case 'reject':
+        await bulkQuestionAction({ action: 'unpublish', questionIds: undo.questionIds });
+        break;
+      case 'unpublish': {
+        const toApprove = undo.restore.filter((r) => r.toStatus === 'published').map((r) => r.id);
+        const toReject = undo.restore.filter((r) => r.toStatus === 'rejected').map((r) => r.id);
+        if (toApprove.length > 0) await bulkQuestionAction({ action: 'approve', questionIds: toApprove });
+        if (toReject.length > 0) await bulkQuestionAction({ action: 'reject', questionIds: toReject });
+        break;
+      }
+      case 'move': {
+        // A selection can span more than one original subject, so group by
+        // where each question actually came from rather than assuming a
+        // single previous subject for the whole batch.
+        const bySubject = new Map<string, string[]>();
+        for (const r of undo.restore) {
+          bySubject.set(r.previousSubjectId, [...(bySubject.get(r.previousSubjectId) ?? []), r.id]);
+        }
+        for (const [targetSubjectId, questionIds] of bySubject) {
+          await bulkQuestionAction({ action: 'move', questionIds, targetSubjectId });
+        }
+        break;
+      }
+    }
+    refetchQuestions();
+    refetchSubjects();
+  }
 
   async function runBulkAction(
     actionLabel: string,
@@ -359,6 +432,10 @@ function QuestionsReviewPage({ user }: { user: AuthUser }) {
       setBulkTagDifficulty('');
       refetchQuestions();
       refetchSubjects();
+      if (result.undo) {
+        const undo = result.undo;
+        showUndoToast(`${actionLabel} ${result.succeeded} question(s).`, () => undoBulkAction(undo));
+      }
     } catch (e: any) {
       setBulkResult(e?.message ?? `${actionLabel} failed`);
     } finally {
@@ -693,6 +770,17 @@ function QuestionsReviewPage({ user }: { user: AuthUser }) {
                     />
                     Select all on this page
                   </label>
+                )}
+                {questions && questions.length > 0 && (
+                  <button
+                    type='button'
+                    disabled={isSelectingAllMatching}
+                    onClick={handleSelectAllMatching}
+                    className='text-[11px] font-semibold text-primary hover:underline disabled:opacity-50 disabled:no-underline'
+                    title='Selects every question matching the current filters, not just this page -- bulk actions below then apply to all of them at once'
+                  >
+                    {isSelectingAllMatching ? 'Selecting…' : 'Select all matching this filter'}
+                  </button>
                 )}
               </div>
 

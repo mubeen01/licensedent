@@ -1,3 +1,4 @@
+import { type Prisma } from '@prisma/client';
 import { type Exam, type ImportBatch, type Question, type QuestionVersion, type Subject } from 'wasp/entities';
 import { HttpError, prisma } from 'wasp/server';
 import {
@@ -12,6 +13,7 @@ import {
   type GetImportBatches,
   type GetQuestionBankStats,
   type GetQuestionById,
+  type GetQuestionIdsForReview,
   type GetQuestionImageUploadUrl,
   type GetQuestionsForReview,
   type GetQuestionVersions,
@@ -512,6 +514,37 @@ export const deleteSubject: DeleteSubject<DeleteSubjectInput, { id: string }> = 
   return { id };
 };
 
+// Bulk actions (below) hard-cap a single call at this many ids -- reused here
+// as the cap for "select all N matching this filter" too, since selecting
+// more than bulkQuestionAction could ever act on isn't useful.
+const MAX_BULK_QUESTION_IDS = 200;
+
+type QuestionReviewFilterArgs = {
+  importBatchId?: string;
+  subjectId?: string;
+  status: 'unreviewed' | 'published' | 'rejected';
+  needsTagging: boolean;
+  missingAiDraft: boolean;
+};
+
+// Shared between getQuestionsForReview (paginated list) and
+// getQuestionIdsForReview (unpaginated id lookup, for "select all matching")
+// so the two can never silently drift apart and select a different set of
+// questions than what's actually shown on screen.
+function buildQuestionReviewWhere(args: QuestionReviewFilterArgs): Prisma.QuestionWhereInput {
+  return {
+    ...(args.subjectId ? { subjectId: args.subjectId } : { importBatchId: args.importBatchId }),
+    status:
+      args.status === 'published'
+        ? 'published'
+        : args.status === 'rejected'
+          ? 'rejected'
+          : { in: ['pending', 'flagged'] },
+    ...(args.needsTagging ? { difficulty: null } : {}),
+    ...(args.missingAiDraft ? { suggestedExplanation: null } : {}),
+  };
+}
+
 const getQuestionsForReviewInputSchema = z
   .object({
     importBatchId: z.string().nonempty().optional(),
@@ -558,17 +591,7 @@ export const getQuestionsForReview: GetQuestionsForReview<GetQuestionsForReviewI
   const args = ensureArgsSchemaOrThrowHttpError(getQuestionsForReviewInputSchema, rawArgs);
 
   const questions = await context.entities.Question.findMany({
-    where: {
-      ...(args.subjectId ? { subjectId: args.subjectId } : { importBatchId: args.importBatchId }),
-      status:
-        args.status === 'published'
-          ? 'published'
-          : args.status === 'rejected'
-            ? 'rejected'
-            : { in: ['pending', 'flagged'] },
-      ...(args.needsTagging ? { difficulty: null } : {}),
-      ...(args.missingAiDraft ? { suggestedExplanation: null } : {}),
-    },
+    where: buildQuestionReviewWhere(args),
     orderBy:
       args.sortBy === 'newest'
         ? { createdAt: 'desc' }
@@ -615,6 +638,48 @@ export const getQuestionsForReview: GetQuestionsForReview<GetQuestionsForReviewI
       };
     })
   );
+};
+
+const getQuestionIdsForReviewInputSchema = z
+  .object({
+    importBatchId: z.string().nonempty().optional(),
+    subjectId: z.string().nonempty().optional(),
+    status: z.enum(['unreviewed', 'published', 'rejected']).default('unreviewed'),
+    needsTagging: z.boolean().optional().default(false),
+    missingAiDraft: z.boolean().optional().default(false),
+  })
+  .refine((v) => !!v.importBatchId || !!v.subjectId, {
+    message: 'Either importBatchId or subjectId is required',
+  });
+type GetQuestionIdsForReviewInput = z.infer<typeof getQuestionIdsForReviewInputSchema>;
+
+// Backs "select all N matching this filter" in the review list: the list
+// query above is paginated (skip/take), so selecting beyond the loaded page
+// needs a separate, unpaginated id lookup against the exact same filter
+// (buildQuestionReviewWhere, shared with getQuestionsForReview so the two
+// can't select a different set than what's on screen). Capped at
+// MAX_BULK_QUESTION_IDS since bulkQuestionAction itself won't act on more
+// than that in one call -- totalCount is returned uncapped so the UI can say
+// "selected the first 200 of 812 matching" when the real count exceeds it.
+export const getQuestionIdsForReview: GetQuestionIdsForReview<
+  GetQuestionIdsForReviewInput,
+  { ids: string[]; totalCount: number }
+> = async (rawArgs, context) => {
+  ensureAdmin(context.user);
+  const args = ensureArgsSchemaOrThrowHttpError(getQuestionIdsForReviewInputSchema, rawArgs);
+  const where = buildQuestionReviewWhere(args);
+
+  const [rows, totalCount] = await Promise.all([
+    context.entities.Question.findMany({
+      where,
+      select: { id: true },
+      orderBy: { createdAt: 'asc' },
+      take: MAX_BULK_QUESTION_IDS,
+    }),
+    context.entities.Question.count({ where }),
+  ]);
+
+  return { ids: rows.map((r) => r.id), totalCount };
 };
 
 const optionSchema = z.object({ key: z.string(), text: z.string() });
@@ -926,8 +991,6 @@ export const deleteQuestion: DeleteQuestion<DeleteQuestionInput, { id: string }>
   return { id };
 };
 
-const MAX_BULK_QUESTION_IDS = 200;
-
 const bulkQuestionActionInputSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('approve'), questionIds: z.array(z.string().nonempty()).min(1).max(MAX_BULK_QUESTION_IDS) }),
   z.object({
@@ -983,11 +1046,23 @@ const bulkQuestionActionInputSchema = z.discriminatedUnion('action', [
 );
 type BulkQuestionActionInput = z.infer<typeof bulkQuestionActionInputSchema>;
 
+// Lets the frontend show an "Undo" toast after approve/reject/unpublish/move
+// without a separate lookup -- each variant carries exactly what's needed to
+// construct the inverse bulkQuestionAction call(s). Deliberately not offered
+// for delete (a hard delete has nothing to restore), draftAi (non-destructive,
+// a redraft is just as cheap), acceptAiSuggestions, or tag (both would need a
+// per-question snapshot of every prior field value, not just ids -- deferred).
+type BulkUndoInfo =
+  | { kind: 'approve' | 'reject'; questionIds: string[] }
+  | { kind: 'unpublish'; restore: { id: string; toStatus: 'published' | 'rejected' }[] }
+  | { kind: 'move'; restore: { id: string; previousSubjectId: string }[] };
+
 type BulkQuestionActionResult = {
   action: 'approve' | 'reject' | 'delete' | 'move' | 'draftAi' | 'acceptAiSuggestions' | 'unpublish' | 'tag';
   attempted: number;
   succeeded: number;
   skipped: { id: string; reason: string }[];
+  undo?: BulkUndoInfo;
 };
 
 // Same skeleton for every branch: load the selected rows, sort into
@@ -1095,7 +1170,13 @@ export const bulkQuestionAction: BulkQuestionAction<BulkQuestionActionInput, Bul
       details: summaryDetails(eligible),
     });
 
-    return { action: 'approve', attempted: args.questionIds.length, succeeded: eligible.length, skipped };
+    return {
+      action: 'approve',
+      attempted: args.questionIds.length,
+      succeeded: eligible.length,
+      skipped,
+      undo: eligible.length > 0 ? { kind: 'approve', questionIds: eligible.map((q) => q.id) } : undefined,
+    };
   }
 
   if (args.action === 'reject') {
@@ -1128,7 +1209,13 @@ export const bulkQuestionAction: BulkQuestionAction<BulkQuestionActionInput, Bul
       details: summaryDetails(eligible),
     });
 
-    return { action: 'reject', attempted: args.questionIds.length, succeeded: eligible.length, skipped };
+    return {
+      action: 'reject',
+      attempted: args.questionIds.length,
+      succeeded: eligible.length,
+      skipped,
+      undo: eligible.length > 0 ? { kind: 'reject', questionIds: eligible.map((q) => q.id) } : undefined,
+    };
   }
 
   if (args.action === 'delete') {
@@ -1203,7 +1290,24 @@ export const bulkQuestionAction: BulkQuestionAction<BulkQuestionActionInput, Bul
       details: summaryDetails(eligible),
     });
 
-    return { action: 'unpublish', attempted: args.questionIds.length, succeeded: eligible.length, skipped };
+    return {
+      action: 'unpublish',
+      attempted: args.questionIds.length,
+      succeeded: eligible.length,
+      skipped,
+      // 'unpublish' serves both "send back" (from published) and "restore"
+      // (from rejected) -- eligible[].status here is still each question's
+      // PRE-mutation value (captured before the updateMany above ran), so
+      // undo can send each one back to the specific status it actually came
+      // from instead of guessing a single direction for the whole batch.
+      undo:
+        eligible.length > 0
+          ? {
+              kind: 'unpublish',
+              restore: eligible.map((q) => ({ id: q.id, toStatus: q.status as 'published' | 'rejected' })),
+            }
+          : undefined,
+    };
   }
 
   if (args.action === 'draftAi') {
@@ -1332,7 +1436,20 @@ export const bulkQuestionAction: BulkQuestionAction<BulkQuestionActionInput, Bul
     details: { ...summaryDetails(questions), targetSubjectId: args.targetSubjectId },
   });
 
-  return { action: 'move', attempted: args.questionIds.length, succeeded: questions.length, skipped };
+  return {
+    action: 'move',
+    attempted: args.questionIds.length,
+    succeeded: questions.length,
+    skipped,
+    // questions[].subjectId here is still each question's PRE-move value --
+    // a selection can span more than one original subject (e.g. moving a
+    // mixed "select all matching" batch), so undo restores each question to
+    // its own previous subject rather than assuming they all came from one.
+    undo:
+      questions.length > 0
+        ? { kind: 'move', restore: questions.map((q) => ({ id: q.id, previousSubjectId: q.subjectId })) }
+        : undefined,
+  };
 };
 
 /* -------------------------------------------------------------------------- */

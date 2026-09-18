@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { useAuth } from 'wasp/client/auth';
 import { getMyOnboardingProfile, useQuery } from 'wasp/client/operations';
@@ -116,6 +117,11 @@ export default function App() {
         )}
       </div>
       <CookieConsentBanner />
+      {/* Global toast portal -- currently only used for the admin review
+          queue's undo toasts (see undoToast.tsx), which render their own
+          fully custom, theme-aware JSX via toast.custom() rather than
+          react-hot-toast's default toast styling. */}
+      <Toaster position='bottom-right' />
     </>
   );
 }

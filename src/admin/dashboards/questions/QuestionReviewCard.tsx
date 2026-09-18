@@ -20,6 +20,7 @@ import { Textarea } from '../../../components/ui/textarea';
 import { useConfirm } from './ConfirmDialog';
 import DuplicateComparisonPanel from './DuplicateComparisonPanel';
 import { hasIncompleteOptions, isIncompleteOption } from './optionValidation';
+import { showUndoToast } from './undoToast';
 import VersionHistoryPanel from './VersionHistoryPanel';
 
 type Option = { key: string; text: string };
@@ -64,15 +65,19 @@ interface QuestionReviewCardProps {
 }
 
 // Exposed so the page-level keyboard shortcuts (useReviewShortcuts) can
-// trigger Approve/Reject/Save from outside without lifting all of this
-// component's save/approve/reject logic up to the parent -- each method is a
-// no-op when the action wouldn't currently be valid (e.g. reject while
+// trigger Approve/Reject/Save/tagging from outside without lifting all of
+// this component's save/approve/reject logic up to the parent -- each method
+// is a no-op when the action wouldn't currently be valid (e.g. reject while
 // already saving, approve while canApprove is false), same guards the
-// on-screen buttons already use.
+// on-screen buttons already use. The tagging methods mirror the mouse
+// controls exactly: they only stage a local edit (isDirty), never auto-save.
 export type QuestionReviewCardHandle = {
   approve: () => void;
   reject: () => void;
   save: () => void;
+  setDifficulty: (level: 'easy' | 'medium' | 'hard') => void;
+  toggleHighYield: () => void;
+  toggleCaseBased: () => void;
 };
 
 const QuestionReviewCard = forwardRef<QuestionReviewCardHandle, QuestionReviewCardProps>(function QuestionReviewCard(
@@ -128,6 +133,21 @@ const QuestionReviewCard = forwardRef<QuestionReviewCardHandle, QuestionReviewCa
     },
     save: () => {
       if (isDirty && !isSaving) handleSave();
+    },
+    setDifficulty: (level) => {
+      if (isSaving) return;
+      setDifficulty(level);
+      setIsDirty(true);
+    },
+    toggleHighYield: () => {
+      if (isSaving) return;
+      setIsHighYield((v) => !v);
+      setIsDirty(true);
+    },
+    toggleCaseBased: () => {
+      if (isSaving) return;
+      setIsCaseBased((v) => !v);
+      setIsDirty(true);
     },
   }));
 
@@ -327,6 +347,10 @@ const QuestionReviewCard = forwardRef<QuestionReviewCardHandle, QuestionReviewCa
       setAppliedSuggestionUnreviewed(false);
       onSaved?.();
       onAdvance?.();
+      showUndoToast('Approved.', async () => {
+        await unpublishQuestion({ id: question.id });
+        onSaved?.();
+      });
     } catch (e: any) {
       setError(e?.message ?? 'Failed to approve');
     } finally {
@@ -387,6 +411,10 @@ const QuestionReviewCard = forwardRef<QuestionReviewCardHandle, QuestionReviewCa
     try {
       await rejectQuestion({ id: question.id });
       onAdvance?.();
+      showUndoToast('Rejected.', async () => {
+        await unpublishQuestion({ id: question.id });
+        onSaved?.();
+      });
     } catch (e: any) {
       setError(e?.message ?? 'Failed to reject');
       setIsSaving(false);
@@ -437,6 +465,18 @@ const QuestionReviewCard = forwardRef<QuestionReviewCardHandle, QuestionReviewCa
       // published/reviewed counts.
       onSaved?.();
       onAdvance?.();
+      // Undo restores the SPECIFIC status this question left (mode here is
+      // still the pre-action value, captured in this closure) -- "send back"
+      // (published -> pending) undoes to approve, "restore" (rejected ->
+      // pending) undoes to reject.
+      showUndoToast(mode === 'rejected' ? 'Restored to review.' : 'Sent back to review.', async () => {
+        if (mode === 'rejected') {
+          await rejectQuestion({ id: question.id });
+        } else {
+          await approveQuestion({ id: question.id });
+        }
+        onSaved?.();
+      });
     } catch (e: any) {
       setError(e?.message ?? 'Failed to send back to review');
       setIsSaving(false);
@@ -457,12 +497,17 @@ const QuestionReviewCard = forwardRef<QuestionReviewCardHandle, QuestionReviewCa
           <span className='text-xs font-semibold tabular-nums text-muted-foreground'>
             Question {position.index + 1} of {position.total}
           </span>
-          <span className='hidden text-[11px] text-muted-foreground sm:block'>
+          <span className='hidden text-[11px] text-muted-foreground xl:block'>
             <kbd className='rounded border border-border bg-muted px-1 py-0.5 font-mono'>J</kbd>/
             <kbd className='rounded border border-border bg-muted px-1 py-0.5 font-mono'>K</kbd> next/prev ·{' '}
             <kbd className='rounded border border-border bg-muted px-1 py-0.5 font-mono'>A</kbd> approve ·{' '}
             <kbd className='rounded border border-border bg-muted px-1 py-0.5 font-mono'>X</kbd> reject ·{' '}
-            <kbd className='rounded border border-border bg-muted px-1 py-0.5 font-mono'>⌘S</kbd> save
+            <kbd className='rounded border border-border bg-muted px-1 py-0.5 font-mono'>⌘S</kbd> save ·{' '}
+            <kbd className='rounded border border-border bg-muted px-1 py-0.5 font-mono'>1</kbd>/
+            <kbd className='rounded border border-border bg-muted px-1 py-0.5 font-mono'>2</kbd>/
+            <kbd className='rounded border border-border bg-muted px-1 py-0.5 font-mono'>3</kbd> difficulty ·{' '}
+            <kbd className='rounded border border-border bg-muted px-1 py-0.5 font-mono'>H</kbd>/
+            <kbd className='rounded border border-border bg-muted px-1 py-0.5 font-mono'>C</kbd> HY/CB
           </span>
         </div>
       )}
