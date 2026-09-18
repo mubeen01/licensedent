@@ -6,6 +6,7 @@ import { getEmailUserFields } from './src/auth/userSignupFields' with { type: 'r
 import { onBeforeLoginHook } from './src/auth/hooks' with { type: 'ref' }
 import { seedMockUsers } from './src/server/scripts/dbSeeds' with { type: 'ref' }
 import { importLessonFolder } from './src/server/scripts/importLessonFolder' with { type: 'ref' }
+import { verifyPRD005AllPhases } from './src/server/scripts/verifyPRD005AllPhases' with { type: 'ref' }
 import App from './src/client/App' with { type: 'ref' }
 import { serverMiddlewareFn } from './src/server/serverSetup' with { type: 'ref' }
 
@@ -305,6 +306,10 @@ export default app({
       // Run with `wasp db seed importLessonFolder`, env-var configured -- see
       // src/server/scripts/importLessonFolder.ts's header for usage.
       importLessonFolder,
+      // PRD-005 full-plan regression suite -- kept, safe to rerun anytime;
+      // see the file header for what it checks and why it's not deleted
+      // like the other verifyPhaseN... scripts.
+      verifyPRD005AllPhases,
     ],
   },
 
