@@ -18,6 +18,7 @@ import type { ExamGuideConfig } from './examGuideTypes';
 
 export const qchpExamGuide: ExamGuideConfig = {
   accent: 'rose',
+  questionFormat: 'mcq',
   backLinkLabel: 'All Gulf exams',
 
   seo: {

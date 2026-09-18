@@ -6,7 +6,6 @@ import { routes } from 'wasp/client/router';
 import { generateCheckoutSession, getCustomerPortalUrl, getPublicExams, useQuery } from 'wasp/client/operations';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardFooter, CardTitle } from '../components/ui/card';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { cn } from '../lib/utils';
@@ -111,6 +110,12 @@ const PricingPage = () => {
   const navigate = useNavigate();
 
   async function handleBuyNowClick(paymentPlanId: PaymentPlanId) {
+    // IDC Pathway's Stripe price isn't configured yet (PAYMENTS_IRELAND_PATHWAY_PLAN_ID) --
+    // the button for this plan is disabled below, but guard here too in case
+    // this is ever called programmatically.
+    if (paymentPlanId === PaymentPlanId.IrelandPathway) {
+      return;
+    }
     if (!user) {
       navigate(routes.LoginRoute.to);
       return;
@@ -133,23 +138,13 @@ const PricingPage = () => {
       });
 
       if (checkoutResults?.sessionUrl) {
-        window.open(checkoutResults.sessionUrl, '_self');
+        window.location.href = checkoutResults.sessionUrl;
       } else {
         throw new Error('Error generating checkout session URL');
       }
     } catch (error: unknown) {
       console.error(error);
-      // IDC Pathway's Stripe price isn't configured yet (PAYMENTS_IRELAND_PATHWAY_PLAN_ID) --
-      // checkout throws a raw "env var undefined" error server-side that must never reach a
-      // real user. Shown as a friendly message instead of the raw error for this plan only;
-      // remove this branch once that env var is set and a real purchase has been verified.
-      if (paymentPlanId === PaymentPlanId.IrelandPathway) {
-        setErrorMessage("IDC Pathway isn't open for purchase just yet -- email us and we'll get you set up.");
-      } else if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage('Error processing payment. Please try again later.');
-      }
+      setErrorMessage(error instanceof Error ? error.message : 'Error processing payment. Please try again later.');
       setIsPaymentLoading(false); // We only set this to false here and not in the try block because we redirect to the checkout url within the same window
     }
   }
@@ -194,9 +189,9 @@ const PricingPage = () => {
               LicenseDent · Gulf + Ireland · dentist-verified
             </span>
           </div>
-          <h2 className='mt-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl'>
+          <h1 className='mt-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl'>
             One payment. <span className='bg-linear-to-r from-primary via-primary-muted to-secondary bg-clip-text text-transparent'>Full prep until exam day.</span>
-          </h2>
+          </h1>
         </div>
         <p className='mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-muted-foreground'>
           Fast Track for a booked DHA/MOH date, Standard for a 3-month runway, Extended for every Gulf exam, IDC
@@ -215,9 +210,9 @@ const PricingPage = () => {
         )}
         {examsWithContent.length > 0 && (
           <div className='mx-auto mt-8 max-w-xs'>
-            <Label>Fast Track / Standard plans — which exam?</Label>
+            <Label htmlFor='examId'>Fast Track / Standard plans — which exam?</Label>
             <Select value={selectedExamId || undefined} onValueChange={setSelectedExamId}>
-              <SelectTrigger className='w-full mt-1.5'>
+              <SelectTrigger id='examId' className='w-full mt-1.5'>
                 <SelectValue placeholder='Choose an exam' />
               </SelectTrigger>
               <SelectContent>
@@ -232,99 +227,109 @@ const PricingPage = () => {
           </div>
         )}
         <div className='isolate mx-auto mt-16 grid max-w-md grid-cols-1 gap-y-8 lg:gap-x-8 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-4'>
-          {visiblePaymentPlanIds.map((planId) => (
-            <Card
-              key={planId}
-              className={cn(
-                'relative flex flex-col grow justify-between overflow-hidden transition-all duration-300 hover:shadow-lg',
-                {
-                  'ring-2 ring-primary bg-transparent!': planId === bestDealPaymentPlanId,
-                  'ring-1 ring-border lg:my-8': planId !== bestDealPaymentPlanId,
-                }
-              )}
-            >
-              {planId === bestDealPaymentPlanId && (
-                <div
-                  className='absolute top-0 right-0 -z-10 w-full h-full transform-gpu blur-3xl'
-                  aria-hidden='true'
-                >
+          {visiblePaymentPlanIds.map((planId) => {
+            const isIrelandPathway = planId === PaymentPlanId.IrelandPathway;
+            return (
+              <div
+                key={planId}
+                className={cn(
+                  'card-elevated card-elevated-hover relative flex flex-col grow justify-between p-8 xl:p-10',
+                  planId === bestDealPaymentPlanId && 'ring-2 ring-primary',
+                  isIrelandPathway && 'opacity-80'
+                )}
+              >
+                {planId === bestDealPaymentPlanId && (
                   <div
-                    className='absolute w-full h-full bg-linear-to-br from-primary/40 via-primary/20 to-gold/20 opacity-30'
-                    style={{
-                      clipPath: 'circle(670% at 50% 50%)',
-                    }}
-                  />
-                </div>
-              )}
-              <CardContent className='p-8 xl:p-10 h-full justify-between'>
-                <div className='flex items-center justify-between gap-x-4'>
-                  <CardTitle id={planId} className='text-foreground text-lg font-semibold leading-8'>
-                    {paymentPlanCards[planId].name}
-                  </CardTitle>
-                  {planId === bestDealPaymentPlanId && (
-                    <span className='rounded-full bg-gold px-2.5 py-1 text-xs font-semibold text-gold-foreground'>
-                      Most popular
+                    className='absolute top-0 right-0 -z-10 w-full h-full transform-gpu blur-3xl'
+                    aria-hidden='true'
+                  >
+                    <div
+                      className='absolute w-full h-full bg-linear-to-br from-primary/40 via-primary/20 to-gold/20 opacity-30'
+                      style={{
+                        clipPath: 'circle(670% at 50% 50%)',
+                      }}
+                    />
+                  </div>
+                )}
+                <div className='h-full justify-between'>
+                  <div className='flex items-center justify-between gap-x-4'>
+                    <h2 id={planId} className='text-foreground text-lg font-semibold leading-8'>
+                      {paymentPlanCards[planId].name}
+                    </h2>
+                    {planId === bestDealPaymentPlanId && (
+                      <span className='rounded-full bg-gold px-2.5 py-1 text-xs font-semibold text-gold-foreground'>
+                        Most popular
+                      </span>
+                    )}
+                    {isIrelandPathway && (
+                      <span className='rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground'>
+                        Coming soon
+                      </span>
+                    )}
+                  </div>
+                  {isIrelandPathway ? (
+                    <p className='mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground'>
+                      <span aria-hidden='true'>🇮🇪</span>
+                      Scoped to IDC Ireland only
+                    </p>
+                  ) : planId === PaymentPlanId.Extended ? (
+                    <p className='mt-2 text-xs font-semibold text-muted-foreground'>Every Gulf exam included</p>
+                  ) : (
+                    (selectedExam || examsWithContent[0]) && (
+                      <p className='mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground'>
+                        <span aria-hidden='true'>{(selectedExam ?? examsWithContent[0]).flagEmoji}</span>
+                        Scoped to one exam — {(selectedExam ?? examsWithContent[0]).code}
+                      </p>
+                    )
+                  )}
+                  <p className='mt-4 text-sm leading-6 text-muted-foreground'>{paymentPlanCards[planId].tagline}</p>
+                  <p className='mt-6 flex items-baseline gap-x-1'>
+                    <span className='text-4xl font-bold tracking-tight text-foreground'>
+                      {paymentPlanCards[planId].price}
                     </span>
+                    <span className='text-sm font-semibold leading-6 text-muted-foreground'>
+                      / {paymentPlanCards[planId].duration}
+                    </span>
+                  </p>
+                  <ul role='list' className='mt-8 space-y-3 text-sm leading-6 text-muted-foreground'>
+                    {paymentPlanCards[planId].features.map((feature) => (
+                      <li key={feature} className='flex gap-x-3'>
+                        <CheckCircle className='h-5 w-5 flex-none text-primary' aria-hidden='true' />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className='mt-8'>
+                  {isIrelandPathway ? (
+                    <Button disabled variant='outline' className='w-full' title="Email us and we'll get you set up.">
+                      Coming soon
+                    </Button>
+                  ) : isUserSubscribed ? (
+                    <Button
+                      onClick={handleCustomerPortalClick}
+                      disabled={isCustomerPortalUrlLoading}
+                      aria-describedby='manage-subscription'
+                      variant={planId === bestDealPaymentPlanId ? 'default' : 'outline'}
+                      className='w-full'
+                    >
+                      Manage Subscription
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => handleBuyNowClick(planId)}
+                      aria-describedby={planId}
+                      variant={planId === bestDealPaymentPlanId ? 'default' : 'outline'}
+                      className='w-full'
+                      disabled={isPaymentLoading}
+                    >
+                      {!!user ? 'Buy plan' : 'Log in to buy plan'}
+                    </Button>
                   )}
                 </div>
-                {planId === PaymentPlanId.IrelandPathway ? (
-                  <p className='mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground'>
-                    <span aria-hidden='true'>🇮🇪</span>
-                    Scoped to IDC Ireland only
-                  </p>
-                ) : planId === PaymentPlanId.Extended ? (
-                  <p className='mt-2 text-xs font-semibold text-muted-foreground'>Every Gulf exam included</p>
-                ) : (
-                  (selectedExam || examsWithContent[0]) && (
-                    <p className='mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground'>
-                      <span aria-hidden='true'>{(selectedExam ?? examsWithContent[0]).flagEmoji}</span>
-                      Scoped to one exam — {(selectedExam ?? examsWithContent[0]).code}
-                    </p>
-                  )
-                )}
-                <p className='mt-4 text-sm leading-6 text-muted-foreground'>{paymentPlanCards[planId].tagline}</p>
-                <p className='mt-6 flex items-baseline gap-x-1'>
-                  <span className='text-4xl font-bold tracking-tight text-foreground'>
-                    {paymentPlanCards[planId].price}
-                  </span>
-                  <span className='text-sm font-semibold leading-6 text-muted-foreground'>
-                    / {paymentPlanCards[planId].duration}
-                  </span>
-                </p>
-                <ul role='list' className='mt-8 space-y-3 text-sm leading-6 text-muted-foreground'>
-                  {paymentPlanCards[planId].features.map((feature) => (
-                    <li key={feature} className='flex gap-x-3'>
-                      <CheckCircle className='h-5 w-5 flex-none text-primary' aria-hidden='true' />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter>
-                {isUserSubscribed ? (
-                  <Button
-                    onClick={handleCustomerPortalClick}
-                    disabled={isCustomerPortalUrlLoading}
-                    aria-describedby='manage-subscription'
-                    variant={planId === bestDealPaymentPlanId ? 'default' : 'outline'}
-                    className='w-full'
-                  >
-                    Manage Subscription
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => handleBuyNowClick(planId)}
-                    aria-describedby={planId}
-                    variant={planId === bestDealPaymentPlanId ? 'default' : 'outline'}
-                    className='w-full'
-                    disabled={isPaymentLoading}
-                  >
-                    {!!user ? 'Buy plan' : 'Log in to buy plan'}
-                  </Button>
-                )}
-              </CardFooter>
-            </Card>
-          ))}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

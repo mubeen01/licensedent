@@ -11,6 +11,7 @@ import type { ExamGuideConfig } from './examGuideTypes';
 
 export const idcExamGuide: ExamGuideConfig = {
   accent: 'emerald',
+  questionFormat: 'saq',
   backLinkLabel: 'All exams',
 
   seo: {
@@ -25,13 +26,13 @@ export const idcExamGuide: ExamGuideConfig = {
   heroTitleLead: 'The complete guide to the',
   heroTitleHighlight: 'IDC Ireland licensing exam',
   heroDescription:
-    'Everything an Indian BDS graduate needs for the Dental Council statutory examination — once-a-year Part 1 (SAQ written + phantom-head bench) + Part 2 (written + OSCE + vivas), January window with random-selection lottery for ~60 seats, BDS-only eligibility, staged €800 fees, bench/OSCE marking secrets, 6-month prep plan with books, and the family-together Critical Skills route after registration. Built for BDS with a gap, 2 kids at home, DHA background.',
+    "Everything a non-EEA dental graduate needs for Ireland's Dental Council statutory examination — once-a-year Part 1 (SAQ written + phantom-head bench) and Part 2 (written + OSCE + vivas), the January application window with random-selection lottery for a limited number of seats, BDS-level eligibility (no MDS required), staged fees around €800, what the bench and OSCE actually mark, and the route family can join you on once you're registered and working.",
 
   quickFacts: [
     { label: 'Frequency', value: 'Once a year in Ireland — Part 1 Mar/Apr (e.g. written 23-24 Mar + bench 27-28 Mar 2024), Part 2 Jun/Jul' },
     { label: 'Route', value: 's.27(2)(d) Dentists Act 1985 — non-EEA exam with Irish dental schools, final-year Irish standard' },
     { label: 'Seats', value: 'Lottery — 11 (2018) → +40 (2024) → 60+ (2025). Random selection from short Jan window, no queue advantage' },
-    { label: 'Eligibility', value: 'Indian BDS + transcripts + internship + good standing. MDS NOT required. Allow 3 months for paperwork' },
+    { label: 'Eligibility', value: 'BDS degree + transcripts + internship + good standing certificate. MDS NOT required. Allow 3 months for paperwork' },
   ],
 
   statSectionEyebrow: "Straight from the Dental Council",
@@ -56,55 +57,55 @@ export const idcExamGuide: ExamGuideConfig = {
     {
       value: 'BDS ok',
       label: 'Final-year standard',
-      description: 'Irish final-year level, not MDS. BDS + DHA-cleared temperament is enough — bench discipline + Irish guidelines (NICE/IADT/FGDP) decide pass.',
+      description: 'Irish final-year level, not MDS. A solid BDS foundation is enough — bench discipline and fluency with Irish guidelines (NICE/IADT/FGDP) decide the pass.',
     },
   ],
 
   roadmapEyebrow: 'The pathway',
-  roadmapTitle: "7-step route for Indian BDS with family",
-  roadmapDescription: 'Docs first, lottery second, exam third. Start Oct/Nov — Jan window is 2-3 weeks only.',
+  roadmapTitle: 'The 7-step route to registration',
+  roadmapDescription: 'Documents first, lottery second, exam third. Start gathering paperwork in Oct/Nov — the January application window is only 2-3 weeks.',
   roadmapSteps: [
     {
       icon: 'clipboard',
-      title: '1. Lock BDS documents (Oct-Nov)',
+      title: '1. Lock down your documents (Oct-Nov)',
       description:
-        'Degree + detailed transcripts + internship completion + good standing from DCI/state council. Transcripts take longest from Indian universities — apply now. Council needs 3 months to finalise; incomplete = auto-out of lottery. Keep DHA DataFlow + Sheryan renewal parallel (expires Mar 2027).',
+        'Degree certificate, detailed transcripts, internship completion certificate, and a good-standing certificate from your home dental council. Transcripts usually take longest to arrive — request them early. The Council needs about 3 months to finalise a file; an incomplete application is automatically out of the lottery.',
     },
     {
       icon: 'filecheck',
-      title: '2. File in January window',
+      title: '2. File in the January window',
       description:
-        'Short Jan window on dentalcouncil.ie. Pay ~€400 application fee, upload complete file. 2024 was first-come-first-served from 26 Jan; 2025+ is random selection — queuing gives zero advantage. Watch FB prep group for opening hour.',
+        'A short application window opens each January on dentalcouncil.ie. Pay the application fee (~€400) and upload a complete file. Selection is by random draw, not first-come-first-served — filing early doesn\'t improve your odds, but a complete file matters.',
     },
     {
       icon: 'key',
-      title: '3. Survive random-selection lottery (Feb)',
+      title: '3. Wait for the random-selection lottery (Feb)',
       description:
-        'Council lotteries ~60 places with dental schools. Ireland-established get active advantage in practice. If selected → pay exam fee + book visa + flights. If not → lose ~€400 only, prep rolls to 2028 at 70% ready, switch to Gulf fixed-salary hunt.',
+        'The Council allocates a limited number of places with the dental schools by random draw. If selected, you pay the exam fee and arrange your visa and travel. If not selected, you only lose the application fee — you can re-apply the following year with a head start on preparation.',
     },
     {
       icon: 'shield',
-      title: '4. Prep SAQ + bench (Sep-Mar)',
+      title: '4. Prepare SAQ + bench (roughly 6 months out)',
       description:
-        'SAQ: 1 timed answer/day (history → tests + X-ray justification → diagnosis → plan → prevention + referral + consent). Bench: Class II / crown (taper 6-10°, ferrule 2mm, chamfer 0.5mm) / dam <5 min, timed daily from month 3. OSCE scripts spoken aloud weekly from Nov.',
+        'SAQ practice: one timed written answer a day, working through history, test and radiograph justification, diagnosis, treatment plan, and prevention/referral/consent. Bench practice: Class II and crown preparation (taper 6-10°, ferrule 2mm, chamfer 0.5mm) and rubber dam placement under 5 minutes, building up to daily timed reps. OSCE scenarios are worth rehearsing out loud.',
     },
     {
       icon: 'monitor',
       title: '5. Sit Part 1 in Mar/Apr (Dublin)',
       description:
-        'Written 2 days + bench 2 days, physically in Ireland. You arrange entry visa yourself. Fly 10-12 days early for Dublin Dental Hospital 2-day bench update course (Lincoln Place) + HealthPath orientation. PPE + infection control marked throughout bench.',
+        'Two days of written papers plus two days of bench, held in person in Ireland. You arrange your own entry visa. Many candidates arrive 10-12 days early for a bench refresher course and to acclimatise. Infection control and PPE are marked throughout the bench component.',
     },
     {
       icon: 'calendar',
-      title: '6. Sit Part 2 in Jun/Jul (if Part 1 pass)',
+      title: '6. Sit Part 2 in Jun/Jul (if Part 1 passes)',
       description:
-        'Only ~10 weeks gap. Written cases + OSCE stations (OPG, perio chart, emergency, consent, safeguarding) + vivas (WHY this material, WHEN to refer to HSE). Safe line that scores: stabilise + safety-net + refer per HSE pathway.',
+        "There's only around a 10-week gap between parts. Part 2 combines written cases, an OSCE circuit (OPG interpretation, perio charting, medical emergencies, consent, safeguarding) and clinical vivas testing why you'd choose a treatment and when you'd refer via the HSE pathway. Each component is marked — and must be passed — individually.",
     },
     {
       icon: 'trophy',
-      title: '7. Register → job → family together',
+      title: '7. Register, find a role, and settle in',
       description:
-        'Enter Register of Dentists → private/HSE offer (Ireland needs 500+ now) → employer Critical Skills permit (~3 wks) → spouse + 8yr + infant join together, spouse works full-time on Stamp 1G. Stamp 4 after 21 mo, citizenship after 5 yrs reckonable.',
+        "Once you're on the Register of Dentists, private practices and the HSE are actively hiring. Most employers sponsor a Critical Skills Employment Permit, which also lets your spouse and children join you and allows your spouse to work.",
     },
   ],
 
@@ -116,7 +117,7 @@ export const idcExamGuide: ExamGuideConfig = {
       icon: 'users',
       title: 'Seats are the bottleneck',
       description:
-        '11 (2018) → +40 new (2024) → 60+ (2025). Bench + OSCE need chairs + examiners, so expect 70-80 in 2027, not 200. Plan as 50/50 lottery, keep Gulf backup.',
+        'Capacity has grown steadily (11 places in 2018 to 60+ by 2025), but bench and OSCE examining is capacity-limited by chairs and examiners, so growth is gradual rather than open-ended. Treat the lottery as genuinely uncertain when planning your year.',
     },
     {
       icon: 'timerreset',
@@ -134,7 +135,7 @@ export const idcExamGuide: ExamGuideConfig = {
       icon: 'ban',
       title: 'Incomplete docs = rejected',
       description:
-        'Council aims to finalise in 3 months; delays from incomplete transcripts/good standing are common. Start Oct, file Jan. Transcripts + internship + standing take longest from India.',
+        'The Council aims to finalise a file within 3 months; delays from incomplete transcripts or good-standing certificates are the most common reason applications fall through. Start requesting documents in October so you can file a complete application in January.',
     },
     {
       icon: 'scale',
@@ -156,15 +157,15 @@ export const idcExamGuide: ExamGuideConfig = {
     },
     {
       icon: 'recognition',
-      title: 'Already in Ireland? 2-year clock',
+      title: "Already living in Ireland? There's a 2-year clock",
       description:
-        'Non-EU dentists who move to Ireland first must apply within 2 years of arrival or risk losing the pathway — unrealistic with logistics/kids. From-India lottery avoids this trap.',
+        "Non-EU dentists who move to Ireland before applying must sit the exam within 2 years of arrival or risk losing eligibility for this pathway — factor that in if you're planning to relocate before your application.",
     },
     {
       icon: 'rotate',
-      title: 'Fail or miss? Prep never wastes',
+      title: "A missed year isn't wasted preparation",
       description:
-        'Miss lottery → re-apply next Jan at 70% ready. Fail Part 1 → re-sit next Mar with bench logs. Use gap year for Gulf fixed-salary (not commission-only) + Q-bank growth.',
+        'Miss the lottery and you can re-apply the following January with most of your prep already done. Fail Part 1 and you can re-sit the next March with your bench logs and SAQ practice intact.',
     },
   ],
 
@@ -236,15 +237,15 @@ export const idcExamGuide: ExamGuideConfig = {
     },
     {
       id: 6,
-      question: 'Which books? How to read with 2 kids?',
+      question: 'Which books should I actually read?',
       answer:
-        '4 only: Oxford Handbook (backbone, 70%), Pickard Operative (cavity/crown, 50%), Harty Endo (pulp/RCT, 40%), Scully lesions + Welbury paedo (50% each, library). Daily 2.5h: 40 read → 40 SAQ write → 40 bench/OSCE → 20 flashcards (doses, ppm, times, INR, BPE) → 10 error log. HealthPath Part 1 package filters what matters.',
+        'Four cover most of the syllabus: the Oxford Handbook of Clinical Dentistry (the backbone), Pickard\'s Manual of Operative Dentistry (cavity and crown preparation), Harty\'s Endodontics in Clinical Practice (pulp diagnosis and RCT), and Scully\'s Oral and Maxillofacial Medicine plus Welbury\'s Paediatric Dentistry for the remaining domains. A focused daily block — reading, SAQ practice, bench or OSCE rehearsal, and flashcards for key numbers (doses, fluoride ppm, timings) — covers more ground than reading passively.',
     },
     {
       id: 7,
-      question: 'Bench is toughest — how to pass from India?',
+      question: 'The bench is the toughest part — how do I prepare from abroad?',
       answer:
-        'Daily phantom-head timed: Class II 60 min, crown 60 min (taper 6-10°, chamfer 0.5mm, no adjacent damage), dam + access 30 min. Photo preps weekly. Fly 10-12 days early for Dublin Dental Hospital 2-day bench course — closest to marking. Any ORE/DHA phantom lab in Delhi/Chennai/Hyd works for daily reps (pay monthly).',
+        "Regular timed phantom-head sessions: Class II preparation (60 min), crown preparation (60 min, watching taper and avoiding adjacent tooth damage), and dam placement plus access (30 min). Photograph your preparations weekly to track progress. Most phantom-head/simulation labs used for other exam boards (e.g. ORE, DHA) work fine for building these reps, and arriving 10-12 days early for a Dublin bench refresher course closest to your exam date is worth the cost.",
     },
     {
       id: 8,
@@ -254,9 +255,9 @@ export const idcExamGuide: ExamGuideConfig = {
     },
     {
       id: 9,
-      question: 'Can family move together? Kids + infant?',
+      question: 'Can my family move with me?',
       answer:
-        'After registration + Critical Skills job, yes — spouse + 8yr + infant join immediately, spouse works full-time on Stamp 1G. 8yr gets free public school; infant childcare €1000-1400/mo in Dublin/Cork. Do NOT use student route — no dependents on initial Stamp 2, 14-20 mo separation.',
+        "Once you're registered and working under a Critical Skills Employment Permit, yes — your spouse and children can join you, and your spouse is entitled to work. School-age children get access to free public education, and childcare is widely available in cities like Dublin and Cork (budget for it — it isn't cheap). Avoid the student-visa route for the exam itself if family reunification matters to you: it doesn't carry the same dependent rights as the Critical Skills permit.",
     },
     {
       id: 10,
@@ -266,9 +267,9 @@ export const idcExamGuide: ExamGuideConfig = {
     },
     {
       id: 11,
-      question: 'Should I do Gulf first? DHA expires Mar 2027.',
+      question: 'Should I gain clinical experience elsewhere first?',
       answer:
-        'Renew DHA eligibility in Sheryan before Mar 2027 (DataFlow 6-12 wks) + close 4-yr gap with 2-3 days/wk chairside now. Take ONLY fixed + visa + family-visa Gulf offers (Sharjah/Ajman MOH better than Dubai commission-only). Use Gulf 1-2 yrs to fund Ireland retry if 2027 lottery misses — Gulf never gives citizenship.',
+        "It's common to keep practising — through a Gulf licensing exam (DHA, MOH, HAAD or similar) or clinical work at home — while your Ireland application is pending. That keeps your income and clinical skills current if the lottery doesn't select you in a given year, and Gulf licenses generally have their own multi-year validity windows worth tracking separately.",
     },
     {
       id: 12,

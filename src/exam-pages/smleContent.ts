@@ -16,6 +16,7 @@ import type { ExamGuideConfig } from './examGuideTypes';
 
 export const smleExamGuide: ExamGuideConfig = {
   accent: 'emerald',
+  questionFormat: 'mcq',
   backLinkLabel: 'All Gulf exams',
 
   seo: {

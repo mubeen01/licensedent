@@ -181,6 +181,7 @@
   --animate-spin-3: spin 3s linear infinite;
   --animate-gradient-x: gradient-x 4s ease infinite;
   --animate-float: float 4s ease-in-out infinite;
+  --animate-fade-in-up: fade-in-up 0.5s ease-out forwards;
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -211,6 +212,16 @@
     }
     50% {
       transform: translateY(-8px);
+    }
+  }
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 }

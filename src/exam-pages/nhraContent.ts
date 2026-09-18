@@ -16,6 +16,7 @@ import type { ExamGuideConfig } from './examGuideTypes';
 
 export const nhraExamGuide: ExamGuideConfig = {
   accent: 'orange',
+  questionFormat: 'mcq',
   backLinkLabel: 'All Gulf exams',
 
   seo: {

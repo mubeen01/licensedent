@@ -15,6 +15,7 @@ import type { ExamGuideConfig } from './examGuideTypes';
 
 export const mohExamGuide: ExamGuideConfig = {
   accent: 'cyan',
+  questionFormat: 'mcq',
   backLinkLabel: 'All Gulf exams',
 
   seo: {

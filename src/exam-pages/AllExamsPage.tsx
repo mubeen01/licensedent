@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { AlertCircle, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { getPublicExams, useQuery } from 'wasp/client/operations';
@@ -94,7 +94,7 @@ function Hero() {
                 <span className='relative inline-flex h-2 w-2 rounded-full bg-primary' />
               </span>
               <Sparkles className='h-4 w-4 text-primary' />
-              {exams?.length ?? 9} exams · {countries} countries · every guide human-verified
+              {exams?.length ?? 10} exams · {countries} countries · every guide human-verified
             </span>
           </div>
 
@@ -121,7 +121,7 @@ function Hero() {
 /*  EXAMS INDEX GRID                                                           */
 /* -------------------------------------------------------------------------- */
 function ExamsIndexGrid() {
-  const { data: exams, isLoading } = useQuery(getPublicExams);
+  const { data: exams, isLoading, error, refetch } = useQuery(getPublicExams);
 
   return (
     <div className='mx-auto max-w-7xl px-6 pb-16 lg:px-8'>
@@ -132,6 +132,16 @@ function ExamsIndexGrid() {
       />
 
       {isLoading && <LoadingSpinner />}
+
+      {error && (
+        <div className='card-elevated flex flex-col items-center gap-3 p-10 text-center'>
+          <AlertCircle className='h-6 w-6 text-destructive' />
+          <p className='text-sm font-medium text-foreground'>Couldn't load exams right now.</p>
+          <Button variant='outline' size='sm' onClick={() => refetch()}>
+            Try again
+          </Button>
+        </div>
+      )}
 
       {exams && (
         <div className='grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
@@ -144,7 +154,7 @@ function ExamsIndexGrid() {
               <div
                 key={exam.id}
                 style={{ animationDelay: `${idx * 60}ms` }}
-                className='animate-fade-in-up group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-5 opacity-0 transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-xl'
+                className='card-elevated card-elevated-hover animate-fade-in-up group relative flex flex-col p-5 opacity-0'
               >
                 <div className={`absolute inset-x-0 top-0 h-1 bg-linear-to-r ${exam.colorGradient}`} aria-hidden='true' />
                 <div
@@ -201,19 +211,6 @@ function ExamsIndexGrid() {
           })}
         </div>
       )}
-
-      <style>{`
-        @keyframes exam-fade-in-up {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-up {
-          animation: exam-fade-in-up 0.5s ease-out forwards;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .animate-fade-in-up { animation: none; opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 }
@@ -224,7 +221,7 @@ function ExamsIndexGrid() {
 function ClosingCta() {
   return (
     <div className='mx-auto max-w-5xl px-6 py-16 md:py-24 lg:px-8'>
-      <div className='relative overflow-hidden rounded-3xl border border-border bg-linear-to-br from-primary/10 via-card to-secondary/5 p-10 text-center shadow-lg sm:p-14'>
+      <div className='card-elevated relative bg-linear-to-br from-primary/10 via-card to-secondary/5 p-10 text-center sm:p-14'>
         <div className='mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-primary to-secondary text-white shadow-lg'>
           <Sparkles className='h-6 w-6' />
         </div>

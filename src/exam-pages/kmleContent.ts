@@ -18,6 +18,7 @@ import type { ExamGuideConfig } from './examGuideTypes';
 
 export const kmleExamGuide: ExamGuideConfig = {
   accent: 'indigo',
+  questionFormat: 'mcq',
   backLinkLabel: 'All Gulf exams',
 
   seo: {

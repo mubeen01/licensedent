@@ -74,6 +74,11 @@ export interface ExamGuideSeo {
 /** Everything one exam guide page needs -- content only, no JSX. */
 export interface ExamGuideConfig {
   accent: AccentId;
+  /** Drives the sample-question section's copy -- 'mcq' for single-best-answer
+   * exams (all current Gulf exams), 'saq' for written short-answer exams (IDC
+   * Ireland). Every exam here is one or the other today; extend if a future
+   * exam mixes both. */
+  questionFormat: 'mcq' | 'saq';
   backLinkLabel: string;
 
   seo: ExamGuideSeo;

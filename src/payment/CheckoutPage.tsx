@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from 'react-router';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import SeoHead from '../client/components/SeoHead';
 import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
 
 type PaymentStatus = 'loading' | 'paid' | 'canceled';
 
@@ -15,8 +14,8 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    const isCanceled = queryParams.get('canceled');
-    const isSuccess = queryParams.get('success');
+    const isCanceled = queryParams.get('canceled') === 'true';
+    const isSuccess = queryParams.get('success') === 'true';
 
     if (isCanceled) {
       setPaymentStatus('canceled');
@@ -37,14 +36,15 @@ export default function CheckoutPage() {
         title='Checkout — LicenseDent'
         description='Confirming your LicenseDent subscription payment.'
         path='/checkout'
+        noindex
       />
-      <Card className='w-full max-w-md text-center'>
-        <CardContent className='flex flex-col items-center gap-4 p-10'>
-          {paymentStatus === 'loading' && (
-            <>
-              <div className='h-10 w-10 animate-spin rounded-full border-2 border-primary/30 border-t-primary' />
-              <p className='text-sm text-muted-foreground'>Confirming your payment…</p>
-            </>
+      <div className='card-elevated flex w-full max-w-md flex-col items-center gap-4 p-10 text-center'>
+        {paymentStatus === 'loading' && (
+            <div role='status' aria-live='polite' className='flex flex-col items-center gap-4'>
+              <div className='h-10 w-10 animate-spin rounded-full border-2 border-primary/30 border-t-primary' aria-hidden='true' />
+              <h1 className='text-xl font-bold text-foreground'>Confirming your payment</h1>
+              <p className='text-sm text-muted-foreground'>This will just take a moment…</p>
+            </div>
           )}
           {paymentStatus === 'paid' && (
             <>
@@ -67,8 +67,7 @@ export default function CheckoutPage() {
           <Button asChild variant='outline' size='sm' className='mt-2'>
             <WaspRouterLink to={routes.AccountRoute.to}>Go to account now</WaspRouterLink>
           </Button>
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

@@ -39,7 +39,7 @@ import { useBankStats } from '../client/hooks/useBankStats';
  */
 function SectionBand({ children }: { children: ReactNode }) {
   return (
-    <div className="border-y border-border/60 bg-muted/30 dark:bg-boxdark-2/40">
+    <div className="border-y border-border/60 bg-muted/30">
       {children}
     </div>
   );

@@ -24,6 +24,7 @@ import type { ExamGuideConfig } from './examGuideTypes';
 
 export const dhaExamGuide: ExamGuideConfig = {
   accent: 'amber',
+  questionFormat: 'mcq',
   backLinkLabel: 'All Gulf exams',
 
   seo: {

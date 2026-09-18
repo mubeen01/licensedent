@@ -13,6 +13,7 @@ import type { ExamGuideConfig } from './examGuideTypes';
 
 export const omsbExamGuide: ExamGuideConfig = {
   accent: 'blue',
+  questionFormat: 'mcq',
   backLinkLabel: 'All Gulf exams',
 
   seo: {

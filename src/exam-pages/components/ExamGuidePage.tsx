@@ -101,7 +101,7 @@ export default function ExamGuidePage({ config }: { config: ExamGuideConfig }) {
         <StatGrid config={config} accentClasses={accent} />
         <Roadmap config={config} accentClasses={accent} />
         <RulesSection config={config} accentClasses={accent} />
-        <div className='border-y border-border/60 bg-muted/30 dark:bg-boxdark-2/40'>
+        <div className='border-y border-border/60 bg-muted/30'>
           <ExamSubjectsSection config={config} accentClasses={accent} />
         </div>
         <SampleQuestionSection config={config} accentClasses={accent} />
@@ -128,13 +128,13 @@ function Hero({ config, accentClasses: a }: { config: ExamGuideConfig; accentCla
       </div>
 
       <div className='mx-auto max-w-5xl px-6 py-16 sm:py-20 lg:px-8'>
-        <a
-          href='/#exams'
+        <WaspRouterLink
+          to={routes.AllExamsRoute.to}
           className='group inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary'
         >
           <ArrowLeft className='h-4 w-4 transition-transform group-hover:-translate-x-0.5' />
           {config.backLinkLabel}
-        </a>
+        </WaspRouterLink>
 
         <div className='mt-6 flex justify-center sm:justify-start'>
           <span
@@ -217,7 +217,7 @@ function StatGrid({ config, accentClasses: a }: { config: ExamGuideConfig; accen
         {config.statCards.map((stat) => (
           <div
             key={stat.label}
-            className={`group rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${a.hoverBorder40}`}
+            className={`card-elevated card-elevated-hover group p-6 ${a.hoverBorder40}`}
           >
             <div className={`text-3xl font-bold ${a.text} ${a.textDark}`}>{stat.value}</div>
             <div className='mt-1 text-sm font-semibold text-foreground'>{stat.label}</div>
@@ -234,7 +234,7 @@ function StatGrid({ config, accentClasses: a }: { config: ExamGuideConfig; accen
 /* -------------------------------------------------------------------------- */
 function Roadmap({ config, accentClasses: a }: { config: ExamGuideConfig; accentClasses: AccentClasses }) {
   return (
-    <div className='border-y border-border/60 bg-muted/30 dark:bg-boxdark-2/40'>
+    <div className='border-y border-border/60 bg-muted/30'>
       <div className='mx-auto max-w-4xl px-6 py-16 md:py-24 lg:px-8'>
         <SectionTitle
           eyebrow={config.roadmapEyebrow}
@@ -279,7 +279,7 @@ function RulesSection({ config, accentClasses: a }: { config: ExamGuideConfig; a
           return (
             <div
               key={rule.title}
-              className={`rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${a.hoverBorder40}`}
+              className={`card-elevated card-elevated-hover p-6 ${a.hoverBorder40}`}
             >
               <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${a.bg10} ${a.text} ${a.textDark}`}>
                 <Icon className='h-5 w-5' />
@@ -310,7 +310,7 @@ function ExamSubjectsSection({ config, accentClasses: a }: { config: ExamGuideCo
         {config.examSubjects.map((subject) => (
           <div
             key={subject.name}
-            className={`group flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${a.hoverBorder30}`}
+            className={`group flex items-center gap-2 rounded-full border border-border bg-linear-to-br from-card to-card-subtle/40 px-4 py-2.5 text-sm font-medium text-foreground shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${a.hoverBorder30}`}
           >
             {subject.name}
             {subject.weight && (
@@ -330,16 +330,21 @@ function ExamSubjectsSection({ config, accentClasses: a }: { config: ExamGuideCo
 /* -------------------------------------------------------------------------- */
 function SampleQuestionSection({ config, accentClasses: a }: { config: ExamGuideConfig; accentClasses: AccentClasses }) {
   const { subject, stem, options, correctKey, explanation } = config.sampleQuestion;
+  const isSaq = config.questionFormat === 'saq';
 
   return (
     <div className='mx-auto max-w-3xl px-6 py-16 md:py-20 lg:px-8'>
       <SectionTitle
         eyebrow='What it actually feels like'
         title='A worked question, in the same format'
-        description='Single-best-answer, no ambiguity tricks — with the reasoning, not just the key.'
+        description={
+          isSaq
+            ? 'Structured written-answer reasoning, not a multiple-choice guess — see the full clinical logic, not just the key.'
+            : 'Single-best-answer, no ambiguity tricks — with the reasoning, not just the key.'
+        }
       />
 
-      <div className='group relative overflow-hidden rounded-3xl border border-border bg-card shadow-xl transition-transform duration-500 hover:scale-[1.005]'>
+      <div className='card-elevated group relative overflow-hidden transition-transform duration-500 hover:scale-[1.005]'>
         <div className='flex items-center justify-between border-b border-border bg-muted/60 px-6 py-3'>
           <div className='flex items-center gap-2'>
             <span className={`rounded-full ${a.bg10} px-2.5 py-1 text-xs font-semibold ${a.text} ${a.textDark}`}>
@@ -349,7 +354,7 @@ function SampleQuestionSection({ config, accentClasses: a }: { config: ExamGuide
           </div>
           <div className='flex items-center gap-1.5 text-xs font-semibold text-muted-foreground'>
             <Clock className='h-3.5 w-3.5' />
-            Single best answer
+            {isSaq ? 'Short-answer reasoning' : 'Single best answer'}
           </div>
         </div>
         <div className='p-6'>
@@ -403,7 +408,7 @@ function SampleQuestionSection({ config, accentClasses: a }: { config: ExamGuide
 /* -------------------------------------------------------------------------- */
 function FaqSection({ config, accentClasses: a }: { config: ExamGuideConfig; accentClasses: AccentClasses }) {
   return (
-    <div className='border-y border-border/60 bg-muted/30 dark:bg-boxdark-2/40'>
+    <div className='border-y border-border/60 bg-muted/30'>
       <div className='mx-auto max-w-4xl px-6 py-16 md:py-24 lg:px-8'>
         <SectionTitle eyebrow={config.faqEyebrow} title={config.faqTitle} description={config.faqDescription} />
         <Accordion type='single' collapsible className='w-full space-y-3'>
@@ -411,7 +416,7 @@ function FaqSection({ config, accentClasses: a }: { config: ExamGuideConfig; acc
             <AccordionItem
               key={faq.id}
               value={`faq-${faq.id}`}
-              className={`rounded-xl border border-border bg-card px-5 transition-colors duration-200 ${a.hoverBorder30} ${a.dataOpenBorder40} ${a.dataOpenBg}`}
+              className={`rounded-xl border border-border bg-linear-to-br from-card to-card-subtle/40 px-5 transition-colors duration-200 ${a.hoverBorder30} ${a.dataOpenBorder40} ${a.dataOpenBg}`}
             >
               <AccordionTrigger
                 className={`py-5 text-left text-base font-semibold leading-7 text-foreground transition-colors duration-200 hover:no-underline ${a.hoverText} ${a.hoverTextDark} ${a.dataOpenText} ${a.dataOpenTextDark}`}

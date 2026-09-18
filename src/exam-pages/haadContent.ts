@@ -17,6 +17,7 @@ import type { ExamGuideConfig } from './examGuideTypes';
 
 export const haadExamGuide: ExamGuideConfig = {
   accent: 'teal',
+  questionFormat: 'mcq',
   backLinkLabel: 'All Gulf exams',
 
   seo: {

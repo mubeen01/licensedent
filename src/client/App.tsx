@@ -5,7 +5,7 @@ import { getMyOnboardingProfile, useQuery } from 'wasp/client/operations';
 import { routes } from 'wasp/client/router';
 import './Main.css';
 import NavBar from './components/NavBar/NavBar';
-import { demoNavigationitems, marketingNavigationItems } from './components/NavBar/constants';
+import { marketingNavigationItems } from './components/NavBar/constants';
 import CookieConsentBanner from './components/cookie-consent/Banner';
 import OrganizationJsonLd from './components/OrganizationJsonLd';
 import Footer from '../landing-page/components/Footer';
@@ -17,11 +17,6 @@ import { footerNavigation } from '../landing-page/contentSections';
  */
 export default function App() {
   const location = useLocation();
-  const isMarketingPage = useMemo(() => {
-    return location.pathname === '/' || location.pathname.startsWith('/pricing');
-  }, [location]);
-
-  const navigationItems = isMarketingPage ? marketingNavigationItems : demoNavigationitems;
 
   // Every standalone auth page uses AuthPageLayout's own full-height, self-
   // branded split screen -- the marketing NavBar/Footer must never wrap
@@ -108,7 +103,7 @@ export default function App() {
           <Outlet />
         ) : (
           <>
-            {shouldDisplayAppNavBar && <NavBar navigationItems={navigationItems} />}
+            {shouldDisplayAppNavBar && <NavBar navigationItems={marketingNavigationItems} />}
             <div className='mx-auto max-w-(--breakpoint-2xl)'>
               <Outlet />
             </div>

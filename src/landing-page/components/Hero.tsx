@@ -112,7 +112,7 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
               </span>
             </div>
 
-            <div className='mx-auto flex max-w-md items-stretch divide-x divide-border rounded-2xl border border-border bg-card/60 py-4 backdrop-blur-xs lg:mx-0'>
+            <div className='card-elevated mx-auto flex max-w-md items-stretch divide-x divide-border py-4 lg:mx-0'>
               {heroStats.map((stat) => (
                 <div
                   key={stat.label}
