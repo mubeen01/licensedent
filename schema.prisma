@@ -162,6 +162,11 @@ enum SubscriptionPlanType {
   ireland_pathway // display name "IDC Pathway" -- enum value stays internal/technical, decoupled from display name
 }
 
+enum SubscriptionSource {
+  payment
+  admin_grant
+}
+
 model Exam {
   id                        String          @id @default(uuid())
   name                      String
@@ -519,6 +524,12 @@ model Subscription {
   planType                  SubscriptionPlanType
   durationDays              Int
   allExamsAccess            Boolean               @default(false)
+
+  // Distinguishes a real Stripe purchase from an admin comp grant
+  // (grantUserSubscription) -- both create identically-shaped rows
+  // otherwise, so this is the only way the admin dashboard's revenue
+  // total can tell them apart.
+  source                    SubscriptionSource    @default(payment)
 
   // When exam access ends. Set at grant time (createdAt + durationDays); a
   // renewal extends the later of now/expiresAt by the new duration. Backfilled

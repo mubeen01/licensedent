@@ -116,6 +116,7 @@ export const grantUserSubscription: GrantUserSubscription<GrantUserSubscriptionI
       durationDays: plan.effect.durationDays,
       allExamsAccess: plan.effect.allExamsAccess,
       examAccessId: resolvedExamId,
+      source: 'admin_grant',
     },
   });
 

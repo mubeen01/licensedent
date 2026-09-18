@@ -26,14 +26,19 @@ function dateKey(d: Date): string {
 
 // Zero-filled day buckets so a chart never silently drops a day with no
 // events -- a flat line at 0 reads correctly, a missing point reads as a
-// bug. Anchored to local midnight, not "now minus N*24h", so "last 7 days"
-// always includes all of today so far.
+// bug. Anchored to UTC midnight, not "now minus N*24h" and not the server
+// process's local timezone -- dateKey() also reads the UTC calendar day, so
+// mixing in a local-timezone "start of day" here would silently mislabel
+// events near midnight whenever the server's TZ isn't UTC.
+function startOfUTCDay(d: Date): number {
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
 function buildDayBuckets(days: number): string[] {
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfToday = startOfUTCDay(new Date());
   const keys: string[] = [];
   for (let i = days - 1; i >= 0; i--) {
-    keys.push(dateKey(new Date(startOfToday.getTime() - i * MS_PER_DAY)));
+    keys.push(dateKey(new Date(startOfToday - i * MS_PER_DAY)));
   }
   return keys;
 }
@@ -65,10 +70,10 @@ export type AdminOverviewStats = {
 };
 
 // One round trip for every KPI tile on the admin dashboard. Deliberately
-// independent of DailyStats/the Stripe-dependent stats job (see
-// analytics/operations.ts's getDailyStats) -- every number here is computed
-// live from tables that are always populated, so the dashboard's headline
-// row never goes blank just because a Stripe key is a placeholder.
+// independent of the Open SaaS template's Stripe-dependent daily-stats job
+// (removed -- PRD-005 Phase 6) -- every number here is computed live from
+// tables that are always populated, so the dashboard's headline row never
+// goes blank just because a Stripe key is a placeholder.
 export const getAdminOverviewStats: GetAdminOverviewStats<void, AdminOverviewStats> = async (_args, context) => {
   ensureAdmin(context.user);
   const now = new Date();
@@ -85,12 +90,16 @@ export const getAdminOverviewStats: GetAdminOverviewStats<void, AdminOverviewSta
     unreadMessages,
     submittedAttempts,
   ] = await Promise.all([
-    context.entities.User.count(),
-    context.entities.User.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
-    context.entities.User.count({ where: { createdAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } }),
+    context.entities.User.count({ where: { isDisabled: false } }),
+    context.entities.User.count({ where: { isDisabled: false, createdAt: { gte: sevenDaysAgo } } }),
+    context.entities.User.count({ where: { isDisabled: false, createdAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } } }),
     context.entities.Subscription.count(),
     context.entities.Subscription.findMany({ select: { createdAt: true, durationDays: true } }),
-    prisma.subscription.groupBy({ by: ['planType'], _count: { _all: true } }),
+    // Comp grants (grantUserSubscription) create rows shaped identically to a
+    // real purchase -- filtered here so "revenueToDate" below (labeled "in
+    // purchases to date" on the dashboard) doesn't count a free admin grant
+    // as income.
+    prisma.subscription.groupBy({ by: ['planType'], where: { source: 'payment' }, _count: { _all: true } }),
     context.entities.ContactFormMessage.count({ where: { isRead: false } }),
     prisma.mockExamAttempt.findMany({
       where: { status: 'submitted' },
@@ -140,10 +149,10 @@ export const getAdminGrowthSeries: GetAdminGrowthSeries<{ days?: number } | void
 ) => {
   ensureAdmin(context.user);
   const { days } = ensureArgsSchemaOrThrowHttpError(daysRangeSchema, rawArgs ?? {});
-  const startOfWindow = new Date(new Date().setHours(0, 0, 0, 0) - (days - 1) * MS_PER_DAY);
+  const startOfWindow = new Date(startOfUTCDay(new Date()) - (days - 1) * MS_PER_DAY);
 
   const users = await context.entities.User.findMany({
-    where: { createdAt: { gte: startOfWindow } },
+    where: { isDisabled: false, createdAt: { gte: startOfWindow } },
     select: { createdAt: true },
   });
 
@@ -163,7 +172,7 @@ export const getAdminReviewVelocity: GetAdminReviewVelocity<
 > = async (rawArgs, context) => {
   ensureAdmin(context.user);
   const { days } = ensureArgsSchemaOrThrowHttpError(daysRangeSchema, rawArgs ?? {});
-  const startOfWindow = new Date(new Date().setHours(0, 0, 0, 0) - (days - 1) * MS_PER_DAY);
+  const startOfWindow = new Date(startOfUTCDay(new Date()) - (days - 1) * MS_PER_DAY);
 
   const [approved, rejected] = await Promise.all([
     context.entities.Question.findMany({

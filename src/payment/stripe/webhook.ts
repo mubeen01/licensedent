@@ -134,6 +134,7 @@ async function saveSuccessfulOneTimePayment(
         durationDays: accessGrant.durationDays,
         allExamsAccess: accessGrant.allExamsAccess,
         examAccessId: accessGrant.allExamsAccess ? undefined : (session.metadata?.examId ?? undefined),
+        source: 'payment',
       },
     });
   }

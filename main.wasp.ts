@@ -1,4 +1,4 @@
-import { app, page, route, query, action, api, job } from '@wasp.sh/spec'
+import { app, page, route, query, action, api } from '@wasp.sh/spec'
 
 // Auth-related src imports
 import { getVerificationEmailContent, getPasswordResetEmailContent } from './src/auth/email-and-pass/emails' with { type: 'ref' }
@@ -56,10 +56,6 @@ import {
 } from './src/payment/operations' with { type: 'ref' }
 import BillingPage from './src/dashboard/BillingPage' with { type: 'ref' }
 import { paymentsWebhook, paymentsMiddlewareConfigFn } from './src/payment/webhook' with { type: 'ref' }
-
-// Analytics
-import { getDailyStats } from './src/analytics/operations' with { type: 'ref' }
-import { calculateDailyStats } from './src/analytics/stats' with { type: 'ref' }
 
 // Admin Dashboard
 import AnalyticsDashboardPage from './src/admin/dashboards/analytics/AnalyticsDashboardPage' with { type: 'ref' }
@@ -387,17 +383,6 @@ export default app({
     api('POST', '/payments-webhook', paymentsWebhook, {
       entities: ['User', 'Subscription'],
       middlewareConfigFn: paymentsMiddlewareConfigFn,
-    }),
-
-    // Analytics
-    query(getDailyStats, { entities: ['User', 'DailyStats'] }),
-    job(calculateDailyStats, {
-      executor: 'PgBoss',
-      schedule: {
-        cron: '0 * * * *', // every hour. useful in production
-        // cron: '* * * * *' // every minute. useful for debugging
-      },
-      entities: ['User', 'DailyStats', 'Logs', 'PageViewSource'],
     }),
 
     // Admin Dashboard
