@@ -10,17 +10,34 @@ short on purpose — the real depth lives in `docs/`, linked below.
 
 ## Where the actual project is
 
-**Active development happens in WSL2 Ubuntu, not here on native Windows,**
-even if this file is being read from `D:\Dental\LicenseDent`. Wasp has no
-native Windows support, and the old native-Windows / `/mnt/d` setup had a
-recurring file-watcher staleness bug.
+**`D:\Dental\LicenseDent` is the one permanent home of this project** — all
+git history and commits live there (two separate repos: this root repo and
+`app/`, see `docs/09-work-changelog.md` for why). Wasp has no native Windows
+support at all (checked the npm registry directly: no `win32` build exists
+for `@wasp.sh/wasp-cli` at any version), so it can only ever run via
+WSL2/Linux/macOS.
 
-- **Active copy (WSL2)**: `~/LicenseDent/app` — this is where you actually
-  work. If your session's shell is on Windows, open a WSL2 shell (or run
-  `wsl.exe -e bash -lc "..."` from Windows) and `cd ~/LicenseDent/app`.
-- **Windows fallback (`D:\Dental\LicenseDent\app`)**: a frozen snapshot
-  still on Wasp 0.18, kept only as a pre-upgrade rollback point. **Don't
-  develop against it or try to upgrade it** — it's intentionally untouched.
+**Active coding/running happens in a *disposable* WSL2 working copy**,
+synced from D: at the start of a session:
+
+```bash
+rm -rf ~/LicenseDent
+mkdir -p ~/LicenseDent
+rsync -a --exclude 'node_modules' --exclude '.wasp' /mnt/d/Dental/LicenseDent/ ~/LicenseDent/
+# verify the sync actually completed -- don't trust exit code alone
+diff <(cd /mnt/d/Dental/LicenseDent/app/src && find . -type f | sort) \
+     <(cd ~/LicenseDent/app/src && find . -type f | sort)   # must be empty
+```
+
+WSL never permanently stores anything D: doesn't also have — it's scratch
+space, safe to `rm -rf` and re-sync any time. **Commit straight into
+`D:\Dental\LicenseDent`'s repos**, not the WSL copy, so D: never falls
+behind. Running Wasp directly against `/mnt/d` (skipping the WSL copy)
+technically boots the server, but the live dev experience is broken there —
+hot-reload never fires and the client's dev-mode SSR effectively never
+completes (confirmed 2026-09-20, same file-watcher/IO staleness class of bug
+as the original reason this project left native Windows). Always work from
+the WSL-native `~/LicenseDent` copy, never `/mnt/d` directly.
 
 ## Starting the dev server
 
