@@ -57,6 +57,7 @@ import {
   getMyEffectiveAccess,
   getMyDashboardScope,
   generateCheckoutSession,
+  getPlanAvailability,
 } from './src/payment/operations' with { type: 'ref' }
 import BillingPage from './src/dashboard/BillingPage' with { type: 'ref' }
 import { paymentsWebhook, paymentsMiddlewareConfigFn } from './src/payment/webhook' with { type: 'ref' }
@@ -401,6 +402,7 @@ export default app({
     // Payment
     route('PricingPageRoute', '/pricing', page(PricingPage), { prerender: true }),
     route('CheckoutRoute', '/checkout', page(Checkout, { authRequired: true })),
+    query(getPlanAvailability),
     query(getCustomerPortalUrl, { entities: ['User'] }),
     query(getMySubscription, { entities: ['Subscription'] }),
     query(getMySubscriptionHistory, { entities: ['Subscription'] }),

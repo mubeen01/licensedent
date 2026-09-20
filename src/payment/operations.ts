@@ -6,6 +6,7 @@ import type {
   GetMyEffectiveAccess,
   GetMySubscription,
   GetMySubscriptionHistory,
+  GetPlanAvailability,
 } from 'wasp/server/operations';
 import type { Subscription } from 'wasp/entities';
 import { PaymentPlanId, paymentPlans } from '../payment/plans';
@@ -89,6 +90,31 @@ export const generateCheckoutSession: GenerateCheckoutSession<
     sessionUrl: session.url,
     sessionId: session.id,
   };
+};
+
+// PRD-006 follow-up (2026-09-20 final launch audit): which plans currently
+// have a real Stripe price id configured, vs. the OpenSaaS template's
+// leftover placeholder or a genuinely unset env var. `getPaymentProcessorPlanId()`
+// only distinguishes "unset" (throws) from "set" -- it can't tell a real price
+// id apart from the placeholder, so PricingPage previously had to hardcode a
+// per-plan disabled state (see git history on IrelandPathway's old guard) that
+// someone had to remember to remove once a real id was configured. This
+// re-checks live on every load instead, so the "Buy Now"/"Coming soon" state
+// self-corrects the moment a real id is set in .env.server -- no code change
+// needed at launch time. Never leaks the actual id, only a boolean per plan.
+const PLACEHOLDER_STRIPE_PRICE_ID = '012345';
+
+export const getPlanAvailability: GetPlanAvailability<void, Record<PaymentPlanId, boolean>> = async () => {
+  const availability = {} as Record<PaymentPlanId, boolean>;
+  for (const planId of Object.values(PaymentPlanId)) {
+    try {
+      const id = paymentPlans[planId].getPaymentProcessorPlanId();
+      availability[planId] = Boolean(id) && id !== PLACEHOLDER_STRIPE_PRICE_ID;
+    } catch {
+      availability[planId] = false;
+    }
+  }
+  return availability;
 };
 
 export const getCustomerPortalUrl: GetCustomerPortalUrl<void, string | null> = async (_args, context) => {

@@ -19,9 +19,36 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
+  # Runs on every push and PR -- a typecheck gate before anything reaches
+  # main, since previously nothing verified a change before `wasp deploy`
+  # ran straight to production on push. No test step yet: there are no
+  # test files in this repo (`src/**/*.test.ts(x)`) for vitest to run, so
+  # a "test" step would be a vacuous pass, not real coverage -- add one
+  # once real tests exist rather than fake the gate.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24.20.0'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Typecheck
+        run: npx tsc --noEmit -p tsconfig.src.json
+
   deploy:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       WASP_VERSION: '0.25'

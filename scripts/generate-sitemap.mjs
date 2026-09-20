@@ -1,10 +1,17 @@
 // PRD-006 L10: sitemap.xml used to be hand-maintained with lastmod dates
 // that drifted stale relative to real source edits. This generates it from
-// the actual route list (main.wasp.ts's own `prerender: true` public routes)
-// with lastmod pulled from each route's real source file via git, so it can
-// never go stale again. Wired into vite.config.ts to run before every build.
+// a hand-maintained ROUTES list below, meant to mirror main.wasp.ts's own
+// `prerender: true` public routes, with lastmod pulled from each route's
+// real source file via git so lastmod at least can't go stale. ROUTES
+// itself is NOT auto-derived (an earlier version of this comment claimed
+// it was -- it wasn't, and nothing enforced the two staying in sync).
+// `assertRoutesMatchMainWasp()` below closes that gap: it parses
+// main.wasp.ts's real `prerender: true` route paths and fails the build
+// loudly if a new one is added here without a matching ROUTES entry (or
+// vice versa), rather than silently shipping a stale sitemap. Wired into
+// vite.config.ts to run before every build.
 import { execSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -35,6 +42,38 @@ const ROUTES = [
   { loc: '/about', source: 'src/about/AboutPage.tsx', changefreq: 'yearly', priority: '0.3' },
 ];
 
+// Parses main.wasp.ts's actual `route('Name', '/path', page(X), { ... prerender: true ... })`
+// calls (all currently single-line -- see the real file for the pattern this matches) and
+// diffs their paths against ROUTES above. Throws with a clear message naming exactly which
+// paths are missing/extra, rather than letting the sitemap silently drift from the real
+// route list the way the header comment used to (incorrectly) claim it couldn't.
+function assertRoutesMatchMainWasp() {
+  const mainWaspSource = readFileSync(path.join(appRoot, 'main.wasp.ts'), 'utf-8');
+  const prerenderedPaths = new Set();
+  for (const line of mainWaspSource.split('\n')) {
+    if (!line.includes('prerender: true')) continue;
+    const match = line.match(/route\(\s*'[^']+'\s*,\s*'([^']+)'/);
+    if (match) prerenderedPaths.add(match[1]);
+  }
+
+  const routesPaths = new Set(ROUTES.map((r) => r.loc));
+  const missingFromRoutes = [...prerenderedPaths].filter((p) => !routesPaths.has(p));
+  const staleInRoutes = [...routesPaths].filter((p) => !prerenderedPaths.has(p));
+
+  if (missingFromRoutes.length > 0 || staleInRoutes.length > 0) {
+    const lines = [];
+    if (missingFromRoutes.length > 0) {
+      lines.push(`  prerendered in main.wasp.ts but missing from ROUTES: ${missingFromRoutes.join(', ')}`);
+    }
+    if (staleInRoutes.length > 0) {
+      lines.push(`  in ROUTES but not a prerendered route in main.wasp.ts: ${staleInRoutes.join(', ')}`);
+    }
+    throw new Error(
+      `[generate-sitemap] ROUTES has drifted from main.wasp.ts's real prerendered routes:\n${lines.join('\n')}\nUpdate ROUTES in scripts/generate-sitemap.mjs to match.`
+    );
+  }
+}
+
 function lastCommitDate(relPath) {
   try {
     const out = execSync(`git log -1 --format=%cd --date=short -- "${relPath}"`, {
@@ -49,6 +88,8 @@ function lastCommitDate(relPath) {
 }
 
 function generate() {
+  assertRoutesMatchMainWasp();
+
   const urls = ROUTES.map(({ loc, source, changefreq, priority }) => {
     const lastmod = lastCommitDate(source);
     return `  <url>\n    <loc>${SITE_ORIGIN}${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;

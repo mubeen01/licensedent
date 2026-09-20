@@ -3,7 +3,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from 'wasp/client/auth';
 import { routes } from 'wasp/client/router';
-import { generateCheckoutSession, getCustomerPortalUrl, getPublicExams, useQuery } from 'wasp/client/operations';
+import {
+  generateCheckoutSession,
+  getCustomerPortalUrl,
+  getPlanAvailability,
+  getPublicExams,
+  useQuery,
+} from 'wasp/client/operations';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
@@ -97,6 +103,10 @@ const offerJsonLd = {
   '@type': 'Product',
   name: 'LicenseDent Exam Prep Plan',
   description: 'One-time-purchase dental licensing exam prep plans -- question bank, mock tests and progress analytics.',
+  // Required for Product rich-result eligibility (Google flags Product
+  // markup with no image). Reuses the same real, already-1200x630 social
+  // preview asset SeoHead.tsx defaults to -- no new asset invented.
+  image: `${SITE_ORIGIN}/logo/og-image.png`,
   offers: (
     [PaymentPlanId.FastTrack, PaymentPlanId.Standard, PaymentPlanId.Extended] as const
   ).map((planId) => ({
@@ -114,6 +124,12 @@ const PricingPage = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { data: user } = useAuth();
+  // Drives the "Buy Now"/"Coming soon" state per plan -- see getPlanAvailability's
+  // own comment for why this replaced a hardcoded per-plan check. Defaults every
+  // plan to unavailable until the query actually resolves (fail-safe: never show
+  // a plan as buyable before we've confirmed it really is).
+  const { data: planAvailability } = useQuery(getPlanAvailability);
+  const isPlanAvailable = (planId: PaymentPlanId) => planAvailability?.[planId] ?? false;
   const { data: publicExams, isLoading: isExamsLoading } = useQuery(getPublicExams);
   // Exam picker for single-exam plans (Fast Track / Standard) -- defaults to the first
   // exam with real published content once exams load, but the student can change it.
@@ -143,10 +159,9 @@ const PricingPage = () => {
   const navigate = useNavigate();
 
   async function handleBuyNowClick(paymentPlanId: PaymentPlanId) {
-    // IDC Pathway's Stripe price isn't configured yet (PAYMENTS_IRELAND_PATHWAY_PLAN_ID) --
-    // the button for this plan is disabled below, but guard here too in case
-    // this is ever called programmatically.
-    if (paymentPlanId === PaymentPlanId.IrelandPathway) {
+    // The button for an unavailable plan is disabled below, but guard here
+    // too in case this is ever called programmatically.
+    if (!isPlanAvailable(paymentPlanId)) {
       return;
     }
     if (!user) {
@@ -291,13 +306,14 @@ const PricingPage = () => {
         <div className='isolate mx-auto mt-16 grid max-w-md grid-cols-1 gap-y-8 lg:gap-x-8 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-4'>
           {visiblePaymentPlanIds.map((planId) => {
             const isIrelandPathway = planId === PaymentPlanId.IrelandPathway;
+            const isAvailable = isPlanAvailable(planId);
             return (
               <div
                 key={planId}
                 className={cn(
                   'card-elevated card-elevated-hover relative flex flex-col grow justify-between p-8 xl:p-10',
                   planId === bestDealPaymentPlanId && 'ring-2 ring-primary',
-                  isIrelandPathway && 'opacity-80'
+                  !isAvailable && 'opacity-80'
                 )}
               >
                 {planId === bestDealPaymentPlanId && (
@@ -323,7 +339,7 @@ const PricingPage = () => {
                         Most popular
                       </span>
                     )}
-                    {isIrelandPathway && (
+                    {!isAvailable && (
                       <span className='rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground'>
                         Coming soon
                       </span>
@@ -377,7 +393,7 @@ const PricingPage = () => {
                   </ul>
                 </div>
                 <div className='mt-8'>
-                  {isIrelandPathway ? (
+                  {!isAvailable ? (
                     // PRD-006 M21: the "email us" instruction was previously
                     // only in a `title` tooltip on a disabled button --
                     // unreachable by keyboard and screen readers, and
