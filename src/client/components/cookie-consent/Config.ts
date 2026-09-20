@@ -28,8 +28,18 @@ const getConfig = () => {
 
     guiOptions: {
       consentModal: {
-        layout: 'box',
-        position: 'bottom right',
+        // Launch-audit fix (2026-09-20): 'box'/'bottom right' rendered a
+        // ~305px-tall card that overlapped vertically-centered page content
+        // (confirmed via real bounding-box measurement: the card spanned
+        // y:399-704 on a common 1280x720 viewport, directly on top of the
+        // login/signup form's submit button at y:425-465). Its `auto`
+        // pointer-events + max z-index meant it silently absorbed clicks
+        // meant for the button underneath -- a real user on that viewport
+        // size could not submit login/signup at all until dismissing the
+        // banner first. 'bar'/'bottom' is a slim full-width strip pinned to
+        // the very bottom edge, well clear of centered content.
+        layout: 'bar',
+        position: 'bottom',
         equalWeightButtons: true,
         flipButtons: false,
       },
