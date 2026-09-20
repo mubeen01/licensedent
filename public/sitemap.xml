@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  PRD-01 S1.3. Static list of the public, content-bearing pages (the same
-  15-page SEO candidate set as S0.1/S0.2 and the 13-route S1.1 prerender
-  set -- Login/Signup/Account/etc are intentionally excluded, not useful
-  for search).
-
-  Domain (PRD-01 Q1) answered 2026-09-16: licensedent.com. Keep in sync
-  with SeoHead.tsx's SITE_ORIGIN constant and robots.txt's Sitemap: line.
-
-  Hand-written for now; revisit generating this at build time from the
-  route list once the route set is less likely to change every session.
+  PRD-006 L10: generated at build time by scripts/generate-sitemap.mjs from
+  main.wasp.ts's real public route list -- do not hand-edit, edit ROUTES in
+  that script instead. lastmod is each route's source file's real last git
+  commit date, so this can't go stale the way a hand-written file did.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://licensedent.com/</loc>
-    <lastmod>2026-09-20</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
