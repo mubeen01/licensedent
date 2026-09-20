@@ -43,7 +43,7 @@ export default function Footer({
 
             <a
               href='mailto:support@licensedent.com'
-              className='mt-5 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary'
+              className='mt-5 inline-flex items-center gap-2 py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-primary'
             >
               <Mail className='h-4 w-4' /> support@licensedent.com
             </a>
@@ -66,7 +66,7 @@ export default function Footer({
                       crawlable <a href> under the hood. */}
                   <ReactRouterLink
                     to={item.href}
-                    className='text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
+                    className='inline-block py-1 text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
                   >
                     {item.name}
                   </ReactRouterLink>
@@ -84,14 +84,14 @@ export default function Footer({
                   {item.href.startsWith('mailto:') ? (
                     <a
                       href={item.href}
-                      className='text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
+                      className='inline-block py-1 text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
                     >
                       {item.name}
                     </a>
                   ) : (
                     <ReactRouterLink
                       to={item.href}
-                      className='text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
+                      className='inline-block py-1 text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
                     >
                       {item.name}
                     </ReactRouterLink>
@@ -108,7 +108,7 @@ export default function Footer({
               <li>
                 <WaspRouterLink
                   to={routes.SignupRoute.to}
-                  className='text-sm font-semibold leading-6 text-primary transition-colors hover:text-primary/80'
+                  className='inline-block py-1 text-sm font-semibold leading-6 text-primary transition-colors hover:text-primary/80'
                 >
                   Create free account
                 </WaspRouterLink>
@@ -116,7 +116,7 @@ export default function Footer({
               <li>
                 <WaspRouterLink
                   to={routes.PricingPageRoute.to}
-                  className='text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
+                  className='inline-block py-1 text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
                 >
                   View plans
                 </WaspRouterLink>
@@ -124,7 +124,7 @@ export default function Footer({
               <li>
                 <WaspRouterLink
                   to={routes.LoginRoute.to}
-                  className='text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
+                  className='inline-block py-1 text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
                 >
                   Log in
                 </WaspRouterLink>
