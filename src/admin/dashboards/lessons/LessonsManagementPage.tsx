@@ -36,16 +36,20 @@ import DefaultLayout from '../../layout/DefaultLayout';
 import LoadingSpinner from '../../layout/LoadingSpinner';
 import { useConfirm } from '../questions/ConfirmDialog';
 
-// Accepts whatever a real user pastes -- a full watch/share/embed URL or a
-// bare 11-char id -- so the admin doesn't have to manually strip a URL down
-// to the id LessonsPage's `youtube.com/embed/${youtubeId}` player needs.
-// Falls back to the trimmed input as-is if nothing recognizable matches, so
-// a genuinely bare id (or an unrecognized format) still saves rather than
-// silently becoming empty.
+// Accepts whatever a real user pastes -- YouTube's own <iframe> embed-code
+// snippet (Share -> Embed), a plain watch/share/embed URL, or a bare 11-char
+// id -- so the admin can paste straight from YouTube without hand-editing it
+// down to the id LessonsPage's `youtube.com/embed/${youtubeId}` player needs.
+// The embed-code snippet's `src="https://www.youtube.com/embed/ID?..."` (or
+// the privacy-enhanced `youtube-nocookie.com` domain YouTube sometimes uses)
+// matches the same "youtube...com/embed/" pattern as a plain embed link, so
+// one pattern list covers both. Falls back to the trimmed input as-is if
+// nothing recognizable matches, so a genuinely bare id (or an unrecognized
+// format) still saves rather than silently becoming empty.
 function extractYoutubeId(input: string): string {
   const trimmed = input.trim();
   const patterns = [
-    /(?:youtube\.com\/watch\?(?:.*&)?v=|youtube\.com\/embed\/|youtube\.com\/shorts\/|youtu\.be\/)([A-Za-z0-9_-]{11})/,
+    /(?:youtube(?:-nocookie)?\.com\/watch\?(?:.*&)?v=|youtube(?:-nocookie)?\.com\/embed\/|youtube\.com\/shorts\/|youtu\.be\/)([A-Za-z0-9_-]{11})/,
   ];
   for (const pattern of patterns) {
     const match = pattern.exec(trimmed);
@@ -850,12 +854,15 @@ function AddPartForm({
         </div>
       </div>
       <div>
-        <Label className='text-xs text-muted-foreground'>YouTube link or ID (leave blank -- "coming soon")</Label>
-        <Input
-          className='mt-1'
+        <Label className='text-xs text-muted-foreground'>
+          YouTube embed code (leave blank -- "coming soon")
+        </Label>
+        <Textarea
+          className='mt-1 font-mono text-xs'
+          rows={2}
           value={youtubeId}
           onChange={(e) => setYoutubeId(e.currentTarget.value)}
-          placeholder='https://youtu.be/dQw4w9WgXcQ or dQw4w9WgXcQ'
+          placeholder='Paste the <iframe> code from YouTube&apos;s Share -&gt; Embed button (a plain link or bare id also works)'
         />
       </div>
       <div>
@@ -1094,12 +1101,13 @@ function PartRow({
             </div>
           </div>
           <div>
-            <Label className='text-xs text-muted-foreground'>YouTube link or ID</Label>
-            <Input
-              className='mt-1'
+            <Label className='text-xs text-muted-foreground'>YouTube embed code</Label>
+            <Textarea
+              className='mt-1 font-mono text-xs'
+              rows={2}
               value={youtubeId}
               onChange={(e) => setYoutubeId(e.currentTarget.value)}
-              placeholder='https://youtu.be/dQw4w9WgXcQ or dQw4w9WgXcQ'
+              placeholder='Paste the <iframe> code from YouTube&apos;s Share -&gt; Embed button (a plain link or bare id also works)'
             />
           </div>
           <div>
