@@ -37,7 +37,15 @@ export interface AccentPalette {
 
 export const accentPalettes: Record<AccentId, AccentPalette> = {
   amber: {
-    text: 'text-amber-700',
+    // PRD-006 Phase 8: text-amber-700 measured 4.45:1 against this
+    // palette's own bg-amber-500/10 badge background (Lighthouse
+    // color-contrast audit on /exams/dha, run against the real
+    // production build) -- just short of WCAG AA's 4.5:1 minimum for
+    // normal text. One shade darker clears it with margin. The other 8
+    // accent palettes weren't specifically measured (Lighthouse only
+    // exercised the one exam guide page audited) -- worth a spot-check
+    // in a follow-up rather than blanket-guessed here.
+    text: 'text-amber-800',
     textDark: 'dark:text-amber-400',
     bg10: 'bg-amber-500/10',
     border30: 'border-amber-500/30',
