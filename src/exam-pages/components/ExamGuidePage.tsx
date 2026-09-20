@@ -63,17 +63,34 @@ export default function ExamGuidePage({ config }: { config: ExamGuideConfig }) {
   // Every SEO title in this codebase follows "<short name> Exam Guide ... -- <subtitle> | LicenseDent" -- the part before the em dash is a clean, short label for breadcrumbs/Course names.
   const shortName = config.seo.title.split('—')[0].trim();
 
-  const courseJsonLd = {
+  // PRD-006 M1: was `Course` -- Google requires `hasCourseInstance` (or
+  // `offers`) for Course rich-result eligibility, which this page doesn't
+  // genuinely have (there's no single "course instance" for one exam;
+  // LicenseDent sells multi-exam question-bank plans, not per-exam
+  // courses). Fabricating one to satisfy the field would mean inventing
+  // structure that isn't true. More importantly, `Course` + `provider`
+  // implies LicenseDent teaches/certifies toward this specific government
+  // licensing exam -- a bigger mischaracterization risk than a Search
+  // Console warning, and inconsistent with the site's own disclaimers
+  // (independent exam-prep, not affiliated with any licensing authority).
+  // `Article` + `about` accurately describes what this page actually is:
+  // an informational guide about the exam, not a course.
+  const articleJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Course',
-    name: shortName,
+    '@type': 'Article',
+    headline: shortName,
     description: config.seo.description,
     url: canonicalUrl,
-    provider: { '@type': 'EducationalOrganization', name: 'LicenseDent', url: SITE_ORIGIN },
-    // The exam's own official subject/domain blueprint (sourced from that
-    // authority's guideline, see this exam's *Content.ts file header) --
-    // not LicenseDent's internal question-bank taxonomy.
-    teaches: config.examSubjects.map((s) => s.name),
+    author: { '@type': 'EducationalOrganization', name: 'LicenseDent', url: SITE_ORIGIN },
+    publisher: { '@type': 'EducationalOrganization', name: 'LicenseDent', url: SITE_ORIGIN },
+    about: {
+      '@type': 'Thing',
+      name: shortName,
+      // The exam's own official subject/domain blueprint (sourced from
+      // that authority's guideline, see this exam's *Content.ts file
+      // header) -- not LicenseDent's internal question-bank taxonomy.
+      description: `Covers: ${config.examSubjects.map((s) => s.name).join(', ')}`,
+    },
   };
 
   const breadcrumbJsonLd = {
@@ -93,7 +110,7 @@ export default function ExamGuidePage({ config }: { config: ExamGuideConfig }) {
         description={config.seo.description}
         path={config.seo.path}
         faqs={config.faqs}
-        extraJsonLd={[courseJsonLd, breadcrumbJsonLd]}
+        extraJsonLd={[articleJsonLd, breadcrumbJsonLd]}
       />
       <main className='isolate'>
         <Hero config={config} accentClasses={accent} />
