@@ -1,5 +1,4 @@
 import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { getPublicExams, useQuery } from 'wasp/client/operations';
 import { Button } from '../components/ui/button';
@@ -43,11 +42,6 @@ export default function AllExamsPage() {
 /* -------------------------------------------------------------------------- */
 function Hero() {
   const { data: exams } = useQuery(getPublicExams);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
 
   const countries = exams ? new Set(exams.map((e) => e.country)).size : 7;
 
@@ -59,10 +53,12 @@ function Hero() {
         <div className='absolute -bottom-24 left-1/3 h-88 w-88 rounded-full bg-gold/10 blur-3xl' />
       </div>
 
+      {/* PRD-006 H7: same fix as the homepage's Hero.tsx -- this section's
+          H1 previously stayed invisible (opacity-0) until a post-hydration
+          useEffect flipped isVisible, even though it was already rendered
+          in the prerendered HTML. Now full opacity immediately. */}
       <div className='mx-auto max-w-5xl px-6 py-16 text-center sm:py-20 lg:px-8'>
-        <div
-          className={`transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
-        >
+        <div>
           <div className='flex justify-center'>
             <span className='inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary'>
               <span className='relative flex h-2 w-2'>

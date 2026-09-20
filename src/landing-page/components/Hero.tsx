@@ -1,5 +1,5 @@
 import { BadgeCheck, BookOpen, CheckCircle2, Clock, Globe, ShieldCheck, Sparkles } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Button } from '../../components/ui/button';
 
@@ -15,13 +15,8 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
     { value: '100%', label: 'Dentist-verified', icon: BadgeCheck },
     { value: examCount ?? '10', label: 'Gulf + Ireland exams', icon: Globe },
   ];
-  const [isVisible, setIsVisible] = useState(false);
   const mockupRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
 
   const handleMockupMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -44,12 +39,17 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
 
       <div className='mx-auto max-w-7xl px-6 py-20 sm:py-24 md:py-32 lg:px-8'>
         <div className='grid items-center gap-12 lg:grid-cols-2 lg:gap-20'>
-          {/* Left column */}
-          <div
-            className={`space-y-8 text-center transition-all duration-1000 lg:text-left ${
-              isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-            }`}
-          >
+          {/* Left column -- PRD-006 H7: previously faded/slid in via a
+              post-hydration useEffect (opacity-0 until isVisible flips),
+              which meant the H1 -- this section's LCP element and the
+              first thing both users and crawlers see -- stayed invisible
+              until React mounted and ran an effect, even though it was
+              already fully rendered in the prerendered HTML. Measured
+              impact: this page's LCP was 2744ms vs 436ms for an
+              identically-structured page with no such gate. Now renders
+              at full opacity immediately; below-the-fold sections keep
+              their own Reveal-based scroll-in animation. */}
+          <div className='space-y-8 text-center lg:text-left'>
             <div className='flex justify-center lg:justify-start'>
               <div className='inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary backdrop-blur-xs'>
                 <span className='relative flex h-2 w-2'>
@@ -138,12 +138,9 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
             </div>
           </div>
 
-          {/* Right column: product mockup in browser chrome */}
-          <div
-            className={`relative mt-8 transition-all delay-300 duration-1000 lg:mt-0 ${
-              isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-            }`}
-          >
+          {/* Right column: product mockup in browser chrome -- PRD-006 H7:
+              same entrance-animation removal as the left column above. */}
+          <div className='relative mt-8 lg:mt-0'>
             <div
               className='absolute inset-0 -z-10 scale-95 rounded-4xl bg-linear-to-br from-primary/25 via-secondary/15 to-gold/20 blur-3xl'
               aria-hidden='true'
