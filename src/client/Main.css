@@ -1,4 +1,16 @@
-@import 'tailwindcss';
+/* PRD-006 C1: plain `@import 'tailwindcss'` resolves fine in Vite 8's dev
+   server (chokidar/esbuild's resolver follows the package's default
+   `import` condition to dist/lib.mjs, a JS module, and Vite's dev CSS
+   pipeline tolerates that) but fails the PRODUCTION build --
+   `npx vite build` errored with `ENOENT open '.../tailwindcss'` because
+   Vite 8's build-time CSS resolver doesn't fall back to the `style`
+   condition tailwindcss@4 exposes its actual stylesheet under, and
+   resolved the bare specifier as a literal relative path instead. The
+   package explicitly exports an `./index.css` subpath for exactly this
+   case -- importing it directly sidesteps the condition-resolution
+   entirely, works identically in dev and build, and needs no new
+   dependency. See docs/15-frontend-seo-geo-hardening-PRD-006.md Phase 1. */
+@import 'tailwindcss/index.css';
 
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
@@ -145,8 +157,6 @@
   --z-index-9999: 9999;
   --z-index-99999: 99999;
   --z-index-999999: 999999;
-
-  --content-icon-copy: url('../images/icon/icon-copy-alt.svg');
 
   --transition-property-width: width;
   --transition-property-stroke: stroke;
