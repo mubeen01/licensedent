@@ -85,12 +85,17 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
             </p>
 
             <div className='flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start'>
+              {/* PRD-006 L8: this linked to /signup, but the "Try 20
+                  Questions" claim only actually matches /demo-exam (the
+                  demo hardcodes exactly 20 questions and needs no
+                  account) -- clicking through to signup didn't deliver
+                  what the button promised. */}
               <Button
                 size='lg'
                 asChild
                 className='group w-full border-0 bg-linear-to-r from-primary to-secondary px-8 font-semibold text-white shadow-[0_8px_30px_-6px_hsl(var(--primary)/0.45)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_45px_-8px_hsl(var(--primary)/0.55)] sm:w-auto'
               >
-                <WaspRouterLink to={routes.SignupRoute.to}>
+                <WaspRouterLink to={routes.DemoExamRoute.to}>
                   Start Free — Try 20 Questions
                   <span className='inline-block transition-transform group-hover:translate-x-1' aria-hidden='true'>
                     →
@@ -192,8 +197,11 @@ function BrowserFrame() {
           <span className='h-2.5 w-2.5 rounded-full bg-warning/60' />
           <span className='h-2.5 w-2.5 rounded-full bg-success/60' />
         </div>
+        {/* PRD-006 L7: was "app.licensedent.com/practice" -- the real
+            deployment has no "app." subdomain (see SeoHead's SITE_ORIGIN,
+            'https://licensedent.com'). */}
         <div className='flex-1 rounded-md bg-background/80 px-3 py-1 text-center text-[11px] text-muted-foreground'>
-          app.licensedent.com/practice
+          licensedent.com/practice
         </div>
       </div>
       <SampleQuestionCard />

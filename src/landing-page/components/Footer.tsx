@@ -1,4 +1,5 @@
 import { Mail } from 'lucide-react';
+import { Link as ReactRouterLink } from 'react-router';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 
 interface NavigationItem {
@@ -54,12 +55,21 @@ export default function Footer({
             <ul role='list' className='mt-4 space-y-3'>
               {footerNavigation.product.map((item) => (
                 <li key={item.name}>
-                  <a
-                    href={item.href}
+                  {/* PRD-006 M16: these were plain <a href> -- clicking one
+                      did a full document navigation/reload instead of a SPA
+                      transition, even for internal links. Wasp's own typed
+                      Link can't express a hash-only fragment on a route
+                      (`to` must be one of its generated literal route
+                      strings), so this follows the same pattern NavBar.tsx
+                      already uses for its identical `/#exams`-style items:
+                      plain react-router Link, which still renders a real,
+                      crawlable <a href> under the hood. */}
+                  <ReactRouterLink
+                    to={item.href}
                     className='text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
                   >
                     {item.name}
-                  </a>
+                  </ReactRouterLink>
                 </li>
               ))}
             </ul>
@@ -71,12 +81,21 @@ export default function Footer({
             <ul role='list' className='mt-4 space-y-3'>
               {footerNavigation.company.map((item) => (
                 <li key={item.name}>
-                  <a
-                    href={item.href}
-                    className='text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
-                  >
-                    {item.name}
-                  </a>
+                  {item.href.startsWith('mailto:') ? (
+                    <a
+                      href={item.href}
+                      className='text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
+                    >
+                      {item.name}
+                    </a>
+                  ) : (
+                    <ReactRouterLink
+                      to={item.href}
+                      className='text-sm leading-6 text-muted-foreground transition-colors hover:text-primary'
+                    >
+                      {item.name}
+                    </ReactRouterLink>
+                  )}
                 </li>
               ))}
             </ul>

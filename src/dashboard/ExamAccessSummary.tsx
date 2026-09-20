@@ -63,7 +63,10 @@ export function CustomerPortalButton() {
 
   const handleClick = () => {
     if (customerPortalUrl) {
-      window.open(customerPortalUrl, '_blank');
+      // PRD-006 M14: window.open(url, '_blank') alone doesn't set
+      // noopener -- the opened Stripe tab otherwise keeps a live
+      // window.opener handle back to this page.
+      window.open(customerPortalUrl, '_blank', 'noopener,noreferrer');
     }
   };
 

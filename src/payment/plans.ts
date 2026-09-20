@@ -1,4 +1,18 @@
-import { requireNodeEnvVar } from '../server/utils';
+// PRD-006 L15: this file is imported by both server code and the client
+// (PricingPage.tsx), so it must not pull in anything under `server/` at
+// module scope -- harmless today (the import below was never called at
+// module scope, only lazily inside getPaymentProcessorPlanId(), which the
+// client never invokes), but a future edit could easily start evaluating
+// it eagerly and leak a server-only module into the client bundle. A
+// private, identical copy avoids the cross-boundary import entirely.
+function requireNodeEnvVar(name: string): string {
+  const value = process.env[name];
+  if (value === undefined) {
+    throw new Error(`Env var ${name} is undefined`);
+  } else {
+    return value;
+  }
+}
 
 export enum SubscriptionStatus {
   PastDue = 'past_due',

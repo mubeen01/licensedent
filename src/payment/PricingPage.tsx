@@ -114,7 +114,7 @@ const PricingPage = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { data: user } = useAuth();
-  const { data: publicExams } = useQuery(getPublicExams);
+  const { data: publicExams, isLoading: isExamsLoading } = useQuery(getPublicExams);
   // Exam picker for single-exam plans (Fast Track / Standard) -- defaults to the first
   // exam with real published content once exams load, but the student can change it.
   const examsWithContent = publicExams?.filter((e) => e.publishedQuestionCount > 0) ?? [];
@@ -132,7 +132,13 @@ const PricingPage = () => {
     data: customerPortalUrl,
     isLoading: isCustomerPortalUrlLoading,
     error: customerPortalUrlError,
-  } = useQuery(getCustomerPortalUrl, { enabled: isUserSubscribed });
+    // PRD-006 H8: `{ enabled: isUserSubscribed }` was being passed as
+    // useQuery's second positional argument (the query's own input args),
+    // not its third (options) -- so `enabled` was never actually applied
+    // and this ran unconditionally, including for every anonymous visitor,
+    // who got a 401 on page load. `undefined` fills the args slot now;
+    // `enabled` is in its real place.
+  } = useQuery(getCustomerPortalUrl, undefined, { enabled: isUserSubscribed });
 
   const navigate = useNavigate();
 
@@ -170,8 +176,12 @@ const PricingPage = () => {
         throw new Error('Error generating checkout session URL');
       }
     } catch (error: unknown) {
+      // PRD-006 M18: previously rendered `error.message` verbatim to the
+      // user -- a Wasp HttpError's message can carry implementation
+      // detail (e.g. internal validation text) that has no business being
+      // user-facing. Logged for debugging, fixed string shown instead.
       console.error(error);
-      setErrorMessage(error instanceof Error ? error.message : 'Error processing payment. Please try again later.');
+      setErrorMessage('Error processing payment. Please try again later.');
       setIsPaymentLoading(false); // We only set this to false here and not in the try block because we redirect to the checkout url within the same window
     }
   }
@@ -194,7 +204,10 @@ const PricingPage = () => {
       return;
     }
 
-    window.open(customerPortalUrl, '_blank');
+    // PRD-006 M14: window.open(url, '_blank') does NOT imply noopener --
+    // the opened Stripe portal tab otherwise gets a live `window.opener`
+    // handle back to this page.
+    window.open(customerPortalUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -236,21 +249,40 @@ const PricingPage = () => {
             <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>
         )}
-        {examsWithContent.length > 0 && (
+        {/* PRD-006 M10: previously gated on `examsWithContent.length > 0`
+            alone, so this entire block (and the height it takes up) was
+            absent until getPublicExams resolved, then popped in and
+            shifted the pricing grid below it down -- the page's only
+            measurable layout shift (CLS 0.0365). Now also renders (with a
+            skeleton in place of the real Select) while the query is still
+            loading, so the space is reserved from first paint. Still
+            correctly renders nothing once loaded if there's truly no exam
+            with content yet. */}
+        {(isExamsLoading || examsWithContent.length > 0) && (
           <div className='mx-auto mt-8 max-w-xs'>
             <Label htmlFor='examId'>Fast Track / Standard plans — which exam?</Label>
-            <Select value={selectedExamId || undefined} onValueChange={setSelectedExamId}>
-              <SelectTrigger id='examId' className='w-full mt-1.5'>
-                <SelectValue placeholder='Choose an exam' />
-              </SelectTrigger>
-              <SelectContent>
-                {examsWithContent.map((exam) => (
-                  <SelectItem key={exam.id} value={exam.id}>
-                    {exam.flagEmoji} {exam.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isExamsLoading ? (
+              <div className='mt-1.5 h-10 w-full animate-pulse rounded-lg bg-muted' aria-hidden='true' />
+            ) : (
+              // PRD-006 M12: `value={selectedExamId || undefined}` made this
+              // switch from uncontrolled (undefined) to controlled (a real
+              // string) the moment `selectedExamId` was first set, which
+              // React warns against. `selectedExamId` already defaults to
+              // `''` in its own useState, so passing it straight through
+              // keeps the component controlled from the first render.
+              <Select value={selectedExamId} onValueChange={setSelectedExamId}>
+                <SelectTrigger id='examId' className='w-full mt-1.5'>
+                  <SelectValue placeholder='Choose an exam' />
+                </SelectTrigger>
+                <SelectContent>
+                  {examsWithContent.map((exam) => (
+                    <SelectItem key={exam.id} value={exam.id}>
+                      {exam.flagEmoji} {exam.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <p className='mt-1.5 text-xs text-muted-foreground'>Extended (every Gulf exam) and IDC Pathway (Ireland only) don't need a choice here.</p>
           </div>
         )}
@@ -302,6 +334,20 @@ const PricingPage = () => {
                     </p>
                   ) : planId === PaymentPlanId.Extended ? (
                     <p className='mt-2 text-xs font-semibold text-muted-foreground'>Every Gulf exam included</p>
+                  ) : isExamsLoading ? (
+                    // PRD-006 M10: second contributor to the same layout
+                    // shift as the exam-picker block above -- this line was
+                    // entirely absent until getPublicExams resolved, then
+                    // appeared and pushed the price/features/button below it
+                    // down. An invisible placeholder of the same shape holds
+                    // the line's height without showing wrong content.
+                    <p
+                      className='mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground opacity-0'
+                      aria-hidden='true'
+                    >
+                      <span>🏳️</span>
+                      Scoped to one exam — •••
+                    </p>
                   ) : (
                     (selectedExam || examsWithContent[0]) && (
                       <p className='mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground'>
