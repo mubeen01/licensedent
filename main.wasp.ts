@@ -245,10 +245,20 @@ export default app({
     "<link rel='icon' href='/logo/favicon-32x32.png' type='image/png' sizes='32x32' />",
     "<link rel='icon' href='/logo/favicon-16x16.png' type='image/png' sizes='16x16' />",
     "<link rel='apple-touch-icon' href='/logo/apple-touch-icon.png' sizes='180x180' />",
-    "<meta charSet='utf-8' />",
-    "<meta name='description' content='Practice-question bank, timed mock tests and subject-wise revision for DHA, HAAD, MOH, SMLE and IDC Ireland dental licensing exams.' />",
-    "<meta name='author' content='LicenseDent' />",
-    "<meta name='keywords' content='DHA exam prep, HAAD exam, IDC Ireland exam, dental licensing exam, dentist mock test, DHA MCQs, LicenseDent' />",
+
+    // PRD-006 C4: `description`/`author`/`keywords` used to be static here
+    // (homepage copy only) -- same bug as the OG/Twitter tags described in
+    // the comment below, and fixed the same way: a live curl of every
+    // public route confirmed this global `description` landed FIRST in
+    // document order on all 15 pages, and since `document.querySelector`
+    // and most consumers take the first matching tag, every page's own
+    // per-page description (rendered by SeoHead.tsx) was silently ignored
+    // in favor of this one. Removed entirely; SeoHead.tsx is now the only
+    // source of `description`, same as it already was for OG/Twitter.
+    // `keywords` isn't used by Google and was mildly spam-adjacent besides.
+    // Wasp's own base index.html already emits a charset meta tag, so the
+    // one that used to be here was a harmless but pointless duplicate --
+    // also removed.
 
     // Open Graph/Twitter tags used to be static here (homepage copy only),
     // duplicating what SeoHead.tsx now renders per-page -- confirmed via a
@@ -258,13 +268,18 @@ export default app({
     // silently ignored in favor of the homepage's. Removed here entirely;
     // SeoHead.tsx (rendered on every public/auth/checkout page) is now the
     // only source of these tags, with real per-page values.
-    // TODO: You can put your Plausible analytics scripts below (https://docs.opensaas.sh/guides/analytics/):
-    // NOTE: Plausible does not use Cookies, so you can simply add the scripts here.
-    // Google, on the other hand, does, so you must instead add the script dynamically
-    // via the Cookie Consent component after the user clicks the "Accept" cookies button.
-    // `async` (not `defer`) per Wasp Spec's head-tags note -- defer can cause hydration warnings.
-    "<script async data-domain='<your-site-id>' src='https://plausible.io/js/script.js'></script>", // for production
-    "<script async data-domain='<your-site-id>' src='https://plausible.io/js/script.local.js'></script>", // for development
+
+    // PRD-006 C5: a Plausible analytics pair used to be here, both with
+    // `data-domain='<your-site-id>'` -- the literal, never-configured
+    // placeholder from the OpenSaaS template. Confirmed live: Plausible's
+    // own script was firing "Ignoring Event: localhost" console warnings
+    // on every single page during local dev, since BOTH the production and
+    // the local-dev variant loaded unconditionally, before and regardless
+    // of the cookie-consent banner's decision (which exists specifically
+    // to gate this). Removed entirely rather than left half-configured.
+    // Re-add a single, correctly-configured tag once a real Plausible site
+    // id exists, wired through the cookie-consent gate in
+    // src/client/components/cookie-consent/Config.ts rather than here.
   ],
 
   // 🔐 Auth out of the box! https://wasp.sh/docs/auth/overview

@@ -1,37 +1,13 @@
-import { AlertCircle, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { getPublicExams, useQuery } from 'wasp/client/operations';
-import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import { Button } from '../components/ui/button';
 import SeoHead, { SITE_ORIGIN } from '../client/components/SeoHead';
 import ScrollToTop from '../landing-page/components/ScrollToTop';
 import SectionTitle from '../landing-page/components/SectionTitle';
-import { dhaExamGuide } from './dhaContent';
 import { examGuideRoute } from './examGuideRoute';
-import { haadExamGuide } from './haadContent';
-import { idcExamGuide } from './idcContent';
-import { kmleExamGuide } from './kmleContent';
-import { mohExamGuide } from './mohContent';
-import { nhraExamGuide } from './nhraContent';
-import { omsbExamGuide } from './omsbContent';
-import { qchpExamGuide } from './qchpContent';
-import { shaExamGuide } from './shaContent';
-import { smleExamGuide } from './smleContent';
-
-/** First two quick facts from each exam's own guide page, reused here as scan-friendly chips. */
-const quickChipsByCode: Record<string, [string, string]> = {
-  DHA: [dhaExamGuide.quickFacts[0].value, dhaExamGuide.quickFacts[1].value],
-  HAAD: [haadExamGuide.quickFacts[0].value, haadExamGuide.quickFacts[1].value],
-  MOH: [mohExamGuide.quickFacts[0].value, mohExamGuide.quickFacts[1].value],
-  SMLE: [smleExamGuide.quickFacts[0].value, smleExamGuide.quickFacts[1].value],
-  OMSB: [omsbExamGuide.quickFacts[0].value, omsbExamGuide.quickFacts[1].value],
-  QCHP: [qchpExamGuide.quickFacts[0].value, qchpExamGuide.quickFacts[1].value],
-  KMLE: [kmleExamGuide.quickFacts[0].value, kmleExamGuide.quickFacts[1].value],
-  NHRA: [nhraExamGuide.quickFacts[0].value, nhraExamGuide.quickFacts[1].value],
-  SHA: [shaExamGuide.quickFacts[0].value, shaExamGuide.quickFacts[1].value],
-  IDC: [idcExamGuide.quickFacts[0].value, idcExamGuide.quickFacts[1].value],
-};
+import { EXAM_GUIDES } from './examGuideIndex';
 
 // PRD-01 S2.3 -- static, so it's present in the prerendered HTML.
 const breadcrumbJsonLd = {
@@ -121,7 +97,15 @@ function Hero() {
 /*  EXAMS INDEX GRID                                                           */
 /* -------------------------------------------------------------------------- */
 function ExamsIndexGrid() {
-  const { data: exams, isLoading, error, refetch } = useQuery(getPublicExams);
+  // Live published-question counts are a progressive enhancement (the "N
+  // practice questions" line below each card) -- every card and its link
+  // renders unconditionally from EXAM_GUIDES above regardless of whether
+  // this query has resolved, errored, or is still loading, so a failed/slow
+  // query degrades to "no live count shown," never to a missing or broken
+  // page. Matched by exam code, which is stable between the DB and the
+  // static guide content (see guideCard() above).
+  const { data: exams } = useQuery(getPublicExams);
+  const countByCode = new Map(exams?.map((e) => [e.code, e.publishedQuestionCount]));
 
   return (
     <div className='mx-auto max-w-7xl px-6 pb-16 lg:px-8'>
@@ -131,86 +115,64 @@ function ExamsIndexGrid() {
         description="Every card links to a dedicated page — exam structure, pathway, rules and a sample question, specific to that authority."
       />
 
-      {isLoading && <LoadingSpinner />}
+      <div className='grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+        {EXAM_GUIDES.map((exam, idx) => {
+          const questionCount = countByCode.get(exam.code);
 
-      {error && (
-        <div className='card-elevated flex flex-col items-center gap-3 p-10 text-center'>
-          <AlertCircle className='h-6 w-6 text-destructive' />
-          <p className='text-sm font-medium text-foreground'>Couldn't load exams right now.</p>
-          <Button variant='outline' size='sm' onClick={() => refetch()}>
-            Try again
-          </Button>
-        </div>
-      )}
-
-      {exams && (
-        <div className='grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-          {exams.map((exam, idx) => {
-            const hasContent = exam.publishedQuestionCount > 0;
-            const guideRoute = examGuideRoute(exam.code);
-            const chips = exam.code ? quickChipsByCode[exam.code] : undefined;
-
-            return (
+          return (
+            <div
+              key={exam.code}
+              style={{ animationDelay: `${idx * 60}ms` }}
+              className='card-elevated card-elevated-hover animate-fade-in-up group relative flex flex-col p-5'
+            >
+              <div className={`absolute inset-x-0 top-0 h-1 bg-linear-to-r ${exam.gradient}`} aria-hidden='true' />
               <div
-                key={exam.id}
-                style={{ animationDelay: `${idx * 60}ms` }}
-                className='card-elevated card-elevated-hover animate-fade-in-up group relative flex flex-col p-5 opacity-0'
-              >
-                <div className={`absolute inset-x-0 top-0 h-1 bg-linear-to-r ${exam.colorGradient}`} aria-hidden='true' />
-                <div
-                  className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-linear-to-br ${exam.colorGradient} opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-25`}
-                  aria-hidden='true'
-                />
+                className={`pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-linear-to-br ${exam.gradient} opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-25`}
+                aria-hidden='true'
+              />
 
-                <div className='relative z-10 flex h-full flex-col'>
-                  <div className='flex items-start justify-between'>
-                    <span
-                      className={`flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-linear-to-br ${exam.colorGradient} text-xl shadow-xs transition-transform duration-300 group-hover:scale-110`}
-                    >
-                      {exam.flagEmoji}
-                    </span>
+              <div className='relative z-10 flex h-full flex-col'>
+                <div className='flex items-start justify-between'>
+                  <span
+                    className={`flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-linear-to-br ${exam.gradient} text-xl shadow-xs transition-transform duration-300 group-hover:scale-110`}
+                  >
+                    {exam.flagEmoji}
+                  </span>
+                  {questionCount != null && questionCount > 0 && (
                     <span className='rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground'>
-                      {exam.country}
+                      {questionCount.toLocaleString()} questions
                     </span>
-                  </div>
-
-                  <h3 className='mt-3 text-xl font-extrabold tracking-tight text-foreground'>{exam.code}</h3>
-                  <p className='mt-0.5 text-xs font-semibold text-foreground/70'>{exam.authorityLabel}</p>
-                  <p className='mt-2 text-sm leading-6 text-muted-foreground'>{exam.description}</p>
-
-                  {chips && (
-                    <div className='mt-3 flex flex-wrap gap-1.5'>
-                      {chips.map((chip) => (
-                        <span
-                          key={chip}
-                          className='rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground'
-                        >
-                          {chip}
-                        </span>
-                      ))}
-                    </div>
                   )}
+                </div>
 
-                  <div className='mt-auto pt-4'>
-                    {hasContent ? (
-                      <WaspRouterLink
-                        to={guideRoute ?? routes.SignupRoute.to}
-                        className='inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-all group-hover:gap-2.5'
-                      >
-                        {guideRoute ? 'View exam guide' : 'Start practicing'} <ArrowRight className='h-4 w-4' />
-                      </WaspRouterLink>
-                    ) : (
-                      <span className='inline-flex w-fit items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground'>
-                        Coming soon
-                      </span>
-                    )}
-                  </div>
+                <h3 className='mt-3 text-xl font-extrabold tracking-tight text-foreground'>{exam.code}</h3>
+                <p className='mt-0.5 text-xs font-semibold text-foreground/70'>{exam.authorityLabel}</p>
+                <p className='mt-2 text-sm leading-6 text-muted-foreground'>{exam.description}</p>
+
+                <div className='mt-3 flex flex-wrap gap-1.5'>
+                  {exam.quickChips.map((chip) => (
+                    <span
+                      key={chip}
+                      className='rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground'
+                    >
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+
+                <div className='mt-auto pt-4'>
+                  <WaspRouterLink
+                    to={examGuideRoute(exam.code) ?? routes.SignupRoute.to}
+                    className='inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-all group-hover:gap-2.5'
+                  >
+                    View exam guide <ArrowRight className='h-4 w-4' />
+                  </WaspRouterLink>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -19,6 +19,16 @@ interface SeoHeadProps {
   noindex?: boolean;
   /** Overrides the default site-wide social preview image (path under SITE_ORIGIN, e.g. '/logo/og-image.png'). */
   ogImage?: string;
+  /**
+   * PRD-006 H5: true for pages that don't correspond to a single real URL --
+   * currently only the catch-all 404. `path` for such a page is a synthetic
+   * placeholder (e.g. '/404'), and every unmatched URL on the site would
+   * otherwise emit the exact same `canonical`/`og:url` pointing at that one
+   * non-existent page -- a contradictory signal alongside `noindex` (which
+   * already tells crawlers not to index the page at all) and a source of
+   * "soft 404" reports in Search Console. When true, both tags are omitted.
+   */
+  noCanonical?: boolean;
 }
 
 // PRD-01 Q1 (real production domain): answered 2026-09-16, licensedent.com.
@@ -35,7 +45,7 @@ const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/logo/og-image.png`;
 const DEFAULT_OG_IMAGE_WIDTH = 1200;
 const DEFAULT_OG_IMAGE_HEIGHT = 348;
 
-export default function SeoHead({ title, description, path, faqs, extraJsonLd, noindex, ogImage }: SeoHeadProps) {
+export default function SeoHead({ title, description, path, faqs, extraJsonLd, noindex, ogImage, noCanonical }: SeoHeadProps) {
   const canonicalUrl = `${SITE_ORIGIN}${path}`;
   const resolvedOgImage = ogImage ? `${SITE_ORIGIN}${ogImage}` : DEFAULT_OG_IMAGE;
 
@@ -56,7 +66,7 @@ export default function SeoHead({ title, description, path, faqs, extraJsonLd, n
     <>
       <title>{title}</title>
       <meta name='description' content={description} />
-      <link rel='canonical' href={canonicalUrl} />
+      {!noCanonical && <link rel='canonical' href={canonicalUrl} />}
       {noindex && <meta name='robots' content='noindex' />}
 
       {/* Per-page Open Graph/Twitter tags -- overrides main.wasp.ts's global
@@ -67,7 +77,7 @@ export default function SeoHead({ title, description, path, faqs, extraJsonLd, n
       <meta property='og:site_name' content='LicenseDent' />
       <meta property='og:title' content={title} />
       <meta property='og:description' content={description} />
-      <meta property='og:url' content={canonicalUrl} />
+      {!noCanonical && <meta property='og:url' content={canonicalUrl} />}
       <meta property='og:image' content={resolvedOgImage} />
       <meta property='og:image:width' content={String(DEFAULT_OG_IMAGE_WIDTH)} />
       <meta property='og:image:height' content={String(DEFAULT_OG_IMAGE_HEIGHT)} />
