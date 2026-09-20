@@ -18,6 +18,13 @@ import { SITE_ORIGIN } from './SeoHead';
  * over a single `@graph`) helps AI/search entity resolution distinguish
  * "the organization" from "the website" even though both currently
  * describe the same one property.
+ *
+ * PRD-006 M20: `description` now states who verifies content (a panel of
+ * licensed dentists, no individual names -- per the user's explicit
+ * choice, not an invented detail), matching the new /about page's
+ * wording. `legalName`/`address` are intentionally still omitted: the
+ * user asked to keep "LicenseDent" as-is for now and provide real
+ * jurisdiction/registration details later.
  */
 export default function OrganizationJsonLd() {
   const organizationJsonLd = {
@@ -31,7 +38,7 @@ export default function OrganizationJsonLd() {
     // the 180x180 PNG generated for apple-touch-icon instead of the SVG icon.
     logo: `${SITE_ORIGIN}/logo/apple-touch-icon.png`,
     description:
-      'Human-verified practice questions, timed mock tests and subject-wise revision for Gulf and Ireland dental licensing exams. Never AI-guessed.',
+      'Human-verified practice questions, timed mock tests and subject-wise revision for Gulf and Ireland dental licensing exams. Every question is written or reviewed by a panel of licensed, practicing dentists -- never AI-guessed.',
     contactPoint: {
       '@type': 'ContactPoint',
       email: 'support@licensedent.com',

@@ -32,6 +32,7 @@ const ROUTES = [
   { loc: '/pricing', source: 'src/payment/PricingPage.tsx', changefreq: 'monthly', priority: '0.8' },
   { loc: '/demo-exam', source: 'src/demo-exam/DemoExamPage.tsx', changefreq: 'monthly', priority: '0.7' },
   { loc: '/legal', source: 'src/legal/LegalPage.tsx', changefreq: 'yearly', priority: '0.3' },
+  { loc: '/about', source: 'src/about/AboutPage.tsx', changefreq: 'yearly', priority: '0.3' },
 ];
 
 function lastCommitDate(relPath) {

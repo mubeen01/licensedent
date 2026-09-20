@@ -17,6 +17,9 @@ import { getPublicExams, getPublicBankStats } from './src/landing-page/operation
 // Legal
 import LegalPage from './src/legal/LegalPage' with { type: 'ref' }
 
+// About
+import AboutPage from './src/about/AboutPage' with { type: 'ref' }
+
 // Demo Exam
 import DemoExamPage from './src/demo-exam/DemoExamPage' with { type: 'ref' }
 
@@ -363,6 +366,9 @@ export default app({
 
     // Legal (public — terms of service, refund policy, disclaimers)
     route('LegalRoute', '/legal', page(LegalPage), { prerender: true }),
+
+    // About (public — PRD-006 M20: who verifies content + contact)
+    route('AboutRoute', '/about', page(AboutPage), { prerender: true }),
 
     // Demo Exam (public, front-end only — no auth, no DB, sample questions)
     route('DemoExamRoute', '/demo-exam', page(DemoExamPage), { prerender: true }),

@@ -495,6 +495,10 @@ export const footerNavigation = {
     { name: 'FAQ', href: '/#faq' },
   ],
   company: [
+    // PRD-006 M20: About page now names who verifies our content; the
+    // direct-email "Contact" link stays too, it's the faster path for an
+    // existing user with a question.
+    { name: 'About', href: '/about' },
     { name: 'Contact', href: 'mailto:support@licensedent.com' },
     { name: 'Terms of Service', href: '/legal#terms' },
     // PRD-006 H2: added -- the cookie-consent banner already linked to a
