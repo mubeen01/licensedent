@@ -36,14 +36,22 @@ interface SeoHeadProps {
 // stay in sync with SeoHead's own canonical URLs -- one place to update.
 export const SITE_ORIGIN = 'https://licensedent.com';
 
-// Same asset main.wasp.ts's global <head> fallback points at (PRD-004 §2d) --
-// real dimensions, not the "ideal" 1.91:1 large-card ratio (see that file's
-// comment). Used here so every page gets correct per-page og:image:width/
-// height tags, which didn't exist anywhere before this (only the
-// twitter:-prefixed dimension tags did).
+// `public/logo/og-image.png`, the site's default social preview image
+// (main.wasp.ts's global <head> no longer references it directly -- PRD-006
+// C4/C5 removed its static OG/Twitter tags entirely, SeoHead is now the only
+// source, on every page).
+// PRD-006 H10: the asset used to be 1200x348 (3.45:1), a mismatch against
+// `twitter:card=summary_large_image`'s ~1.91:1 expectation and Facebook/
+// LinkedIn's recommended 1200x630 -- centre-cropped or downgraded to a small
+// card on those platforms. Regenerated at 1200x630 (padded with the brand
+// primary teal, `hsl(175 77% 26%)`, top/bottom -- the original artwork is
+// unchanged/uncropped, just given a correctly-proportioned canvas) via
+// `sharp`'s `contain` fit. Used here so every page gets correct per-page
+// og:image:width/height tags, which didn't exist anywhere before this (only
+// the twitter:-prefixed dimension tags did).
 const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/logo/og-image.png`;
 const DEFAULT_OG_IMAGE_WIDTH = 1200;
-const DEFAULT_OG_IMAGE_HEIGHT = 348;
+const DEFAULT_OG_IMAGE_HEIGHT = 630;
 
 export default function SeoHead({ title, description, path, faqs, extraJsonLd, noindex, ogImage, noCanonical }: SeoHeadProps) {
   const canonicalUrl = `${SITE_ORIGIN}${path}`;
