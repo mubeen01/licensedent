@@ -227,6 +227,14 @@ export default function DemoExamPage() {
   }
 
   // phase === 'results'
+  // PRD-006 H12: a 20-question, 15-minute sample cannot support a
+  // readiness verdict in either direction ("ready to sit your exam" /
+  // "not exam-ready yet") -- the app is careful about exactly this
+  // elsewhere (StudyPlanCard advertises a "transparent readiness score,
+  // never a black-box AI prediction"). Reframed as observation about this
+  // sample, not a prediction about the real exam. Also dropped
+  // "course"/"program", used nowhere else in the app -- the product is
+  // sold as a question bank / plan, not a course.
   const tier =
     // 20 questions only ever produce multiples of 5 — 98 is never reachable,
     // so the top tier uses 95 (19/20 or 20/20) as the practical equivalent.
@@ -236,8 +244,8 @@ export default function DemoExamPage() {
           color: 'text-secondary',
           bg: 'bg-secondary/10',
           border: 'border-secondary/30',
-          heading: 'Congratulations! 🎉',
-          message: "That's an outstanding score — you're ready to sit your exam with confidence.",
+          heading: 'Great result! 🎉',
+          message: "A strong sample score. Keep that momentum going with the full question bank.",
           cta: { label: 'Create a free account', to: routes.SignupRoute.to },
         }
       : score.percent >= 80
@@ -246,9 +254,9 @@ export default function DemoExamPage() {
             color: 'text-gold',
             bg: 'bg-gold/10',
             border: 'border-gold/30',
-            heading: "You're close!",
+            heading: "Solid start!",
             message:
-              'A strong score, but not quite there yet. A focused 1-month Fast Track course could be exactly what closes the gap before your exam.',
+              'A good score on this sample, with room to tighten up. The Fast Track plan gives you the full bank to close the gaps before your exam.',
             cta: { label: 'See the Fast Track plan', to: routes.PricingPageRoute.to },
           }
         : {
@@ -256,10 +264,10 @@ export default function DemoExamPage() {
             color: 'text-destructive',
             bg: 'bg-destructive/10',
             border: 'border-destructive/30',
-            heading: 'There are real gaps to close',
+            heading: 'Plenty to work on',
             message:
-              "This score suggests you're not exam-ready yet — that's exactly what a structured course and full question bank are for. Join our program to build a real study plan.",
-            cta: { label: 'View courses & plans', to: routes.PricingPageRoute.to },
+              "This sample shows real gaps worth closing — that's exactly what the full question bank and a structured study plan are for.",
+            cta: { label: 'View plans', to: routes.PricingPageRoute.to },
           };
   const TierIcon = tier.icon;
 

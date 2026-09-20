@@ -16,8 +16,14 @@ import SeoHead, { SITE_ORIGIN } from '../client/components/SeoHead';
 const bestDealPaymentPlanId: PaymentPlanId = PaymentPlanId.Standard;
 
 // PRD-002 §6 Q2's content gate (real IDC-specific content before public launch)
-// cleared 2026-09-17 with Phase I7.1 (4 Lessons, 140 published IDC questions) --
-// IDC Pathway is now purchasable from this page. Still deliberately NOT added to
+// cleared 2026-09-17 with Phase I7.1 (4 Lessons, 140 published IDC questions).
+// IDC Pathway is displayed here but NOT yet purchasable -- see
+// `handleBuyNowClick`'s guard and the "Coming soon" button below, both blocked
+// on PAYMENTS_IRELAND_PATHWAY_PLAN_ID (a real Stripe price id) not being
+// configured yet, not on content. (PRD-006 M21: this comment previously said
+// "is now purchasable," which contradicted `offerJsonLd`'s own comment a few
+// lines below and the actual disabled-button behavior -- reconciled to match
+// what the page actually does.) Still deliberately NOT added to
 // `pricingTeaserPlans` (see that array's comment) -- putting it on the public
 // homepage teaser is a separate decision from making it purchasable here.
 const visiblePaymentPlanIds: PaymentPlanId[] = [
@@ -75,7 +81,7 @@ export const paymentPlanCards: Record<PaymentPlanId, PaymentPlanCard> = {
     features: [
       'Full IDC Ireland question bank',
       'Structured Lessons with gated quizzes',
-      'Video lectures as the library launches',
+      'Video lecture library (in production — included as it launches)',
       'Unlimited practice + timed mocks',
       'Progress analytics',
     ],
@@ -324,14 +330,28 @@ const PricingPage = () => {
                 </div>
                 <div className='mt-8'>
                   {isIrelandPathway ? (
-                    <Button disabled variant='outline' className='w-full' title="Email us and we'll get you set up.">
-                      Coming soon
-                    </Button>
+                    // PRD-006 M21: the "email us" instruction was previously
+                    // only in a `title` tooltip on a disabled button --
+                    // unreachable by keyboard and screen readers, and
+                    // invisible until a mouse hover. Now visible text below
+                    // the button, reachable by everyone.
+                    <div className='space-y-2'>
+                      <Button disabled variant='outline' className='w-full'>
+                        Coming soon
+                      </Button>
+                      <p className='text-center text-xs text-muted-foreground'>
+                        Email <a href='mailto:support@licensedent.com' className='underline underline-offset-2 hover:text-primary'>support@licensedent.com</a> and we'll get you set up.
+                      </p>
+                    </div>
                   ) : isUserSubscribed ? (
                     <Button
                       onClick={handleCustomerPortalClick}
                       disabled={isCustomerPortalUrlLoading}
-                      aria-describedby='manage-subscription'
+                      // PRD-006 M8: was `aria-describedby='manage-subscription'`,
+                      // referencing an id that doesn't exist anywhere on the
+                      // page -- a dangling ARIA reference. No element on the
+                      // page actually serves as its description, so removed
+                      // rather than pointed at a made-up id.
                       variant={planId === bestDealPaymentPlanId ? 'default' : 'outline'}
                       className='w-full'
                     >

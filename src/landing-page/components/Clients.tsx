@@ -20,10 +20,13 @@ interface Destination {
   exams: string;
 }
 
+// PRD-006 M5: SHA (Sharjah Health Authority) is a UAE exam, not Oman's --
+// it was previously listed under Oman alongside OMSB. Corrected to the
+// UAE entry; Oman keeps only its real exam, OMSB.
 const destinations: Destination[] = [
-  { flag: '🇦🇪', country: 'United Arab Emirates', exams: 'DHA · HAAD · MOH' },
+  { flag: '🇦🇪', country: 'United Arab Emirates', exams: 'DHA · HAAD · MOH · SHA' },
   { flag: '🇸🇦', country: 'Saudi Arabia', exams: 'SMLE' },
-  { flag: '🇴🇲', country: 'Oman', exams: 'OMSB · SHA' },
+  { flag: '🇴🇲', country: 'Oman', exams: 'OMSB' },
   { flag: '🇶🇦', country: 'Qatar', exams: 'QCHP' },
   { flag: '🇰🇼', country: 'Kuwait', exams: 'KMLE' },
   { flag: '🇧🇭', country: 'Bahrain', exams: 'NHRA' },

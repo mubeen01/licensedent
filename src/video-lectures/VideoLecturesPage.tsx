@@ -43,10 +43,19 @@ function VideoLibrary() {
                 <CardContent className='p-5'>
                   <h4 className='font-bold text-foreground leading-snug'>{lecture.title}</h4>
                   <p className='mt-1.5 text-sm text-muted-foreground leading-6'>{lecture.description}</p>
-                  <div className='mt-3 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground'>
-                    <Clock className='h-3.5 w-3.5' />
-                    {lecture.durationMinutes} min
-                  </div>
+                  {/* PRD-006 M11: durationMinutes is the planning estimate for
+                      a lecture that hasn't been recorded yet (youtubeId is
+                      still null) -- showing a concrete "42 min" for content
+                      that doesn't exist reads as a fabricated spec. Only
+                      show it once the lecture is actually live; the
+                      thumbnail's "Coming soon" badge already communicates
+                      the not-yet-recorded state. */}
+                  {lecture.youtubeId && (
+                    <div className='mt-3 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground'>
+                      <Clock className='h-3.5 w-3.5' />
+                      {lecture.durationMinutes} min
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}

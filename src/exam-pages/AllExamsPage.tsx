@@ -256,8 +256,12 @@ function ClosingCta() {
           <span className='flex items-center gap-2'>
             <CheckCircle2 className='h-4 w-4 text-secondary' /> Verified by a dentist
           </span>
+          {/* PRD-006 H3: was "Cancel anytime" -- every plan is a one-time,
+              non-renewing purchase (see /pricing and /legal's own copy),
+              so there is no subscription to cancel. Replaced with a claim
+              that's actually true of the product. */}
           <span className='flex items-center gap-2'>
-            <CheckCircle2 className='h-4 w-4 text-secondary' /> Cancel anytime
+            <CheckCircle2 className='h-4 w-4 text-secondary' /> 7-day refund
           </span>
         </div>
       </div>

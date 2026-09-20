@@ -31,4 +31,4 @@
 - [Home](https://licensedent.com/): Overview, live question-bank stats, and exam coverage.
 - [Pricing](https://licensedent.com/pricing): Fast Track, Standard and Extended plans.
 - [Free demo exam](https://licensedent.com/demo-exam): 20-question, 15-minute DHA-style exam, no login required.
-- [Terms, refunds & disclaimers](https://licensedent.com/legal): Terms of service, 7-day refund policy, regulator-affiliation disclaimer.
+- [Terms, privacy, refunds & disclaimers](https://licensedent.com/legal): Terms of service, privacy policy, 7-day refund policy, regulator-affiliation disclaimer.

@@ -91,13 +91,21 @@ const getConfig = () => {
           consentModal: {
             title: 'We use cookies',
             description:
-              'We use cookies primarily for analytics to enhance your experience. By accepting, you agree to our use of these cookies. You can manage your preferences or learn more about our cookie policy.',
+              // PRD-006 H2: previously said "learn more about our cookie
+              // policy" -- no separate cookie policy page exists; cookies
+              // are covered inside the Privacy Policy section below.
+              'We use cookies primarily for analytics to enhance your experience. By accepting, you agree to our use of these cookies. You can manage your preferences or read our privacy policy below.',
             acceptAllBtn: 'Accept all',
             acceptNecessaryBtn: 'Reject all',
             // showPreferencesBtn: 'Manage Individual preferences', // (OPTIONAL) Activates the preferences modal
+            // PRD-006 H2/M14: "Privacy Policy" previously linked to /legal,
+            // which had no privacy policy on it at all -- now points at the
+            // real #privacy section added there. Both links gained
+            // rel="noopener noreferrer" (target="_blank" alone doesn't
+            // imply noopener).
             footer: `
-            <a href="/legal" target="_blank">Privacy Policy</a>
-            <a href="/legal#terms" target="_blank">Terms and Conditions</a>
+            <a href="/legal#privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+            <a href="/legal#terms" target="_blank" rel="noopener noreferrer">Terms and Conditions</a>
                     `,
           },
           // The showPreferencesBtn activates this modal to manage individual preferences https://cookieconsent.orestbida.com/reference/configuration-reference.html#translation-preferencesmodal

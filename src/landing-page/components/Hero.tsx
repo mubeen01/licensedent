@@ -61,12 +61,19 @@ export default function Hero({ questionCount, examCount }: { questionCount?: num
               </div>
             </div>
 
+            {/* PRD-006 H1: previously "Clear DHA, MOH & IDC Ireland with
+                confidence" -- read as a direct exam-outcome/pass promise
+                for a regulated licence, which the app cannot guarantee
+                (see /legal's own disclaimer) and which is exactly the
+                kind of claim a payment processor flags on review. Rewritten
+                to describe the product (a verified question bank) instead
+                of promising a result. */}
             <h1 className='text-5xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-6xl lg:text-[4.5rem]'>
-              Clear DHA, MOH &{' '}
+              Prepare for DHA, MOH &{' '}
               <span className='animate-gradient-x bg-linear-to-r from-primary via-primary-muted to-secondary bg-size-[200%_100%] bg-clip-text text-transparent'>
                 IDC Ireland
               </span>{' '}
-              with confidence
+              with a verified question bank
             </h1>
 
             <p className='mx-auto max-w-xl text-lg leading-8 text-muted-foreground lg:mx-0'>

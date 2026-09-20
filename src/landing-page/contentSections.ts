@@ -402,7 +402,10 @@ export const pricingTeaserPlans: PricingTeaserPlan[] = [
       'Unlimited practice + timed mocks',
       'Progress analytics, streaks & study plan',
       'Custom Quiz Builder — build your own quiz, timed or untimed',
-      'Video lectures as the library launches',
+      // PRD-006 M11: made explicit that the library is still in
+      // production, matching VideoLecturesPage's own "library is in
+      // production" framing instead of implying it's ready today.
+      'Video lecture library (in production — included as it launches)',
     ],
     perk: '✨ Best for multi-exam Gulf flexibility',
   },
@@ -494,6 +497,10 @@ export const footerNavigation = {
   company: [
     { name: 'Contact', href: 'mailto:support@licensedent.com' },
     { name: 'Terms of Service', href: '/legal#terms' },
+    // PRD-006 H2: added -- the cookie-consent banner already linked to a
+    // "Privacy Policy" that didn't exist anywhere; the footer had no
+    // privacy link at all either.
+    { name: 'Privacy Policy', href: '/legal#privacy' },
     { name: 'Refund Policy', href: '/legal#refund' },
     { name: 'Disclaimer', href: '/legal#disclaimer' },
   ],
