@@ -96,7 +96,17 @@ function LessonPartQuizPage({ user }: { user: AuthUser }) {
             <p className='text-lg md:text-xl leading-relaxed font-medium text-foreground'>{current.stem}</p>
 
             {current.imageUrl && (
-              <img src={current.imageUrl} alt='' className='max-h-80 rounded-lg border border-border object-contain' />
+              // PRD-006 H9 (interim fix): see PracticeSession.tsx's
+              // identical comment -- full fix is a real per-image
+              // `imageAlt` field. No subject name is available on this
+              // page's question shape, so a generic (still non-empty)
+              // description is used here instead of the subject-scoped one
+              // the other 3 image surfaces use.
+              <img
+                src={current.imageUrl}
+                alt='Clinical image for this question'
+                className='max-h-80 rounded-lg border border-border object-contain'
+              />
             )}
 
             <div className='flex flex-col gap-2.5'>

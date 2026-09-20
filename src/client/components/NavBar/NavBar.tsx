@@ -1,6 +1,6 @@
 import { LogIn, Menu } from 'lucide-react';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { Link as ReactRouterLink } from 'react-router';
+import { NavLink as ReactRouterNavLink } from 'react-router';
 import { useAuth } from 'wasp/client/auth';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '../../../components/ui/sheet';
@@ -197,14 +197,19 @@ function renderNavigationItems(
   return navigationItems.map((item) => {
     return (
       <li key={item.name}>
-        <ReactRouterLink
+        {/* PRD-006 M6: switched from plain Link to react-router's own
+            NavLink, which sets aria-current="page" on the active item
+            automatically -- the current page was never exposed to
+            assistive tech before. Visual styling is unchanged (menuStyles
+            doesn't depend on active state). */}
+        <ReactRouterNavLink
           to={item.to}
           className={menuStyles}
           onClick={setMobileMenuOpen && (() => setMobileMenuOpen(false))}
           target={item.to.startsWith('http') ? '_blank' : undefined}
         >
           {item.name}
-        </ReactRouterLink>
+        </ReactRouterNavLink>
       </li>
     );
   });

@@ -43,7 +43,7 @@ export function EmailVerificationPage() {
       <SeoHead title='Verify Email — LicenseDent' description='Verify your LicenseDent account email.' path='/email-verification' noindex />
       {status === 'verifying' && (
         <div className='text-center'>
-          <h2 className='text-2xl font-semibold tracking-tight text-foreground mb-2'>Verifying your email…</h2>
+          <h1 className='text-2xl font-semibold tracking-tight text-foreground mb-2'>Verifying your email…</h1>
           <p className='text-sm text-muted-foreground'>This will just take a moment.</p>
         </div>
       )}
@@ -53,7 +53,7 @@ export function EmailVerificationPage() {
           <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-success/10'>
             <CheckCircle2 className='h-5 w-5 text-success' aria-hidden='true' />
           </div>
-          <h2 className='text-2xl font-semibold tracking-tight text-foreground mb-2'>Email verified</h2>
+          <h1 className='text-2xl font-semibold tracking-tight text-foreground mb-2'>Email verified</h1>
           <p className='text-sm text-muted-foreground mb-6'>Taking you to login…</p>
           <WaspRouterLink to={routes.LoginRoute.to} className='text-sm font-medium text-primary hover:underline'>
             Go to login now
@@ -66,7 +66,7 @@ export function EmailVerificationPage() {
           <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10'>
             <XCircle className='h-5 w-5 text-destructive' aria-hidden='true' />
           </div>
-          <h2 className='text-2xl font-semibold tracking-tight text-foreground mb-2'>Verification failed</h2>
+          <h1 className='text-2xl font-semibold tracking-tight text-foreground mb-2'>Verification failed</h1>
           <Alert variant='destructive' className='mb-6 text-left'>
             <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>

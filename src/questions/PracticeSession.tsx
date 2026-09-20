@@ -204,9 +204,18 @@ export default function PracticeSession({
         <p className='text-lg md:text-xl leading-relaxed font-medium text-foreground'>{question!.stem}</p>
 
         {question!.imageUrl && (
+          // PRD-006 H9 (interim fix): alt='' marks an image purely
+          // decorative, so a screen reader skips it entirely -- but this IS
+          // the question for a screen-reader user on an image-based MCQ
+          // (radiograph, clinical photo, histopath). A generic
+          // subject-scoped description isn't a substitute for a real
+          // per-image description (tracked as the full fix: an `imageAlt`
+          // field on Question, required at admin review time), but it's a
+          // real improvement over claiming the image carries no
+          // information at all.
           <img
             src={question!.imageUrl}
-            alt=''
+            alt={`Clinical image for this ${question!.subjectName} question`}
             className='max-h-80 rounded-lg border border-border object-contain'
           />
         )}

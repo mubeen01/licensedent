@@ -47,7 +47,7 @@ export function RequestPasswordResetPage() {
           <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10'>
             <Mail className='h-5 w-5 text-primary' aria-hidden='true' />
           </div>
-          <h2 className='text-2xl font-semibold tracking-tight text-foreground mb-2'>Check your email</h2>
+          <h1 className='text-2xl font-semibold tracking-tight text-foreground mb-2'>Check your email</h1>
           <p className='text-sm text-muted-foreground mb-6'>
             If an account exists for <span className='font-medium text-foreground'>{email}</span>, we've sent a
             password reset link.
@@ -63,7 +63,7 @@ export function RequestPasswordResetPage() {
   return (
     <AuthPageLayout>
       <SeoHead title='Forgot Password — LicenseDent' description='Reset your LicenseDent password.' path='/request-password-reset' noindex />
-      <h2 className='text-2xl font-semibold tracking-tight text-foreground mb-1.5'>Forgot your password?</h2>
+      <h1 className='text-2xl font-semibold tracking-tight text-foreground mb-1.5'>Forgot your password?</h1>
       <p className='text-sm text-muted-foreground mb-7'>Enter your email and we'll send you a reset link.</p>
 
       {error && (

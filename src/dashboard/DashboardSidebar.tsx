@@ -143,6 +143,11 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
                 key={item.to}
                 to={item.to}
                 onClick={onClose}
+                // PRD-006 M6: `active` already drove the visual styling but
+                // was never exposed to assistive tech -- aria-current gives
+                // screen-reader/other AT users the same "you are here"
+                // signal sighted users get from the highlight.
+                aria-current={active ? 'page' : undefined}
                 className={cn(
                   'w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all group relative',
                   active

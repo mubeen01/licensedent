@@ -222,7 +222,9 @@ const PricingPage = () => {
         <div className='absolute -top-24 left-1/4 h-96 w-96 rounded-full bg-primary/15 blur-3xl' />
         <div className='absolute top-10 right-1/4 h-96 w-96 rounded-full bg-secondary/10 blur-3xl' />
       </div>
-      <div className='mx-auto max-w-7xl px-6 lg:px-8'>
+      {/* PRD-006 M9: was a plain <div> -- the page's actual content had no
+          <main> landmark. */}
+      <main className='mx-auto max-w-7xl px-6 lg:px-8'>
         <div id='pricing' className='mx-auto max-w-4xl text-center'>
           <div className='flex justify-center'>
             <span className='inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary'>
@@ -419,7 +421,7 @@ const PricingPage = () => {
             );
           })}
         </div>
-      </div>
+      </main>
     </div>
   );
 };

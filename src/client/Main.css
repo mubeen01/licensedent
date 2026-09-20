@@ -546,3 +546,25 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* PRD-006 M15: the animation-driven components that check
+   `prefers-reduced-motion` themselves in JS (Reveal.tsx, ScrollToTop.tsx,
+   CTABanner.tsx, Clients.tsx, Hero.tsx's mouse-tilt) already handle it --
+   this covers everything else: the purely-CSS `animate-gradient-x`,
+   `animate-float`, `animate-ping`, `animate-fade-in-up`, Tailwind's own
+   `animate-pulse`, and every hover/focus `transition-*` utility used
+   throughout the site, none of which had any reduced-motion handling
+   before. Sets near-zero duration + a single iteration rather than
+   `animation: none`, so a `forwards`-filled animation (e.g.
+   `animate-fade-in-up`) still completes to its final, visible state
+   almost instantly instead of getting stuck at its 0%/hidden keyframe. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

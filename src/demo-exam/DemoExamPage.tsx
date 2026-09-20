@@ -81,7 +81,8 @@ export default function DemoExamPage() {
 
   if (phase === 'intro') {
     return (
-      <div className='mx-auto max-w-2xl px-6 py-16 sm:py-24'>
+      // PRD-006 M9: was a plain <div> -- no <main> landmark on this page.
+      <main className='mx-auto max-w-2xl px-6 py-16 sm:py-24'>
         <SeoHead
           title='Free DHA-Style Demo Exam — 20 Questions, 15 Minutes | LicenseDent'
           description='Take a free, no-login DHA-style demo exam: 20 shuffled questions, a 15-minute timer, and instant scoring with explanations.'
@@ -121,7 +122,7 @@ export default function DemoExamPage() {
             Start the demo exam
           </Button>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -131,7 +132,13 @@ export default function DemoExamPage() {
     const isLowTime = secondsLeft <= 60;
 
     return (
-      <div className='mx-auto max-w-4xl px-6 py-8 sm:py-12'>
+      // PRD-006 M9: was a plain <div> -- no <main> landmark. PRD-006 M7:
+      // this phase had no heading at all -- sr-only h1 gives it one
+      // without duplicating the visible "Question X of Y" text below.
+      <main className='mx-auto max-w-4xl px-6 py-8 sm:py-12'>
+        <h1 className='sr-only'>
+          Free demo exam — question {currentIndex + 1} of {questions.length}
+        </h1>
         {/* Header: timer + progress */}
         <div className='mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card px-5 py-3 shadow-xs'>
           <div className='text-sm font-medium text-muted-foreground'>
@@ -142,6 +149,13 @@ export default function DemoExamPage() {
               'flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-bold',
               isLowTime ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'
             )}
+            // PRD-006 M7: announces the countdown to screen-reader users
+            // only once time is genuinely running low (last 60s), not on
+            // every per-second tick the rest of the time -- an
+            // unconditional aria-live here would re-announce the clock
+            // every second, which is disruptive rather than helpful.
+            role={isLowTime ? 'timer' : undefined}
+            aria-live={isLowTime ? 'polite' : undefined}
           >
             <Clock className='h-4 w-4' />
             {formatTime(secondsLeft)}
@@ -149,7 +163,7 @@ export default function DemoExamPage() {
         </div>
 
         {/* Question palette */}
-        <div className='mb-6 flex flex-wrap gap-2'>
+        <div className='mb-6 flex flex-wrap gap-2' role='group' aria-label='Question navigator'>
           {questions.map((_, i) => {
             const isAnswered = answers[i] !== undefined;
             const isCurrent = i === currentIndex;
@@ -157,6 +171,8 @@ export default function DemoExamPage() {
               <button
                 key={i}
                 onClick={() => setCurrentIndex(i)}
+                aria-label={`Question ${i + 1}${isCurrent ? ', current' : isAnswered ? ', answered' : ', not answered'}`}
+                aria-current={isCurrent ? 'true' : undefined}
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition-all',
                   isCurrent
@@ -183,6 +199,12 @@ export default function DemoExamPage() {
                 <button
                   key={opt.key}
                   onClick={() => setAnswers((prev) => ({ ...prev, [currentIndex]: opt.key }))}
+                  // PRD-006 M7: previously conveyed the selected option by
+                  // colour alone. `aria-pressed` (rather than a full
+                  // role="radio" group, which implies arrow-key navigation
+                  // between options that isn't implemented here) exposes
+                  // the same state to assistive tech with no behavior change.
+                  aria-pressed={isSelected}
                   className={cn(
                     'flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-all duration-200',
                     isSelected ? 'border-primary/50 bg-primary/10' : 'border-border hover:border-primary/30 hover:bg-muted/40'
@@ -222,7 +244,7 @@ export default function DemoExamPage() {
             </Button>
           )}
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -272,14 +294,17 @@ export default function DemoExamPage() {
   const TierIcon = tier.icon;
 
   return (
-    <div className='mx-auto max-w-3xl px-6 py-16 sm:py-20'>
+    // PRD-006 M9: was a plain <div> -- no <main> landmark.
+    <main className='mx-auto max-w-3xl px-6 py-16 sm:py-20'>
       <div className={cn('rounded-3xl border-2 p-8 text-center shadow-xs sm:p-12', tier.border, tier.bg)}>
         <TierIcon className={cn('mx-auto h-12 w-12', tier.color)} />
         <div className='mt-4 text-5xl font-bold text-foreground'>{score.percent}%</div>
         <p className='mt-1 text-sm text-muted-foreground'>
           {score.correct} of {score.total} correct
         </p>
-        <h2 className={cn('mt-6 text-2xl font-bold', tier.color)}>{tier.heading}</h2>
+        {/* PRD-006 M7: was an <h2> with nothing above it in this <main> --
+            promoted to <h1> so this phase's own real heading exists. */}
+        <h1 className={cn('mt-6 text-2xl font-bold', tier.color)}>{tier.heading}</h1>
         <p className='mx-auto mt-3 max-w-xl text-base leading-relaxed text-muted-foreground'>{tier.message}</p>
 
         <div className='mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row'>
@@ -294,15 +319,20 @@ export default function DemoExamPage() {
 
       {/* Review */}
       <div className='mt-8'>
+        {/* PRD-006 M7: this toggle had no aria-expanded/aria-controls --
+            a screen-reader user got no signal that it revealed content
+            below, or whether that content was currently shown. */}
         <button
           onClick={() => setReviewOpen((v) => !v)}
+          aria-expanded={reviewOpen}
+          aria-controls='demo-exam-review-list'
           className='mx-auto flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80'
         >
           {reviewOpen ? 'Hide' : 'Review'} your answers
         </button>
 
         {reviewOpen && (
-          <div className='mt-6 space-y-3'>
+          <div id='demo-exam-review-list' className='mt-6 space-y-3'>
             {questions.map((q, i) => {
               const yourKey = answers[i];
               const isCorrect = yourKey === q.correctKey;
@@ -343,6 +373,6 @@ export default function DemoExamPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

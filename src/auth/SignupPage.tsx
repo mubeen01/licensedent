@@ -54,7 +54,7 @@ export function Signup() {
           <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10'>
             <Mail className='h-5 w-5 text-primary' aria-hidden='true' />
           </div>
-          <h2 className='text-2xl font-semibold tracking-tight text-foreground mb-2'>Check your email</h2>
+          <h1 className='text-2xl font-semibold tracking-tight text-foreground mb-2'>Check your email</h1>
           <p className='text-sm text-muted-foreground mb-6'>
             We sent a verification link to <span className='font-medium text-foreground'>{email}</span>. Click it
             to activate your account.
@@ -70,7 +70,7 @@ export function Signup() {
   return (
     <AuthPageLayout>
       <SeoHead title='Sign Up — LicenseDent' description='Create your LicenseDent account.' path='/signup' noindex />
-      <h2 className='text-2xl font-semibold tracking-tight text-foreground mb-1.5'>Create your account</h2>
+      <h1 className='text-2xl font-semibold tracking-tight text-foreground mb-1.5'>Create your account</h1>
       <p className='text-sm text-muted-foreground mb-7'>Start practicing for your Gulf licensing exam today.</p>
 
       {error && (

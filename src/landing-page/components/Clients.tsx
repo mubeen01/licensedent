@@ -11,8 +11,16 @@
  *
  * Self-contained: the scroll animation lives in the <style> block below, so you
  * don't need to edit tailwind.config. It pauses on hover and stops entirely for
- * users who prefer reduced motion.
+ * users who prefer reduced motion. PRD-006 M4: also pauses via an explicit
+ * button (hover alone doesn't satisfy WCAG 2.2.2 for keyboard/touch users,
+ * who can't hover), and the duplicated back-half of the track (rendered only
+ * so the -50% loop is seamless) is now aria-hidden so its content isn't
+ * announced twice by assistive tech.
  */
+
+import { Pause, Play } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '../../lib/utils';
 
 interface Destination {
   flag: string;
@@ -47,14 +55,23 @@ function DestinationChip({ flag, country, exams }: Destination) {
 }
 
 export default function Clients() {
-  // Rendered twice back-to-back so the -50% scroll loops seamlessly.
-  const track = [...destinations, ...destinations];
+  const [isPaused, setIsPaused] = useState(false);
 
   return (
     <section aria-label='Gulf licensing coverage' className='w-full py-14 sm:py-16'>
-      <p className='mb-8 text-center text-sm font-semibold uppercase tracking-widest text-muted-foreground'>
-        Prepare for the licence that lets you practice across the Gulf
-      </p>
+      <div className='mb-8 flex items-center justify-center gap-2.5 px-6'>
+        <p className='text-center text-sm font-semibold uppercase tracking-widest text-muted-foreground'>
+          Prepare for the licence that lets you practice across the Gulf
+        </p>
+        <button
+          type='button'
+          onClick={() => setIsPaused((p) => !p)}
+          aria-label={isPaused ? 'Resume scrolling destination list' : 'Pause scrolling destination list'}
+          className='flex h-6 w-6 flex-none items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary'
+        >
+          {isPaused ? <Play className='h-3 w-3' aria-hidden='true' /> : <Pause className='h-3 w-3' aria-hidden='true' />}
+        </button>
+      </div>
 
       {/* Marquee */}
       <div className='relative overflow-hidden'>
@@ -62,10 +79,18 @@ export default function Clients() {
         <div className='pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-linear-to-r from-background to-transparent sm:w-28' />
         <div className='pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-linear-to-l from-background to-transparent sm:w-28' />
 
-        <div className='dp-marquee-track flex w-max items-center gap-4 px-4'>
-          {track.map((d, i) => (
+        <div className={cn('dp-marquee-track flex w-max items-center gap-4 px-4', isPaused && 'dp-marquee-paused')}>
+          {destinations.map((d, i) => (
             <DestinationChip key={`${d.country}-${i}`} {...d} />
           ))}
+          {/* Rendered a second time, back-to-back, so the -50% scroll loops
+              seamlessly -- purely decorative duplication, aria-hidden so a
+              screen reader doesn't read every country and exam twice. */}
+          <div className='flex items-center gap-4' aria-hidden='true'>
+            {destinations.map((d, i) => (
+              <DestinationChip key={`${d.country}-dup-${i}`} {...d} />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -81,7 +106,8 @@ export default function Clients() {
         .dp-marquee-track {
           animation: dp-marquee 34s linear infinite;
         }
-        .dp-marquee-track:hover {
+        .dp-marquee-track:hover,
+        .dp-marquee-track.dp-marquee-paused {
           animation-play-state: paused;
         }
         @media (prefers-reduced-motion: reduce) {

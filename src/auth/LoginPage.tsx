@@ -46,7 +46,7 @@ export default function Login() {
   return (
     <AuthPageLayout>
       <SeoHead title='Log In — LicenseDent' description='Log in to your LicenseDent account.' path='/login' noindex />
-      <h2 className='text-2xl font-semibold tracking-tight text-foreground mb-1.5'>Welcome back</h2>
+      <h1 className='text-2xl font-semibold tracking-tight text-foreground mb-1.5'>Welcome back</h1>
       <p className='text-sm text-muted-foreground mb-7'>Log in to keep your practice streak going.</p>
 
       {error && (

@@ -57,6 +57,11 @@ export function PasswordResetPage() {
     return (
       <AuthPageLayout>
         {seo}
+        {/* PRD-006 (adjacent to H11, found while fixing it): this state --
+            reached by anyone visiting /password-reset without a real
+            token, e.g. a bookmarked, mistyped, or already-used link --
+            previously had no heading at all, so it had zero <h1>s. */}
+        <h1 className='text-2xl font-semibold tracking-tight text-foreground mb-4'>Reset link invalid</h1>
         <Alert variant='destructive'>
           <AlertDescription>
             This reset link is invalid or has expired.{' '}
@@ -78,7 +83,7 @@ export function PasswordResetPage() {
           <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-success/10'>
             <CheckCircle2 className='h-5 w-5 text-success' aria-hidden='true' />
           </div>
-          <h2 className='text-2xl font-semibold tracking-tight text-foreground mb-2'>Password reset</h2>
+          <h1 className='text-2xl font-semibold tracking-tight text-foreground mb-2'>Password reset</h1>
           <p className='text-sm text-muted-foreground mb-6'>Taking you to login…</p>
           <WaspRouterLink to={routes.LoginRoute.to} className='text-sm font-medium text-primary hover:underline'>
             Go to login now
@@ -91,7 +96,7 @@ export function PasswordResetPage() {
   return (
     <AuthPageLayout>
       {seo}
-      <h2 className='text-2xl font-semibold tracking-tight text-foreground mb-1.5'>Reset your password</h2>
+      <h1 className='text-2xl font-semibold tracking-tight text-foreground mb-1.5'>Reset your password</h1>
       <p className='text-sm text-muted-foreground mb-7'>Choose a new password for your account.</p>
 
       {error && (

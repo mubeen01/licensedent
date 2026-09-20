@@ -586,7 +586,15 @@ const QuestionReviewCard = forwardRef<QuestionReviewCardHandle, QuestionReviewCa
       <div className='flex shrink-0 items-center gap-3'>
         {imageUrl ? (
           <div className='relative'>
-            <img src={imageUrl} alt='' className='h-24 rounded-md border border-border object-cover' />
+            {/* PRD-006 H9 (interim fix): see PracticeSession.tsx's
+                identical comment -- full fix is a real per-image
+                `imageAlt` field, backfilled here first since this is the
+                image's admin review point. */}
+            <img
+              src={imageUrl}
+              alt='Question image for reviewer reference'
+              className='h-24 rounded-md border border-border object-cover'
+            />
             <button
               type='button'
               onClick={handleRemoveImage}
