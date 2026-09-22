@@ -6,6 +6,8 @@ import { getEmailUserFields } from './src/auth/userSignupFields' with { type: 'r
 import { onBeforeLoginHook } from './src/auth/hooks' with { type: 'ref' }
 import { seedMockUsers } from './src/server/scripts/dbSeeds' with { type: 'ref' }
 import { importLessonFolder } from './src/server/scripts/importLessonFolder' with { type: 'ref' }
+import { importMcqBatches } from './src/server/scripts/importMcqBatches' with { type: 'ref' }
+import { importGulf180Videos } from './src/server/scripts/importGulf180Videos' with { type: 'ref' }
 import { verifyPRD005AllPhases } from './src/server/scripts/verifyPRD005AllPhases' with { type: 'ref' }
 import App from './src/client/App' with { type: 'ref' }
 import { serverMiddlewareFn } from './src/server/serverSetup' with { type: 'ref' }
@@ -325,6 +327,16 @@ export default app({
       // Run with `wasp db seed importLessonFolder`, env-var configured -- see
       // src/server/scripts/importLessonFolder.ts's header for usage.
       importLessonFolder,
+      // Gulf general-dentist bank: flat MCQ batch files (no Lesson/Part
+      // structure) straight into a Subject's question pool. Run with
+      // `wasp db seed importMcqBatches`, env-var configured -- see
+      // src/server/scripts/importMcqBatches.ts's header for usage.
+      importMcqBatches,
+      // Gulf-180 video lessons: one video (10-slide script + Notes-short.md +
+      // MCQs-5.md) -> one LessonPart, all videos for a subject sharing one
+      // Lesson. Run with `wasp db seed importGulf180Videos`, env-var
+      // configured -- see src/server/scripts/importGulf180Videos.ts's header.
+      importGulf180Videos,
       // PRD-005 full-plan regression suite -- kept, safe to rerun anytime;
       // see the file header for what it checks and why it's not deleted
       // like the other verifyPhaseN... scripts.
