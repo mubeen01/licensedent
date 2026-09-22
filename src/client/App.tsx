@@ -103,7 +103,14 @@ export default function App() {
         ) : isAppShell ? (
           <Outlet />
         ) : (
-          <>
+          // theme-landing here (not just on LandingPage's own div) so the shared
+          // NavBar/Announcement/Footer chrome and every other public page
+          // (pricing, exams, legal) get the same 2026-09-22 indigo/violet/amber
+          // identity as the homepage -- previously scoped to LandingPage alone,
+          // which left the Announcement banner and NavBar stuck on the old
+          // teal/sky palette directly above the new hero. isAppShell above keeps
+          // the logged-in dashboard (its own theme) completely untouched.
+          <div className='theme-landing'>
             {shouldDisplayAppNavBar && <NavBar navigationItems={marketingNavigationItems} />}
             <div className='mx-auto max-w-(--breakpoint-2xl)'>
               <Outlet />
@@ -113,7 +120,7 @@ export default function App() {
                 each page importing its own -- Pricing and Legal previously rendered
                 with no footer at all because they never called it themselves. */}
             {shouldDisplayAppNavBar && <Footer footerNavigation={footerNavigation} />}
-          </>
+          </div>
         )}
       </div>
       <CookieConsentBanner />

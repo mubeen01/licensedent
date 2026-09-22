@@ -50,7 +50,7 @@ export default function PracticeModes({ modes }: { modes: PracticeMode[] }) {
       <SectionTitle
         eyebrow='Study your way'
         title='Practice however you learn best'
-        description="Mix and match filters in Quiz Builder, or jump straight into one of these from Practice — same verified question bank, sliced the way you need it."
+        description="Mix and match filters in Quiz Builder, or jump straight into one of these from Practice — same question bank, sliced the way you need it."
       />
       <div className='flex flex-wrap justify-center gap-3'>
         {modes.map((mode, i) => {

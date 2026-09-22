@@ -1,8 +1,8 @@
 # LicenseDent
 
-> Human-verified practice questions, timed mock tests and subject-wise
-> revision for Gulf and Ireland dental licensing exams. Every question is
-> written or reviewed by a dentist -- never AI-guessed. Covers DHA (Dubai),
+> Practice questions, timed mock tests and subject-wise revision for Gulf
+> and Ireland dental licensing exams. Every question is written or
+> reviewed by a practicing dentist. Covers DHA (Dubai),
 > HAAD/DOH (Abu Dhabi), MOH (UAE federal), SHA (Sharjah), SMLE/SDLE (Saudi
 > Arabia), OMSB (Oman), QCHP (Qatar), NHRA (Bahrain), KDLE/KMLE (Kuwait),
 > and the Irish Dental Council statutory exam (IDC Ireland).
@@ -29,7 +29,7 @@
 ## Product
 
 - [Home](https://licensedent.com/): Overview, live question-bank stats, and exam coverage.
-- [Pricing](https://licensedent.com/pricing): Fast Track, Standard and Extended plans.
+- [Pricing](https://licensedent.com/pricing): Fast Track ($100/1 month), Standard ($200/3 months), Extended ($500/6 months, all Gulf exams) and IDC Pathway ($650/6 months, Ireland only) -- one-time purchases, no auto-renewal.
 - [Free demo exam](https://licensedent.com/demo-exam): 20-question, 15-minute DHA-style exam, no login required.
 - [Terms, privacy, refunds & disclaimers](https://licensedent.com/legal): Terms of service, privacy policy, 7-day refund policy, regulator-affiliation disclaimer.
 - [About](https://licensedent.com/about): Who verifies our content, what we do, and how to get in touch.

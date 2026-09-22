@@ -29,9 +29,9 @@ const bestDealPaymentPlanId: PaymentPlanId = PaymentPlanId.Standard;
 // configured yet, not on content. (PRD-006 M21: this comment previously said
 // "is now purchasable," which contradicted `offerJsonLd`'s own comment a few
 // lines below and the actual disabled-button behavior -- reconciled to match
-// what the page actually does.) Still deliberately NOT added to
-// `pricingTeaserPlans` (see that array's comment) -- putting it on the public
-// homepage teaser is a separate decision from making it purchasable here.
+// what the page actually does.) It IS now also on the homepage teaser (see
+// `pricingTeaserPlans`) -- both pages list all 4 plans, only purchasability
+// differs, and that's driven by `isPlanAvailable` below, not by omission.
 const visiblePaymentPlanIds: PaymentPlanId[] = [
   PaymentPlanId.FastTrack,
   PaymentPlanId.Standard,
@@ -75,22 +75,12 @@ export const paymentPlanCards: Record<PaymentPlanId, PaymentPlanCard> = {
     duration: teaserFor('Extended').duration,
     features: teaserFor('Extended').features,
   },
-  // Deliberately NOT sourced from `pricingTeaserPlans` (unlike the other three) --
-  // that array also feeds the public LandingPage's homepage teaser section, and
-  // putting Ireland there is a separate decision from making it purchasable here
-  // (see visiblePaymentPlanIds above and pricingTeaserPlans's own comment).
   [PaymentPlanId.IrelandPathway]: {
     name: prettyPaymentPlanName(PaymentPlanId.IrelandPathway),
     price: getPlanPrice(PaymentPlanId.IrelandPathway),
-    tagline: 'IDC Ireland only — question bank + Lessons',
-    duration: '6 months · IDC Ireland only',
-    features: [
-      'Full IDC Ireland question bank',
-      'Structured Lessons with gated quizzes',
-      'Video lecture library (in production — included as it launches)',
-      'Unlimited practice + timed mocks',
-      'Progress analytics',
-    ],
+    tagline: teaserFor('IDC Pathway').tagline,
+    duration: teaserFor('IDC Pathway').duration,
+    features: teaserFor('IDC Pathway').features,
   },
 };
 
@@ -229,7 +219,7 @@ const PricingPage = () => {
     <div className='relative overflow-hidden py-10 lg:mt-10'>
       <SeoHead
         title='Pricing — Plans for Gulf & Ireland Dental Exam Prep | LicenseDent'
-        description='Fast Track, Standard and Extended plans for DHA, HAAD, MOH, SMLE, OMSB, QCHP, KMLE, NHRA, SHA and IDC Ireland exam prep. Human-verified content, no ads.'
+        description='Fast Track, Standard, Extended and IDC Pathway plans for DHA, HAAD, MOH, SMLE, OMSB, QCHP, KMLE, NHRA, SHA and IDC Ireland exam prep. Written by dentists, no ads.'
         path='/pricing'
         extraJsonLd={[offerJsonLd]}
       />
@@ -244,7 +234,7 @@ const PricingPage = () => {
           <div className='flex justify-center'>
             <span className='inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary'>
               <img src='/logo/licensedent-icon.svg' alt='' width={512} height={512} className='h-5 w-5 rounded-md' />
-              LicenseDent · Gulf + Ireland · dentist-verified
+              LicenseDent · Gulf + Ireland · written by dentists
             </span>
           </div>
           <h1 className='mt-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl'>

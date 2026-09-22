@@ -66,7 +66,7 @@ function Hero() {
                 <span className='relative inline-flex h-2 w-2 rounded-full bg-primary' />
               </span>
               <Sparkles className='h-4 w-4 text-primary' />
-              {exams?.length ?? 10} exams · {countries} countries · every guide human-verified
+              {exams?.length ?? 10} exams · {countries} countries · every guide written by dentists
             </span>
           </div>
 

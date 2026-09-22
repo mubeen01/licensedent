@@ -33,7 +33,7 @@ const screens = [
     id: 'practice',
     name: 'Practice',
     icon: ListChecks,
-    tagline: 'Subject-wise MCQs with verified, dentist-written explanations.',
+    tagline: 'Subject-wise MCQs with clear, dentist-written explanations.',
   },
   {
     id: 'mocks',

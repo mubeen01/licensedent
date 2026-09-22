@@ -61,8 +61,9 @@ const MOCK_EXAM_ATTEMPT_CAPS: Record<PaymentPlanId, number> = {
   [PaymentPlanId.Extended]: 150,
   // A real Ireland Mock Exam surface now exists (5 MockTest rows scoped to
   // the IDC exam, drawing from its 140 published questions) -- 60 matches
-  // Standard's cap, a reasonable middle ground given Ireland Pathway sits
-  // between Standard ($550) and Extended ($1,000) in price.
+  // Standard's cap. (Pricing was later rebalanced so Ireland Pathway ($650)
+  // is now priced above Extended ($500), but the cap itself was never tied
+  // to that ordering, so it's left as-is.)
   [PaymentPlanId.IrelandPathway]: 60,
 };
 

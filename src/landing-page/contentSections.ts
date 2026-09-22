@@ -22,7 +22,7 @@ export function buildStats(bank: { publishedQuestionCount?: number; subjectCount
       label: 'Published questions',
       description: 'Growing weekly — Gulf + Ireland pattern bank',
     },
-    { value: '100%', label: 'Dentist-verified', description: 'Every answer checked by a dentist — never AI-guessed' },
+    { value: '100%', label: 'Written by dentists', description: 'Every answer checked by a dentist before it goes live' },
     {
       value: bank?.subjectCount != null ? `${bank.subjectCount}` : '14+',
       label: 'Dental subjects',
@@ -72,8 +72,8 @@ export const features: GridFeature[] = [
     gradient: 'from-gold to-amber-500',
   },
   {
-    name: 'Verified explanations',
-    description: 'Every answer key is checked by a dentist — never AI-guessed and auto-published.',
+    name: 'Explanations that hold up',
+    description: 'Every answer comes with the reasoning behind it, written by a dentist and checked before it ever reaches you.',
     emoji: '✅',
     size: 'medium',
     gradient: 'from-teal-500 to-teal-700',
@@ -183,7 +183,7 @@ export const studyTools: StudyTool[] = [
     gradient: 'from-teal-500 to-teal-700',
     points: [
       'Subject-wise MCQs across 12+ dental subjects, each mapped to the exam blueprint.',
-      'Every question carries a dentist-verified answer key and a clear explanation.',
+      'Every question carries a dentist-written answer key and a clear explanation.',
       'Rule-out reasoning: understand why the other options are wrong, not just the right one.',
       'Clean, distraction-free question interface built for long study sessions.',
       'Mark any question for review and return to it in one tap.',
@@ -198,7 +198,7 @@ export const studyTools: StudyTool[] = [
     points: [
       'Frequently-repeated topics compiled and structured subject-by-subject.',
       'Refreshed after each exam cycle so your prep stays current.',
-      'Corrected and verified — never raw, unchecked dumps.',
+      'Corrected and rewritten — never raw, unchecked dumps.',
       'Perfect for a focused final week when time is tight.',
     ],
   },
@@ -261,7 +261,7 @@ export const studyTools: StudyTool[] = [
     tagline: 'Recorded lectures walking through high-yield topics — launching with the Extended plan. We don’t advertise hours we haven’t recorded.',
     gradient: 'from-secondary to-amber-600',
     points: [
-      'Subject-wise video lectures built around the same verified topic coverage as the question bank.',
+      'Subject-wise video lectures built around the same topic coverage as the question bank.',
       'The library is being recorded now — it ships with the Extended plan, and the dashboard’s Video Lectures page shows what’s live.',
       'Pairs each topic with the question bank so you watch, then practice.',
     ],
@@ -409,11 +409,23 @@ export const pricingTeaserPlans: PricingTeaserPlan[] = [
     ],
     perk: '✨ Best for multi-exam Gulf flexibility',
   },
-  // IDC Pathway is deliberately NOT here -- this array also feeds the public
-  // LandingPage's homepage teaser section (`<PricingTeaser plans={pricingTeaserPlans} />`),
-  // and putting Ireland's plan on the homepage is a separate, bigger launch
-  // decision than making it purchasable on /pricing. Its card lives directly
-  // in PricingPage.tsx's `paymentPlanCards`, sourced independently.
+  {
+    name: 'IDC Pathway',
+    tagline: 'IDC Ireland only — question bank + Lessons',
+    duration: '6 months · IDC Ireland only',
+    price: getPlanPrice(PaymentPlanId.IrelandPathway),
+    features: [
+      'Full IDC Ireland question bank',
+      'Structured Lessons with gated quizzes',
+      'Video lecture library (in production — included as it launches)',
+      'Unlimited practice + timed mocks',
+      'Progress analytics',
+    ],
+  },
+  // All 4 plans are listed here on purpose: this array feeds both the public
+  // LandingPage's homepage teaser and PricingPage's `paymentPlanCards`
+  // (via teaserFor()), so the two pages can never show a different plan
+  // count or different numbers again.
 ];
 
 // Testimonial section removed (2026-08-18): it listed placeholder names with
@@ -435,7 +447,7 @@ export const faqs = [
     id: 2,
     question: 'Do you have recall questions?',
     answer:
-      'Yes. Our recall bank compiles the concepts that repeat most often, structured subject-by-subject and refreshed after each exam cycle — corrected and verified, never raw dumps.',
+      'Yes. Our recall bank compiles the concepts that repeat most often, structured subject-by-subject and refreshed after each exam cycle — corrected and rewritten, never raw dumps.',
   },
   {
     id: 3,
@@ -445,9 +457,9 @@ export const faqs = [
   },
   {
     id: 4,
-    question: 'Are the answers actually verified?',
+    question: 'Who actually writes the questions?',
     answer:
-      'Every question goes through a human review queue before it’s published — nothing reaches students on a guessed or unconfirmed answer key.',
+      'Practicing dentists, drawing on real clinical cases — then a second dentist reviews every one before it’s published. Nothing goes out on a hunch.',
   },
   {
     id: 5,

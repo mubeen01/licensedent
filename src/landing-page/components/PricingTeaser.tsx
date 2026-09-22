@@ -9,7 +9,7 @@ export interface PricingTeaserPlan {
   name: string;
   tagline: string;
   duration: string;
-  /** One-time price for the plan's full duration, e.g. "$250" — sourced from payment/plans.ts's getPlanPrice so it never drifts from what checkout actually charges. */
+  /** One-time price for the plan's full duration, e.g. "$100" — sourced from payment/plans.ts's getPlanPrice so it never drifts from what checkout actually charges. */
   price: string;
   features: string[];
   highlighted?: boolean;
@@ -25,7 +25,7 @@ export default function PricingTeaser({ plans }: { plans: PricingTeaserPlan[] })
         description='Pay for the coverage you actually need — a single exam for a few months, or every exam for a full application cycle.'
       />
 
-      <div className='mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-stretch'>
+      <div className='mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:items-stretch'>
         {plans.map((plan, idx) => {
           // Duration like "6 months · all exams" → main label + a small qualifier chip.
           const [durationMain, durationNote] = plan.duration.split('·').map((part) => part.trim());

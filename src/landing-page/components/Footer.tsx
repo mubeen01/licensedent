@@ -37,7 +37,7 @@ export default function Footer({
               <span className='text-lg font-bold text-foreground'>LicenseDent</span>
             </WaspRouterLink>
             <p className='mt-4 max-w-sm text-sm leading-6 text-muted-foreground'>
-              Question banks, recall bank, timed mock tests and expert-verified explanations for General
+              Question banks, recall bank, timed mock tests and dentist-written explanations for General
               Dentists preparing for DHA, HAAD, MOH, SMLE and IDC Ireland licensing exams.
             </p>
 

@@ -424,6 +424,71 @@
     --radius: 0.75rem;
   }
 
+  /* Public marketing site redesign (2026-09-22) -- same indigo/violet +
+     amber-gold identity already proven on the Ireland dashboard theme below,
+     extended to the public landing page. Deliberately scoped to a class
+     (applied on LandingPage's root div), NOT a replacement of :root, so the
+     Gulf/Ireland in-app dashboards keep their own existing themes untouched.
+     Every card-elevated/button/badge that already reads --primary/--secondary/
+     etc. re-skins automatically -- no per-component color rewrites needed. */
+  .theme-landing {
+    --background: 240 20% 98%;
+    --foreground: 245 25% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 245 25% 10%;
+    --card-accent: 0 0% 100%;
+    --card-accent-foreground: 245 25% 10%;
+    --card-subtle: 243 45% 97%;
+    --card-subtle-foreground: 245 25% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 245 25% 10%;
+    --primary: 243 72% 58%;
+    --primary-foreground: 0 0% 100%;
+    --primary-muted: 243 60% 68%;
+    --secondary: 262 76% 63%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-muted: 262 75% 94%;
+    --secondary-muted-foreground: 245 25% 10%;
+    --muted: 243 20% 96%;
+    --muted-foreground: 243 10% 42%;
+    --accent: 243 70% 95%;
+    --accent-foreground: 245 25% 10%;
+    --gold: 43 80% 46%;
+    --gold-foreground: 245 30% 10%;
+    --success: 152 55% 38%;
+    --success-foreground: 0 0% 100%;
+    --border: 243 20% 90%;
+    --input: 243 20% 90%;
+    --ring: 243 72% 58%;
+  }
+
+  .dark .theme-landing {
+    --background: 245 45% 7%;
+    --foreground: 243 20% 96%;
+    --card: 245 38% 11%;
+    --card-foreground: 243 20% 96%;
+    --card-subtle: 245 30% 15%;
+    --card-subtle-foreground: 243 20% 96%;
+    --popover: 245 38% 10%;
+    --popover-foreground: 243 20% 96%;
+    --primary: 234 89% 74%;
+    --primary-foreground: 245 45% 10%;
+    --primary-muted: 234 70% 65%;
+    --secondary: 262 75% 72%;
+    --secondary-foreground: 245 45% 10%;
+    --secondary-muted: 262 40% 22%;
+    --secondary-muted-foreground: 243 20% 96%;
+    --muted: 245 28% 16%;
+    --muted-foreground: 243 15% 66%;
+    --accent: 262 35% 20%;
+    --accent-foreground: 243 20% 96%;
+    --gold: 43 75% 55%;
+    --gold-foreground: 245 45% 10%;
+    --border: 243 30% 22%;
+    --input: 243 30% 22%;
+    --ring: 234 89% 74%;
+  }
+
   /* Ireland Pathway dashboard theme (2026 redesign) -- deep indigo/violet +
      emerald accent, applied only when DashboardLayout detects
      getMyDashboardScope().kind === 'ireland'. Overrides the same token set

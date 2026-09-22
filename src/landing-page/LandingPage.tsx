@@ -4,30 +4,18 @@ import ExamsGrid from './components/ExamsGrid';
 import FAQ from './components/FAQ';
 import FeaturesGrid from './components/FeaturesGrid';
 import Hero from './components/Hero';
-import JourneyMap from './components/JourneyMap';
-import PracticeModes from './components/PracticeModes';
 import PricingTeaser from './components/PricingTeaser';
 import ProcessSteps from './components/ProcessSteps';
 import ProductWalkthrough from './components/ProductWalkthrough';
 import ScrollToTop from './components/ScrollToTop';
 import StatsBar from './components/StatsBar';
-import StudyTools from './components/StudyTools';
 import SubjectsStrip from './components/SubjectsStrip';
 import TrustSection from './components/TrustSection';
 import TryItDemo from './components/TryItDemo';
 import Clients from './components/Clients';
 import SeoHead from '../client/components/SeoHead';
 
-import {
-  buildStats,
-  demoQuestions,
-  faqs,
-  features,
-  practiceModes,
-  pricingTeaserPlans,
-  studyTools,
-  subjects,
-} from './contentSections';
+import { buildStats, demoQuestions, faqs, features, pricingTeaserPlans, subjects } from './contentSections';
 import { useBankStats } from '../client/hooks/useBankStats';
 
 /**
@@ -54,7 +42,7 @@ export default function LandingPage() {
     <div className="bg-background text-foreground">
       <SeoHead
         title="LicenseDent - Gulf + Ireland Dental Licensing Exam Prep"
-        description="Human-verified practice questions, timed mock tests and subject-wise revision for Gulf and Ireland dental licensing exams. Never AI-guessed."
+        description="Practice questions, timed mock tests and subject-wise revision for Gulf and Ireland dental licensing exams — written and reviewed by practicing dentists."
         path="/"
         faqs={faqs}
       />
@@ -64,10 +52,6 @@ export default function LandingPage() {
 
         {/* Trust strip — where these licences let you practice */}
         <Clients />
-
-        {/* NEW · Your path — a quick visual snapshot of sign-up to exam day,
-            distinct from the detailed ProcessSteps section further down */}
-        <JourneyMap />
 
         {/* 2 · Proof — product-strength numbers right under the hero */}
         <SectionBand>
@@ -90,19 +74,12 @@ export default function LandingPage() {
           <ProductWalkthrough />
         </SectionBand>
 
-        {/* 4 · What you get — the bento feature overview */}
+        {/* 4 · What you get — the bento feature overview. (Two other sections
+            used to repeat this exact list right after it -- a tabbed
+            "study tools" detail view, then a pill-strip of practice filters
+            that just restated Quiz Builder's own filters again. Cut both:
+            one clear feature overview beats the same list three times. */}
         <FeaturesGrid features={features} />
-
-        {/* NEW · Everything you get, in detail — the tabbed study-tools section
-            that goes head-to-head with the competitor */}
-        <SectionBand>
-          <StudyTools tools={studyTools} />
-        </SectionBand>
-
-        {/* NEW · Every way to slice the question bank — Practice's subject
-            picker + Quiz Builder's filters + Mock Exams' timed mode, in one
-            scannable strip */}
-        <PracticeModes modes={practiceModes} />
 
         {/* 5 · How it works — a real 4-step sequence (numbering earns its place) */}
         <SectionBand>

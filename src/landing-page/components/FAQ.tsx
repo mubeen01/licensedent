@@ -21,8 +21,8 @@ export default function FAQ({ faqs }: { faqs: FAQ[] }) {
             Questions, answered
           </h2>
           <p className='mt-4 text-base leading-7 text-muted-foreground'>
-            How LicenseDent works — from what’s in the question bank to switching exams and getting your
-            answers verified.
+            How LicenseDent works — from what’s in the question bank to switching exams and who writes the
+            content.
           </p>
 
           <div className='card-elevated mt-8 bg-linear-to-br from-primary/6 to-secondary/4 p-6'>

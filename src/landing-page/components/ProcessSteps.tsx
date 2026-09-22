@@ -11,7 +11,7 @@ const steps = [
   {
     icon: ListChecks,
     title: 'Practice subject by subject',
-    description: 'Work through Oral Pathology, Endodontics, Periodontics and more — every answer comes with a verified, dentist-written explanation.',
+    description: 'Work through Oral Pathology, Endodontics, Periodontics and more — every answer comes with a clear, dentist-written explanation.',
   },
   {
     icon: Timer,

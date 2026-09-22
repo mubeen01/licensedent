@@ -13,7 +13,7 @@ export function AuthPageLayout({ children }: { children: ReactNode }) {
           ? `${bankStats.publishedQuestionCount.toLocaleString()}+ published questions across ${bankStats.subjectCount} dental subjects`
           : 'A growing, dentist-reviewed question bank across every core dental subject',
     },
-    { icon: CheckCircle2, text: '100% of published answers human-verified — never AI-guessed' },
+    { icon: CheckCircle2, text: '100% of published answers written and checked by dentists' },
     { icon: ClipboardCheck, text: 'Timed, Prometric-style mock tests' },
     { icon: LineChart, text: 'Progress analytics by subject' },
   ];

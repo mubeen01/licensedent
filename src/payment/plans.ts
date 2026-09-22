@@ -95,10 +95,10 @@ export function parsePaymentPlanId(planId: string): PaymentPlanId {
 
 export function getPlanPrice(planId: PaymentPlanId): string {
   const planToPrice: Record<PaymentPlanId, string> = {
-    [PaymentPlanId.FastTrack]: '$250',
-    [PaymentPlanId.Standard]: '$550',
-    [PaymentPlanId.Extended]: '$1,000',
-    [PaymentPlanId.IrelandPathway]: '$800',
+    [PaymentPlanId.FastTrack]: '$100',
+    [PaymentPlanId.Standard]: '$200',
+    [PaymentPlanId.Extended]: '$500',
+    [PaymentPlanId.IrelandPathway]: '$650',
   };
   return planToPrice[planId];
 }

@@ -4,8 +4,8 @@ import SectionTitle from './SectionTitle';
 
 const trustPoints = [
   {
-    name: 'Human-verified answers',
-    description: 'Every answer key and explanation is checked by a dentist before it ever reaches a student — nothing is AI-guessed and auto-published.',
+    name: 'Written by dentists, checked twice',
+    description: 'Every answer key and explanation is written from real clinical practice, then checked by a second dentist before it ever reaches a student.',
     icon: ShieldCheck,
     color: 'text-primary',
     bg: 'bg-primary/10',
@@ -49,7 +49,7 @@ export default function TrustSection() {
       <SectionTitle
         eyebrow='Why trust us'
         title='Built on data integrity, not guesswork'
-        description='The same standard you’d expect from a dental education product — nothing goes live without a human check.'
+        description='The same standard you’d expect from a dental education product — nothing goes live without a second dentist checking it.'
       />
       <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4'>
         {trustPoints.map((point, idx) => {

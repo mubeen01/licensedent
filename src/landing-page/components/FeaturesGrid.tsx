@@ -26,7 +26,7 @@ const featureIcons: Partial<Record<string, LucideIcon>> = {
   'Custom Quiz Builder': Puzzle,
   'Smart Review': RefreshCw,
   'Streaks, XP & study plan': Flame,
-  'Verified explanations': ShieldCheck,
+  'Explanations that hold up': ShieldCheck,
   'Rule-out reasoning': Brain,
   'Image-based MCQs': ScanLine,
   'Timed mock tests': Timer,

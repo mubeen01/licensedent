@@ -21,9 +21,10 @@
 import { Pause, Play } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '../../lib/utils';
+import FlagIcon, { type FlagCode } from './FlagIcon';
 
 interface Destination {
-  flag: string;
+  flag: FlagCode;
   country: string;
   exams: string;
 }
@@ -32,23 +33,23 @@ interface Destination {
 // it was previously listed under Oman alongside OMSB. Corrected to the
 // UAE entry; Oman keeps only its real exam, OMSB.
 const destinations: Destination[] = [
-  { flag: '🇦🇪', country: 'United Arab Emirates', exams: 'DHA · HAAD · MOH · SHA' },
-  { flag: '🇸🇦', country: 'Saudi Arabia', exams: 'SMLE' },
-  { flag: '🇴🇲', country: 'Oman', exams: 'OMSB' },
-  { flag: '🇶🇦', country: 'Qatar', exams: 'QCHP' },
-  { flag: '🇰🇼', country: 'Kuwait', exams: 'KMLE' },
-  { flag: '🇧🇭', country: 'Bahrain', exams: 'NHRA' },
+  { flag: 'AE', country: 'United Arab Emirates', exams: 'DHA · HAAD · MOH · SHA' },
+  { flag: 'SA', country: 'Saudi Arabia', exams: 'SMLE' },
+  { flag: 'OM', country: 'Oman', exams: 'OMSB' },
+  { flag: 'QA', country: 'Qatar', exams: 'QCHP' },
+  { flag: 'KW', country: 'Kuwait', exams: 'KMLE' },
+  { flag: 'BH', country: 'Bahrain', exams: 'NHRA' },
 ];
 
 function DestinationChip({ flag, country, exams }: Destination) {
   return (
-    <div className='card-elevated card-elevated-hover group flex items-center gap-3 px-5 py-3.5'>
-      <span className='flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-muted text-xl leading-none transition-transform duration-300 group-hover:scale-110' aria-hidden='true'>
-        {flag}
+    <div className='card-elevated card-elevated-hover group flex items-center gap-2.5 px-3.5 py-2'>
+      <span className='flex h-7 w-7 flex-none items-center justify-center rounded-lg bg-muted leading-none transition-transform duration-300 group-hover:scale-110' aria-hidden='true'>
+        <FlagIcon code={flag} className='h-4 w-[1.5rem]' />
       </span>
       <div className='text-left'>
-        <div className='whitespace-nowrap text-sm font-semibold text-foreground'>{country}</div>
-        <div className='whitespace-nowrap text-xs font-medium tracking-wide text-muted-foreground'>{exams}</div>
+        <div className='whitespace-nowrap text-xs font-semibold text-foreground'>{country}</div>
+        <div className='whitespace-nowrap text-[10.5px] font-medium tracking-wide text-muted-foreground'>{exams}</div>
       </div>
     </div>
   );
@@ -58,18 +59,18 @@ export default function Clients() {
   const [isPaused, setIsPaused] = useState(false);
 
   return (
-    <section aria-label='Gulf licensing coverage' className='w-full py-14 sm:py-16'>
-      <div className='mb-8 flex items-center justify-center gap-2.5 px-6'>
-        <p className='text-center text-sm font-semibold uppercase tracking-widest text-muted-foreground'>
+    <section aria-label='Gulf licensing coverage' className='w-full py-3 sm:py-4'>
+      <div className='mb-2.5 flex items-center justify-center gap-2 px-6'>
+        <p className='text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground'>
           Prepare for the licence that lets you practice across the Gulf
         </p>
         <button
           type='button'
           onClick={() => setIsPaused((p) => !p)}
           aria-label={isPaused ? 'Resume scrolling destination list' : 'Pause scrolling destination list'}
-          className='flex h-6 w-6 flex-none items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary'
+          className='flex h-5 w-5 flex-none items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary'
         >
-          {isPaused ? <Play className='h-3 w-3' aria-hidden='true' /> : <Pause className='h-3 w-3' aria-hidden='true' />}
+          {isPaused ? <Play className='h-2.5 w-2.5' aria-hidden='true' /> : <Pause className='h-2.5 w-2.5' aria-hidden='true' />}
         </button>
       </div>
 
@@ -94,7 +95,7 @@ export default function Clients() {
         </div>
       </div>
 
-      <p className='mt-8 px-6 text-center text-xs text-muted-foreground'>
+      <p className='mt-4 px-6 text-center text-[11px] text-muted-foreground'>
         An independent preparation platform — not affiliated with any listed authority.
       </p>
 
@@ -106,7 +107,9 @@ export default function Clients() {
         .dp-marquee-track {
           animation: dp-marquee 34s linear infinite;
         }
-        .dp-marquee-track:hover,
+        /* Runs continuously -- no hover-to-pause. Only the explicit pause
+           button (kept for WCAG 2.2.2, which real moving content needs a
+           way to stop) and prefers-reduced-motion below still stop it. */
         .dp-marquee-track.dp-marquee-paused {
           animation-play-state: paused;
         }

@@ -38,7 +38,7 @@ export default function OrganizationJsonLd() {
     // the 180x180 PNG generated for apple-touch-icon instead of the SVG icon.
     logo: `${SITE_ORIGIN}/logo/apple-touch-icon.png`,
     description:
-      'Human-verified practice questions, timed mock tests and subject-wise revision for Gulf and Ireland dental licensing exams. Every question is written or reviewed by a panel of licensed, practicing dentists -- never AI-guessed.',
+      'Practice questions, timed mock tests and subject-wise revision for Gulf and Ireland dental licensing exams. Every question is written or reviewed by a panel of licensed, practicing dentists.',
     contactPoint: {
       '@type': 'ContactPoint',
       email: 'support@licensedent.com',
