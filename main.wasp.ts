@@ -22,6 +22,9 @@ import LegalPage from './src/legal/LegalPage' with { type: 'ref' }
 // About
 import AboutPage from './src/about/AboutPage' with { type: 'ref' }
 
+// Contact
+import ContactPage from './src/contact/ContactPage' with { type: 'ref' }
+
 // Demo Exam
 import DemoExamPage from './src/demo-exam/DemoExamPage' with { type: 'ref' }
 
@@ -382,6 +385,10 @@ export default app({
 
     // About (public — PRD-006 M20: who verifies content + contact)
     route('AboutRoute', '/about', page(AboutPage), { prerender: true }),
+
+    // Contact (public — real contact form; signed-in visitors post straight
+    // into ContactFormMessage, signed-out visitors get a prefilled mailto:)
+    route('ContactRoute', '/contact', page(ContactPage), { prerender: true }),
 
     // Demo Exam (public, front-end only — no auth, no DB, sample questions)
     route('DemoExamRoute', '/demo-exam', page(DemoExamPage), { prerender: true }),
