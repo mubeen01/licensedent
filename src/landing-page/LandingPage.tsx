@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import BlogPreviewSection from './components/BlogPreviewSection';
 import CTABanner from './components/CTABanner';
 import ExamsGrid from './components/ExamsGrid';
 import FAQ from './components/FAQ';
@@ -100,6 +101,11 @@ export default function LandingPage() {
         <SectionBand>
           <FAQ faqs={faqs} />
         </SectionBand>
+
+        {/* NEW · From the blog — content-marketing/SEO surface + internal
+            links into /blog. Renders nothing while zero posts are
+            published, same rule as TestimonialsSection below. */}
+        <BlogPreviewSection />
 
         {/* 9 · Testimonials (PRD-007) -- the section removed for having
             placeholder names is back, now backed by a real Testimonial

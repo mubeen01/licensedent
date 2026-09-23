@@ -29,6 +29,16 @@ interface SeoHeadProps {
    * "soft 404" reports in Search Console. When true, both tags are omitted.
    */
   noCanonical?: boolean;
+  /** Focus keywords for this page. Meta `keywords` carries near-zero weight with Google directly, but it's a real (if minor) signal for Bing/other crawlers and AI/GEO crawlers that still read it, and costs nothing to include. */
+  keywords?: string[];
+  /** 'article' for blog posts -- the correct Open Graph type per ogp.me, and required context for `articlePublishedTime`/`articleModifiedTime`/`articleTags` below to make sense to a scraper. Defaults to 'website'. */
+  ogType?: 'website' | 'article';
+  /** ISO date string -- rendered as `article:published_time` when `ogType` is 'article'. */
+  articlePublishedTime?: string;
+  /** ISO date string -- rendered as `article:modified_time` when `ogType` is 'article'. */
+  articleModifiedTime?: string;
+  /** Rendered as one `article:tag` meta per entry when `ogType` is 'article'. */
+  articleTags?: string[];
 }
 
 // PRD-01 Q1 (real production domain): answered 2026-09-16, licensedent.com.
@@ -55,7 +65,21 @@ export const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/logo/og-image.png`;
 const DEFAULT_OG_IMAGE_WIDTH = 1200;
 const DEFAULT_OG_IMAGE_HEIGHT = 630;
 
-export default function SeoHead({ title, description, path, faqs, extraJsonLd, noindex, ogImage, noCanonical }: SeoHeadProps) {
+export default function SeoHead({
+  title,
+  description,
+  path,
+  faqs,
+  extraJsonLd,
+  noindex,
+  ogImage,
+  noCanonical,
+  keywords,
+  ogType = 'website',
+  articlePublishedTime,
+  articleModifiedTime,
+  articleTags,
+}: SeoHeadProps) {
   const canonicalUrl = `${SITE_ORIGIN}${path}`;
   // PRD-007: blog cover images live on S3, not this domain -- an absolute
   // URL (http/https) is used as-is; a relative path (the original,
@@ -79,6 +103,7 @@ export default function SeoHead({ title, description, path, faqs, extraJsonLd, n
     <>
       <title>{title}</title>
       <meta name='description' content={description} />
+      {keywords && keywords.length > 0 && <meta name='keywords' content={keywords.join(', ')} />}
       {!noCanonical && <link rel='canonical' href={canonicalUrl} />}
       {noindex && <meta name='robots' content='noindex' />}
 
@@ -86,7 +111,7 @@ export default function SeoHead({ title, description, path, faqs, extraJsonLd, n
           fallback (homepage-only copy) for every page that renders this
           component, so social shares of e.g. /pricing show that page's own
           title/description/url instead of the homepage's. */}
-      <meta property='og:type' content='website' />
+      <meta property='og:type' content={ogType} />
       <meta property='og:site_name' content='LicenseDent' />
       <meta property='og:title' content={title} />
       <meta property='og:description' content={description} />
@@ -94,6 +119,13 @@ export default function SeoHead({ title, description, path, faqs, extraJsonLd, n
       <meta property='og:image' content={resolvedOgImage} />
       <meta property='og:image:width' content={String(DEFAULT_OG_IMAGE_WIDTH)} />
       <meta property='og:image:height' content={String(DEFAULT_OG_IMAGE_HEIGHT)} />
+      {ogType === 'article' && articlePublishedTime && (
+        <meta property='article:published_time' content={articlePublishedTime} />
+      )}
+      {ogType === 'article' && articleModifiedTime && (
+        <meta property='article:modified_time' content={articleModifiedTime} />
+      )}
+      {ogType === 'article' && articleTags?.map((tag) => <meta key={tag} property='article:tag' content={tag} />)}
       <meta name='twitter:card' content='summary_large_image' />
       <meta name='twitter:title' content={title} />
       <meta name='twitter:description' content={description} />
