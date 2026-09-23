@@ -2,6 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { getPublicExams, useQuery } from 'wasp/client/operations';
 import SectionTitle from './SectionTitle';
+import { ExamFlag } from '../../client/components/ExamFlag';
 import { EXAM_GUIDES } from '../../exam-pages/examGuideIndex';
 import { examGuideRoute } from '../../exam-pages/examGuideRoute';
 import Reveal from './Reveal';
@@ -39,9 +40,9 @@ export default function ExamsGrid() {
               <div className='flex h-full flex-col'>
                 <div className='flex items-start justify-between'>
                   <span
-                    className={`flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-linear-to-br ${exam.gradient} text-2xl shadow-xs`}
+                    className={`flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-linear-to-br ${exam.gradient} shadow-xs`}
                   >
-                    {exam.flagEmoji}
+                    <ExamFlag emoji={exam.flagEmoji} className='h-7 w-10 rounded-[3px] shadow-sm' />
                   </span>
                   {questionCount != null && questionCount > 0 && (
                     <span className='rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[11px] font-medium text-muted-foreground'>

@@ -40,6 +40,7 @@ import DefaultLayout from '../../layout/DefaultLayout';
 import { useConfirm } from './ConfirmDialog';
 import { extractTextFromFile } from './extractFileText';
 import { type ParsedEntry, parseQuestionsFromText } from './importParsing';
+import { ExamFlag } from '../../../client/components/ExamFlag';
 
 type SubjectMode = 'single' | 'mixed';
 type SingleSubjectSource = 'existing' | 'new';
@@ -385,8 +386,9 @@ function ImportQuestionsPage({ user }: { user: AuthUser }) {
                 <SelectContent>
                   {exams?.map((exam) => (
                     <SelectItem key={exam.id} value={exam.id}>
-                      {exam.flagEmoji ? `${exam.flagEmoji} ` : ''}
-                      {exam.name}
+                      <span className='inline-flex items-center gap-1.5'>
+                        <ExamFlag emoji={exam.flagEmoji} /> {exam.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>

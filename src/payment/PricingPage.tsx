@@ -18,6 +18,7 @@ import { cn } from '../lib/utils';
 import { pricingTeaserPlans } from '../landing-page/contentSections';
 import { PaymentPlanId, getPlanPrice, paymentPlans, prettyPaymentPlanName, SubscriptionStatus } from './plans';
 import SeoHead, { SITE_ORIGIN } from '../client/components/SeoHead';
+import FlagIcon, { ExamFlag } from '../client/components/ExamFlag';
 
 const bestDealPaymentPlanId: PaymentPlanId = PaymentPlanId.Standard;
 
@@ -284,7 +285,9 @@ const PricingPage = () => {
                 <SelectContent>
                   {examsWithContent.map((exam) => (
                     <SelectItem key={exam.id} value={exam.id}>
-                      {exam.flagEmoji} {exam.name}
+                      <span className='inline-flex items-center gap-1.5'>
+                        <ExamFlag emoji={exam.flagEmoji} className='h-3 w-[1.125rem]' /> {exam.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -337,7 +340,7 @@ const PricingPage = () => {
                   </div>
                   {isIrelandPathway ? (
                     <p className='mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground'>
-                      <span aria-hidden='true'>🇮🇪</span>
+                      <FlagIcon code='IE' className='h-3 w-[1.125rem]' />
                       Scoped to IDC Ireland only
                     </p>
                   ) : planId === PaymentPlanId.Extended ? (
@@ -359,7 +362,7 @@ const PricingPage = () => {
                   ) : (
                     (selectedExam || examsWithContent[0]) && (
                       <p className='mt-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground'>
-                        <span aria-hidden='true'>{(selectedExam ?? examsWithContent[0]).flagEmoji}</span>
+                        <ExamFlag emoji={(selectedExam ?? examsWithContent[0]).flagEmoji} className='h-3 w-[1.125rem]' />
                         Scoped to one exam — {(selectedExam ?? examsWithContent[0]).code}
                       </p>
                     )

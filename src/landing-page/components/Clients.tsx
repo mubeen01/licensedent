@@ -21,7 +21,7 @@
 import { Pause, Play } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '../../lib/utils';
-import FlagIcon, { type FlagCode } from './FlagIcon';
+import FlagIcon, { type FlagCode } from '../../client/components/ExamFlag';
 
 interface Destination {
   flag: FlagCode;

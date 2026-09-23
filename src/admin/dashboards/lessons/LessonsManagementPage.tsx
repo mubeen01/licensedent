@@ -35,6 +35,7 @@ import Breadcrumb from '../../layout/Breadcrumb';
 import DefaultLayout from '../../layout/DefaultLayout';
 import LoadingSpinner from '../../layout/LoadingSpinner';
 import { useConfirm } from '../questions/ConfirmDialog';
+import { ExamFlag } from '../../../client/components/ExamFlag';
 
 // Accepts whatever a real user pastes -- YouTube's own <iframe> embed-code
 // snippet (Share -> Embed), a plain watch/share/embed URL, or a bare 11-char
@@ -180,7 +181,7 @@ function LessonsManagementPage({ user }: { user: AuthUser }) {
                   : 'border-border text-muted-foreground hover:bg-muted'
               )}
             >
-              {e.flagEmoji} {e.name}
+              <ExamFlag emoji={e.flagEmoji} /> {e.name}
               <span className={cn('rounded-full px-1.5 text-xs', selectedExamId === e.id ? 'bg-primary/15' : 'bg-muted')}>
                 {lessonCountByExam.get(e.id) ?? 0}
               </span>

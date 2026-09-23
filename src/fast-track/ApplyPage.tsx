@@ -15,6 +15,7 @@ import type { MyFastTrackApplication } from './operations';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
 import SeoHead from '../client/components/SeoHead';
+import { ExamFlag } from '../client/components/ExamFlag';
 import Eyebrow from '../landing-page/components/Eyebrow';
 import Reveal from '../landing-page/components/Reveal';
 import SectionTitle from '../landing-page/components/SectionTitle';
@@ -131,7 +132,9 @@ export default function FastTrackApplyPage({ user }: { user: AuthUser }) {
                         <SelectContent>
                           {exams?.map((exam) => (
                             <SelectItem key={exam.id} value={exam.id}>
-                              {exam.flagEmoji} {exam.code}
+                              <span className='inline-flex items-center gap-1.5'>
+                                <ExamFlag emoji={exam.flagEmoji} /> {exam.code}
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -239,7 +242,7 @@ function ApplicationStatusCard({ application }: { application: MyFastTrackApplic
           </span>
           <h2 className='text-2xl font-bold text-foreground'>You're in!</h2>
           <p className='max-w-md text-sm leading-6 text-muted-foreground'>
-            Your free Fast Track pass for {exam.flagEmoji} {exam.code ?? exam.name} is live on your account.
+            Your free Fast Track pass for <ExamFlag emoji={exam.flagEmoji} /> {exam.code ?? exam.name} is live on your account.
             Head to your dashboard to start practicing.
           </p>
           <Button asChild>
@@ -259,7 +262,7 @@ function ApplicationStatusCard({ application }: { application: MyFastTrackApplic
           </span>
           <h2 className='text-2xl font-bold text-foreground'>We couldn't offer a pilot spot this round</h2>
           <p className='max-w-md text-sm leading-6 text-muted-foreground'>
-            Pilot spots for {exam.flagEmoji} {exam.code ?? exam.name} were limited. You're welcome to pick up
+            Pilot spots for <ExamFlag emoji={exam.flagEmoji} /> {exam.code ?? exam.name} were limited. You're welcome to pick up
             a paid plan any time — same question bank, same review standard.
           </p>
           <Button asChild variant='outline'>
@@ -278,7 +281,7 @@ function ApplicationStatusCard({ application }: { application: MyFastTrackApplic
         </span>
         <h2 className='text-2xl font-bold text-foreground'>Application received</h2>
         <p className='max-w-md text-sm leading-6 text-muted-foreground'>
-          We're reviewing your application for {exam.flagEmoji} {exam.code ?? exam.name}. You'll get an email
+          We're reviewing your application for <ExamFlag emoji={exam.flagEmoji} /> {exam.code ?? exam.name}. You'll get an email
           the moment there's a decision — no need to apply again.
         </p>
         <div className='mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground'>

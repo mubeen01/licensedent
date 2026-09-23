@@ -2,7 +2,7 @@ import { BadgeCheck, BookOpen, CheckCircle2, Globe, ShieldCheck, type LucideIcon
 import { useEffect, useState, type CSSProperties } from 'react';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Button } from '../../components/ui/button';
-import FlagIcon, { type FlagCode } from './FlagIcon';
+import FlagIcon, { type FlagCode } from '../../client/components/ExamFlag';
 
 const badgeFlags: FlagCode[] = ['AE', 'OM', 'QA', 'BH', 'KW', 'SA', 'IE'];
 

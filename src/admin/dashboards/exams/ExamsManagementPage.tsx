@@ -10,6 +10,7 @@ import { Switch } from '../../../components/ui/switch';
 import Breadcrumb from '../../layout/Breadcrumb';
 import DefaultLayout from '../../layout/DefaultLayout';
 import LoadingSpinner from '../../layout/LoadingSpinner';
+import { ExamFlag } from '../../../client/components/ExamFlag';
 
 function ExamsManagementPage({ user }: { user: AuthUser }) {
   const { data: exams, isLoading, refetch } = useQuery(getExamsForAdmin);
@@ -234,7 +235,7 @@ function ExamRow({ exam, onSaved }: { exam: Exam; onSaved: () => void }) {
       <div className='flex items-center justify-between gap-4'>
         <div className='flex items-center gap-3'>
           <span className='flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-linear-to-br from-primary/10 to-secondary/10 text-2xl shadow-xs'>
-            {flagEmoji || <GraduationCap className='h-5 w-5 text-muted-foreground' />}
+            {flagEmoji ? <ExamFlag emoji={flagEmoji} className='h-7 w-10 rounded-[3px] shadow-sm' /> : <GraduationCap className='h-5 w-5 text-muted-foreground' />}
           </span>
           <div>
             <p className='font-bold text-foreground'>{exam.slug}</p>

@@ -4,10 +4,17 @@
  * Windows' system emoji font (Segoe UI Emoji) deliberately renders flag
  * emoji as plain two-letter country codes instead of pictures -- a
  * long-standing Microsoft policy, not a bug in this app -- so any Gulf/
- * Ireland flag shown via emoji looks broken on every Windows Chrome/Edge
- * user. These are simplified but recognizable vector flags instead:
- * correct colors and proportions, no fine emblem detail (illegible at
- * icon size anyway), rendered identically on every OS and browser.
+ * Ireland flag shown via emoji looks broken (a colored circle with "AE"/
+ * "SA"/etc. text in it) on every Windows Chrome/Edge user, which is most of
+ * this app's audience. These are simplified but recognizable vector flags
+ * instead: correct colors and proportions, no fine emblem detail (illegible
+ * at icon size anyway), rendered identically on every OS and browser.
+ *
+ * Moved here (was `landing-page/components/FlagIcon.tsx`) once it became
+ * clear the same emoji-as-text bug was present app-wide -- dashboard,
+ * onboarding, fast-track, admin -- not just the landing page, so this is
+ * now a shared `client/components` primitive like SeoHead/OrganizationJsonLd,
+ * not a landing-page-only one.
  */
 
 import type { ReactNode } from 'react';
@@ -88,4 +95,35 @@ export default function FlagIcon({ code, className = 'h-3.5 w-[1.3125rem]' }: { 
       {flagPaths[code]}
     </svg>
   );
+}
+
+// Every exam's `flagEmoji` (static EXAM_GUIDES content, or the admin-typed
+// `Exam.flagEmoji` DB column) is still stored/passed around as the literal
+// Unicode emoji -- this maps the ones this project actually uses to a real
+// FlagIcon code, so call sites don't need a data-model change (a second
+// `flagCode` column, a migration, backfilling 10+ rows) just to stop
+// rendering broken text on Windows.
+const EMOJI_TO_FLAG_CODE: Record<string, FlagCode> = {
+  '🇦🇪': 'AE',
+  '🇸🇦': 'SA',
+  '🇴🇲': 'OM',
+  '🇶🇦': 'QA',
+  '🇰🇼': 'KW',
+  '🇧🇭': 'BH',
+  '🇮🇪': 'IE',
+};
+
+/**
+ * Drop-in replacement for rendering `{exam.flagEmoji}` directly. Renders the
+ * real SVG flag when the emoji is one of this project's known
+ * countries; falls back to the raw emoji/text unchanged for anything else
+ * (a future exam's country not yet added above, or a null/empty value) --
+ * never worse than the pre-fix behavior, just not fixed for that one case
+ * until it's added to the map above.
+ */
+export function ExamFlag({ emoji, className }: { emoji: string | null | undefined; className?: string }) {
+  if (!emoji) return null;
+  const code = EMOJI_TO_FLAG_CODE[emoji];
+  if (!code) return <>{emoji}</>;
+  return <FlagIcon code={code} className={className} />;
 }

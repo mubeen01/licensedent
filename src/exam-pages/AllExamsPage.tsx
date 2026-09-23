@@ -9,6 +9,7 @@ import Eyebrow from '../landing-page/components/Eyebrow';
 import Reveal from '../landing-page/components/Reveal';
 import ScrollToTop from '../landing-page/components/ScrollToTop';
 import SectionTitle from '../landing-page/components/SectionTitle';
+import { ExamFlag } from '../client/components/ExamFlag';
 import DotGridBackdrop from './components/DotGridBackdrop';
 import ExamThemeScope, { ACCENT_TO_RADIX } from './components/ExamThemeScope';
 import { examGuideRoute } from './examGuideRoute';
@@ -125,9 +126,9 @@ function ExamsIndexGrid() {
                 <div className='relative z-10 flex h-full flex-col'>
                   <div className='flex items-start justify-between'>
                     <span
-                      className={`flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-linear-to-br ${exam.gradient} text-xl shadow-xs transition-transform duration-300 group-hover:scale-110`}
+                      className={`flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-linear-to-br ${exam.gradient} shadow-xs transition-transform duration-300 group-hover:scale-110`}
                     >
-                      {exam.flagEmoji}
+                      <ExamFlag emoji={exam.flagEmoji} className='h-6 w-9 rounded-[3px] shadow-sm' />
                     </span>
                     {questionCount != null && questionCount > 0 && (
                       <Badge color={ACCENT_TO_RADIX[exam.accent]} variant='soft' size='1'>

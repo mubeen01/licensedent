@@ -2,6 +2,7 @@ import { getCustomerPortalUrl, getMySubscription, useQuery } from 'wasp/client/o
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Button } from '../components/ui/button';
 import { parsePaymentPlanId, prettyPaymentPlanName } from '../payment/plans';
+import { ExamFlag } from '../client/components/ExamFlag';
 
 // Shared by AccountPage and BillingPage so plan/expiry logic lives in one place.
 export function ExamAccessSummary() {
@@ -25,11 +26,15 @@ export function ExamAccessSummary() {
   expiresAt.setDate(expiresAt.getDate() + subscription.durationDays);
   const isExpired = expiresAt.getTime() < Date.now();
 
-  const examBadge = subscription.allExamsAccess
-    ? '(all exams) '
-    : subscription.examAccess
-      ? `(${subscription.examAccess.flagEmoji ?? ''} ${subscription.examAccess.code ?? subscription.examAccess.name}) `
-      : '';
+  const examBadge = subscription.allExamsAccess ? (
+    '(all exams) '
+  ) : subscription.examAccess ? (
+    <>
+      (<ExamFlag emoji={subscription.examAccess.flagEmoji} /> {subscription.examAccess.code ?? subscription.examAccess.name}){' '}
+    </>
+  ) : (
+    ''
+  );
 
   return (
     <>

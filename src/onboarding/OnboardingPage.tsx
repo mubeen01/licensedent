@@ -13,6 +13,7 @@ import { Textarea } from '../components/ui/textarea';
 import { cn } from '../lib/utils';
 import { todayISODate } from '../dashboard/greeting';
 import { COUNTRIES } from './countries';
+import { ExamFlag } from '../client/components/ExamFlag';
 
 const DRAFT_KEY = 'licensedent:onboarding-draft';
 const TOTAL_STEPS = 3;
@@ -215,7 +216,9 @@ function OnboardingPage({ user }: { user: AuthUser }) {
                   <SelectContent>
                     {selectableExams.map((exam) => (
                       <SelectItem key={exam.id} value={exam.id}>
-                        {exam.flagEmoji} {exam.name}
+                        <span className='inline-flex items-center gap-1.5'>
+                          <ExamFlag emoji={exam.flagEmoji} /> {exam.name}
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>

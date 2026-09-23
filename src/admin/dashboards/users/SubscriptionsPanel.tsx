@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { cn } from '../../../lib/utils';
 import { PaymentPlanId, getPlanPrice, paymentPlans, prettyPaymentPlanName } from '../../../payment/plans';
 import LoadingSpinner from '../../layout/LoadingSpinner';
+import { ExamFlag } from '../../../client/components/ExamFlag';
 
 export default function SubscriptionsPanel({ userId }: { userId: string }) {
   const { data: subscriptions, isLoading: subsLoading, refetch: refetchSubs } = useQuery(getUserSubscriptions, {
@@ -68,12 +69,16 @@ export default function SubscriptionsPanel({ userId }: { userId: string }) {
                   {sub.isActive ? 'Active' : 'Expired'}
                 </span>
               </div>
-              <p className='mt-1 truncate text-xs text-muted-foreground'>
-                {sub.allExamsAccess
-                  ? 'All exams'
-                  : sub.examAccess
-                  ? `${sub.examAccess.flagEmoji ?? ''} ${sub.examAccess.name}`.trim()
-                  : 'Unscoped'}
+              <p className='mt-1 flex items-center gap-1 truncate text-xs text-muted-foreground'>
+                {sub.allExamsAccess ? (
+                  'All exams'
+                ) : sub.examAccess ? (
+                  <span className='inline-flex items-center gap-1'>
+                    <ExamFlag emoji={sub.examAccess.flagEmoji} /> {sub.examAccess.name}
+                  </span>
+                ) : (
+                  'Unscoped'
+                )}
                 {' · expires '}
                 {sub.expiresAt.toLocaleDateString()}
               </p>
@@ -159,8 +164,9 @@ function GrantSubscriptionForm({
             <SelectContent>
               {exams?.map((exam) => (
                 <SelectItem key={exam.id} value={exam.id}>
-                  {exam.flagEmoji ? `${exam.flagEmoji} ` : ''}
-                  {exam.name}
+                  <span className='inline-flex items-center gap-1.5'>
+                    <ExamFlag emoji={exam.flagEmoji} /> {exam.name}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>

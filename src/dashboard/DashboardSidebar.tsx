@@ -22,6 +22,7 @@ import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Button } from '../components/ui/button';
 import { cn } from '../lib/utils';
 import { parsePaymentPlanId, prettyPaymentPlanName } from '../payment/plans';
+import { ExamFlag } from '../client/components/ExamFlag';
 
 interface DashboardSidebarProps {
   onClose?: () => void;
@@ -195,11 +196,16 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
               <div className='flex items-center justify-between text-xs'>
                 <span className='text-muted-foreground'>
                   {prettyPaymentPlanName(parsePaymentPlanId(subscription.planType))}
-                  {subscription.allExamsAccess
-                    ? ' · all exams'
-                    : subscription.examAccess
-                    ? ` · ${subscription.examAccess.flagEmoji ?? ''} ${subscription.examAccess.code ?? subscription.examAccess.name}`.trim()
-                    : ''}
+                  {subscription.allExamsAccess ? (
+                    ' · all exams'
+                  ) : subscription.examAccess ? (
+                    <>
+                      {' · '}
+                      <ExamFlag emoji={subscription.examAccess.flagEmoji} /> {subscription.examAccess.code ?? subscription.examAccess.name}
+                    </>
+                  ) : (
+                    ''
+                  )}
                 </span>
               </div>
             </>

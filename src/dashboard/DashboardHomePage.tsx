@@ -21,6 +21,7 @@ import StudyPlanCard from './StudyPlanCard';
 import { Button } from '../components/ui/button';
 import { cn } from '../lib/utils';
 import { useBankStats } from '../client/hooks/useBankStats';
+import { ExamFlag } from '../client/components/ExamFlag';
 
 function DashboardHomePage({ user }: { user: AuthUser }) {
   const { data: overview, isLoading } = useQuery(getMyDashboardOverview);
@@ -43,13 +44,15 @@ function DashboardHomePage({ user }: { user: AuthUser }) {
           <div className='flex flex-wrap items-center gap-2 mb-3'>
             <div className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-primary/15 to-secondary/15 text-primary'>
               <span className='w-1.5 h-1.5 rounded-full mr-2 bg-primary' />
-              {isIreland
-                ? 'IDC Ireland Licensing Exam Prep'
-                : profile?.exam
-                ? `Preparing for ${profile.exam.flagEmoji ?? ''} ${
-                    profile.exam.authorityLabel ?? profile.exam.name
-                  } Licensing Exam`
-                : 'Gulf Dental Licensing Exam Prep'}
+              {isIreland ? (
+                'IDC Ireland Licensing Exam Prep'
+              ) : profile?.exam ? (
+                <span className='inline-flex items-center gap-1.5'>
+                  <ExamFlag emoji={profile.exam.flagEmoji} /> {profile.exam.authorityLabel ?? profile.exam.name} Licensing Exam
+                </span>
+              ) : (
+                'Gulf Dental Licensing Exam Prep'
+              )}
             </div>
             {daysUntilExam !== null && (
               <div className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-muted text-muted-foreground'>

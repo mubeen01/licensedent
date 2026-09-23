@@ -8,6 +8,7 @@ import {
   useQuery,
 } from 'wasp/client/operations';
 import { Button } from '../../../components/ui/button';
+import { ExamFlag } from '../../../client/components/ExamFlag';
 import { cn } from '../../../lib/utils';
 import Breadcrumb from '../../layout/Breadcrumb';
 import DefaultLayout from '../../layout/DefaultLayout';
@@ -102,7 +103,7 @@ function AdminFastTrackApplications({ user }: { user: AuthUser }) {
                 </span>
                 <span className='inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground'>
                   <GraduationCap className='h-3 w-3' />
-                  {app.exam.flagEmoji} {app.exam.code ?? app.exam.name}
+                  <ExamFlag emoji={app.exam.flagEmoji} /> {app.exam.code ?? app.exam.name}
                 </span>
                 <span className='inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground'>
                   <MapPin className='h-3 w-3' />
