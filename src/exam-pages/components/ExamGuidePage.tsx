@@ -11,7 +11,9 @@ import {
   EyeOff,
   FileCheck2,
   Globe2,
+  Info,
   KeyRound,
+  Lightbulb,
   Monitor,
   Rotate3d,
   Scale,
@@ -22,14 +24,19 @@ import {
   Trophy,
   Users,
 } from 'lucide-react';
+import { Badge, Callout } from '@radix-ui/themes';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../components/ui/accordion';
 import { Button } from '../../components/ui/button';
 import SeoHead, { SITE_ORIGIN } from '../../client/components/SeoHead';
+import Eyebrow from '../../landing-page/components/Eyebrow';
+import Reveal from '../../landing-page/components/Reveal';
 import ScrollToTop from '../../landing-page/components/ScrollToTop';
 import SectionTitle from '../../landing-page/components/SectionTitle';
 import { accentPalettes } from '../accentPalette';
 import type { ExamGuideConfig, RoadmapIcon, RuleIcon } from '../examGuideTypes';
+import DotGridBackdrop from './DotGridBackdrop';
+import ExamThemeScope from './ExamThemeScope';
 
 const roadmapIcons: Record<RoadmapIcon, typeof Shield> = {
   clipboard: ClipboardCheck,
@@ -112,19 +119,32 @@ export default function ExamGuidePage({ config }: { config: ExamGuideConfig }) {
         faqs={config.faqs}
         extraJsonLd={[articleJsonLd, breadcrumbJsonLd]}
       />
-      <main className='isolate'>
-        <Hero config={config} accentClasses={accent} />
-        <QuickFactsStrip config={config} accentClasses={accent} />
-        <StatGrid config={config} accentClasses={accent} />
-        <Roadmap config={config} accentClasses={accent} />
-        <RulesSection config={config} accentClasses={accent} />
-        <div className='border-y border-border/60 bg-muted/30'>
-          <ExamSubjectsSection config={config} accentClasses={accent} />
-        </div>
-        <SampleQuestionSection config={config} accentClasses={accent} />
-        <FaqSection config={config} accentClasses={accent} />
-        <ClosingCta config={config} accentClasses={accent} />
-      </main>
+      <ExamThemeScope accent={config.accent}>
+        <main className='isolate'>
+          <Hero config={config} accentClasses={accent} />
+          <SectionNav accentClasses={accent} />
+          <div id='overview' className='scroll-mt-28'>
+            <QuickFactsStrip config={config} accentClasses={accent} />
+            <StatGrid config={config} accentClasses={accent} />
+          </div>
+          <div id='roadmap' className='scroll-mt-28'>
+            <Roadmap config={config} accentClasses={accent} />
+          </div>
+          <div id='rules' className='scroll-mt-28'>
+            <RulesSection config={config} accentClasses={accent} />
+          </div>
+          <div id='subjects' className='scroll-mt-28 border-y border-border/60 bg-muted/30'>
+            <ExamSubjectsSection config={config} accentClasses={accent} />
+          </div>
+          <div id='sample-question' className='scroll-mt-28'>
+            <SampleQuestionSection config={config} accentClasses={accent} />
+          </div>
+          <div id='faq' className='scroll-mt-28'>
+            <FaqSection config={config} accentClasses={accent} />
+          </div>
+          <ClosingCta config={config} accentClasses={accent} />
+        </main>
+      </ExamThemeScope>
       <ScrollToTop />
     </div>
   );
@@ -138,52 +158,46 @@ type AccentClasses = (typeof accentPalettes)[keyof typeof accentPalettes];
 function Hero({ config, accentClasses: a }: { config: ExamGuideConfig; accentClasses: AccentClasses }) {
   return (
     <div className='relative w-full overflow-hidden bg-background pt-14'>
-      <div className='pointer-events-none absolute inset-0 -z-10 overflow-hidden' aria-hidden='true'>
-        <div className={`absolute -top-24 -left-24 h-104 w-104 rounded-full ${a.glow} blur-3xl`} />
-        <div className='absolute top-1/3 -right-24 h-104 w-104 rounded-full bg-primary/15 blur-3xl' />
-        <div className='absolute -bottom-24 left-1/3 h-88 w-88 rounded-full bg-gold/10 blur-3xl' />
-      </div>
+      <DotGridBackdrop
+        glowClassName={`absolute -top-56 left-[8%] h-[620px] w-[620px] rounded-full ${a.glow} blur-[90px]`}
+      />
 
       <div className='mx-auto max-w-5xl px-6 py-16 sm:py-20 lg:px-8'>
-        <WaspRouterLink
-          to={routes.AllExamsRoute.to}
-          className='group inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary'
-        >
-          <ArrowLeft className='h-4 w-4 transition-transform group-hover:-translate-x-0.5' />
-          {config.backLinkLabel}
-        </WaspRouterLink>
-
-        <div className='mt-6 flex justify-center sm:justify-start'>
-          <span
-            className={`inline-flex items-center gap-2 rounded-full border ${a.border30} ${a.bg10} px-4 py-1.5 text-sm font-medium ${a.text} ${a.textDark}`}
+        <Reveal>
+          <WaspRouterLink
+            to={routes.AllExamsRoute.to}
+            className='group inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary'
           >
-            <span
-              className={`flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-br ${a.gradientFrom} ${a.gradientTo} text-sm shadow-xs`}
-            >
-              {config.badgeFlagEmoji}
-            </span>
+            <ArrowLeft className='h-4 w-4 transition-transform group-hover:-translate-x-0.5' />
+            {config.backLinkLabel}
+          </WaspRouterLink>
+        </Reveal>
+
+        <Reveal delay={60} className='mt-6 flex justify-center sm:justify-start'>
+          <Eyebrow>
+            <span aria-hidden='true'>{config.badgeFlagEmoji}</span>
             {config.badgeLabel}
-          </span>
-        </div>
+          </Eyebrow>
+        </Reveal>
 
-        <h1 className='mt-6 text-center text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-left lg:text-6xl'>
-          {config.heroTitleLead}{' '}
-          <span
-            className={`block bg-linear-to-r ${a.gradientFrom} ${a.gradientVia} to-primary bg-clip-text text-transparent sm:inline`}
-          >
-            {config.heroTitleHighlight}
-          </span>
-        </h1>
+        <Reveal delay={120}>
+          <h1 className='mt-6 text-center text-4xl font-bold leading-tight text-foreground sm:text-5xl lg:text-left lg:text-6xl'>
+            {config.heroTitleLead}{' '}
+            <span className={`${a.text} ${a.textDark}`}>{config.heroTitleHighlight}</span>
+          </h1>
+        </Reveal>
 
-        <p className='mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-muted-foreground lg:mx-0 lg:text-left'>
-          {config.heroDescription}
-        </p>
+        <Reveal delay={180}>
+          <p className='mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-muted-foreground lg:mx-0 lg:text-left'>
+            {config.heroDescription}
+          </p>
+        </Reveal>
 
-        <div className='mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start'>
+        <Reveal delay={240} className='mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start'>
           <Button
             size='lg'
             asChild
-            className='group w-full border-0 bg-linear-to-r from-primary to-secondary px-8 font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-110 sm:w-auto'
+            className='group w-full bg-primary px-8 font-semibold text-primary-foreground shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-[0_12px_32px_-8px_hsl(var(--primary)/0.55)] sm:w-auto'
           >
             <WaspRouterLink to={routes.SignupRoute.to}>
               Start practicing free
@@ -195,8 +209,44 @@ function Hero({ config, accentClasses: a }: { config: ExamGuideConfig; accentCla
           <Button size='lg' variant='outline' asChild className='w-full px-8 font-semibold sm:w-auto'>
             <WaspRouterLink to={routes.DemoExamRoute.to}>Try a free demo exam</WaspRouterLink>
           </Button>
-        </div>
+        </Reveal>
       </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  SECTION NAV -- sticky in-page anchor bar, real <a href="#..."> links so    */
+/*  the URL fragment and browser back button behave normally (not a Radix     */
+/*  Tabs panel-switcher, which is for swapping visible content, not linking   */
+/*  to positions in one continuous document).                                 */
+/* -------------------------------------------------------------------------- */
+const SECTION_LINKS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'roadmap', label: 'Roadmap' },
+  { id: 'rules', label: 'Rules' },
+  { id: 'subjects', label: 'Subjects' },
+  { id: 'sample-question', label: 'Sample question' },
+  { id: 'faq', label: 'FAQ' },
+] as const;
+
+function SectionNav({ accentClasses: a }: { accentClasses: AccentClasses }) {
+  return (
+    <div className='sticky top-16 z-30 w-full border-b border-border/60 bg-background/85 backdrop-blur-lg lg:top-20'>
+      <nav
+        aria-label='Guide sections'
+        className='mx-auto flex max-w-7xl gap-1 overflow-x-auto px-6 py-2.5 lg:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+      >
+        {SECTION_LINKS.map((link) => (
+          <a
+            key={link.id}
+            href={`#${link.id}`}
+            className={`flex-none rounded-full px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted ${a.hoverText} ${a.hoverTextDark}`}
+          >
+            {link.label}
+          </a>
+        ))}
+      </nav>
     </div>
   );
 }
@@ -208,11 +258,11 @@ function QuickFactsStrip({ config, accentClasses: a }: { config: ExamGuideConfig
   return (
     <div className='mx-auto max-w-5xl px-6 lg:px-8'>
       <div className='grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4'>
-        {config.quickFacts.map((fact) => (
-          <div key={fact.label} className='bg-card p-5'>
+        {config.quickFacts.map((fact, idx) => (
+          <Reveal key={fact.label} delay={Math.min(idx * 70, 210)} className='h-full bg-card p-5'>
             <div className={`text-xs font-semibold uppercase tracking-wide ${a.text} ${a.textDark}`}>{fact.label}</div>
             <div className='mt-1.5 text-sm font-medium leading-5 text-foreground'>{fact.value}</div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </div>
@@ -231,15 +281,14 @@ function StatGrid({ config, accentClasses: a }: { config: ExamGuideConfig; accen
         description={config.statSectionDescription}
       />
       <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4'>
-        {config.statCards.map((stat) => (
-          <div
-            key={stat.label}
-            className={`card-elevated card-elevated-hover group p-6 ${a.hoverBorder40}`}
-          >
-            <div className={`text-3xl font-bold ${a.text} ${a.textDark}`}>{stat.value}</div>
-            <div className='mt-1 text-sm font-semibold text-foreground'>{stat.label}</div>
-            <div className='mt-1.5 text-xs leading-5 text-muted-foreground'>{stat.description}</div>
-          </div>
+        {config.statCards.map((stat, idx) => (
+          <Reveal key={stat.label} delay={Math.min(idx * 90, 270)} className='h-full'>
+            <div className={`card-elevated card-elevated-hover group h-full p-6 ${a.hoverBorder40}`}>
+              <div className={`text-3xl font-bold ${a.text} ${a.textDark}`}>{stat.value}</div>
+              <div className='mt-1 text-sm font-semibold text-foreground'>{stat.label}</div>
+              <div className='mt-1.5 text-xs leading-5 text-muted-foreground'>{stat.description}</div>
+            </div>
+          </Reveal>
         ))}
       </div>
     </div>
@@ -263,7 +312,7 @@ function Roadmap({ config, accentClasses: a }: { config: ExamGuideConfig; accent
           {config.roadmapSteps.map((step, idx) => {
             const Icon = roadmapIcons[step.icon];
             return (
-              <li key={step.title} className='group relative'>
+              <Reveal key={step.title} as='li' delay={Math.min(idx * 90, 360)} className='group relative'>
                 <div
                   className={`absolute left-[-2.6rem] flex h-9 w-9 items-center justify-center rounded-full border-4 border-background bg-linear-to-br ${a.gradientFrom} to-primary text-white shadow-sm`}
                 >
@@ -274,7 +323,7 @@ function Roadmap({ config, accentClasses: a }: { config: ExamGuideConfig; accent
                 </div>
                 <h3 className='mt-1 text-lg font-semibold text-foreground'>{step.title}</h3>
                 <p className='mt-1.5 text-sm leading-6 text-muted-foreground'>{step.description}</p>
-              </li>
+              </Reveal>
             );
           })}
         </ol>
@@ -291,19 +340,18 @@ function RulesSection({ config, accentClasses: a }: { config: ExamGuideConfig; a
     <div className='mx-auto max-w-7xl px-6 py-16 md:py-24 lg:px-8'>
       <SectionTitle eyebrow={config.rulesEyebrow} title={config.rulesTitle} description={config.rulesDescription} />
       <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-        {config.ruleCards.map((rule) => {
+        {config.ruleCards.map((rule, idx) => {
           const Icon = ruleIcons[rule.icon];
           return (
-            <div
-              key={rule.title}
-              className={`card-elevated card-elevated-hover p-6 ${a.hoverBorder40}`}
-            >
-              <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${a.bg10} ${a.text} ${a.textDark}`}>
-                <Icon className='h-5 w-5' />
+            <Reveal key={rule.title} delay={Math.min(idx * 80, 320)} className='h-full'>
+              <div className={`card-elevated card-elevated-hover h-full p-6 ${a.hoverBorder40}`}>
+                <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${a.bg10} ${a.text} ${a.textDark}`}>
+                  <Icon className='h-5 w-5' />
+                </div>
+                <h3 className='mt-4 text-base font-semibold text-foreground'>{rule.title}</h3>
+                <p className='mt-2 text-sm leading-6 text-muted-foreground'>{rule.description}</p>
               </div>
-              <h3 className='mt-4 text-base font-semibold text-foreground'>{rule.title}</h3>
-              <p className='mt-2 text-sm leading-6 text-muted-foreground'>{rule.description}</p>
-            </div>
+            </Reveal>
           );
         })}
       </div>
@@ -324,18 +372,19 @@ function ExamSubjectsSection({ config, accentClasses: a }: { config: ExamGuideCo
         description={config.subjectsDescription}
       />
       <div className='flex flex-wrap justify-center gap-3'>
-        {config.examSubjects.map((subject) => (
-          <div
-            key={subject.name}
-            className={`group flex items-center gap-2 rounded-full border border-border bg-linear-to-br from-card to-card-subtle/40 px-4 py-2.5 text-sm font-medium text-foreground shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${a.hoverBorder30}`}
-          >
-            {subject.name}
-            {subject.weight && (
-              <span className={`rounded-full ${a.bg10} px-2 py-0.5 text-xs font-semibold ${a.text} ${a.textDark}`}>
-                {subject.weight}
-              </span>
-            )}
-          </div>
+        {config.examSubjects.map((subject, idx) => (
+          <Reveal key={subject.name} delay={Math.min(idx * 40, 400)} className='inline-flex'>
+            <div
+              className={`group flex items-center gap-2 rounded-full border border-border bg-linear-to-br from-card to-card-subtle/40 px-4 py-2.5 text-sm font-medium text-foreground shadow-xs transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${a.hoverBorder30}`}
+            >
+              {subject.name}
+              {subject.weight && (
+                <Badge variant='soft' size='1'>
+                  {subject.weight}
+                </Badge>
+              )}
+            </div>
+          </Reveal>
         ))}
       </div>
     </div>
@@ -361,7 +410,7 @@ function SampleQuestionSection({ config, accentClasses: a }: { config: ExamGuide
         }
       />
 
-      <div className='card-elevated group relative overflow-hidden transition-transform duration-500 hover:scale-[1.005]'>
+      <Reveal className='card-elevated group relative overflow-hidden transition-transform duration-500 hover:scale-[1.005]'>
         <div className='flex items-center justify-between border-b border-border bg-muted/60 px-6 py-3'>
           <div className='flex items-center gap-2'>
             <span className={`rounded-full ${a.bg10} px-2.5 py-1 text-xs font-semibold ${a.text} ${a.textDark}`}>
@@ -401,15 +450,24 @@ function SampleQuestionSection({ config, accentClasses: a }: { config: ExamGuide
               );
             })}
           </div>
-          <div className='mt-4 rounded-lg bg-muted/70 px-4 py-3 text-xs leading-5 text-muted-foreground'>
-            <span className='font-semibold text-foreground'>Explanation: </span>
-            {explanation}
-          </div>
+          <Callout.Root variant='soft' size='1' className='mt-4'>
+            <Callout.Icon>
+              <Lightbulb className='h-4 w-4' />
+            </Callout.Icon>
+            <Callout.Text>
+              <span className='font-semibold text-foreground'>Explanation: </span>
+              {explanation}
+            </Callout.Text>
+          </Callout.Root>
         </div>
-      </div>
+      </Reveal>
 
       <div className='mt-8 flex justify-center'>
-        <Button asChild size='lg' className='group bg-linear-to-r from-primary to-secondary font-semibold text-white'>
+        <Button
+          asChild
+          size='lg'
+          className='group bg-primary font-semibold text-primary-foreground shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-[0_12px_32px_-8px_hsl(var(--primary)/0.55)]'
+        >
           <WaspRouterLink to={routes.DemoExamRoute.to}>
             Try more questions like this
             <ArrowRight className='h-4 w-4 transition-transform group-hover:translate-x-1' />
@@ -429,21 +487,22 @@ function FaqSection({ config, accentClasses: a }: { config: ExamGuideConfig; acc
       <div className='mx-auto max-w-4xl px-6 py-16 md:py-24 lg:px-8'>
         <SectionTitle eyebrow={config.faqEyebrow} title={config.faqTitle} description={config.faqDescription} />
         <Accordion type='single' collapsible className='w-full space-y-3'>
-          {config.faqs.map((faq) => (
-            <AccordionItem
-              key={faq.id}
-              value={`faq-${faq.id}`}
-              className={`rounded-xl border border-border bg-linear-to-br from-card to-card-subtle/40 px-5 transition-colors duration-200 ${a.hoverBorder30} ${a.dataOpenBorder40} ${a.dataOpenBg}`}
-            >
-              <AccordionTrigger
-                className={`py-5 text-left text-base font-semibold leading-7 text-foreground transition-colors duration-200 hover:no-underline ${a.hoverText} ${a.hoverTextDark} ${a.dataOpenText} ${a.dataOpenTextDark}`}
+          {config.faqs.map((faq, idx) => (
+            <Reveal key={faq.id} delay={Math.min(idx * 50, 300)}>
+              <AccordionItem
+                value={`faq-${faq.id}`}
+                className={`rounded-xl border border-border bg-linear-to-br from-card to-card-subtle/40 px-5 transition-colors duration-200 ${a.hoverBorder30} ${a.dataOpenBorder40} ${a.dataOpenBg}`}
               >
-                {faq.question}
-              </AccordionTrigger>
-              <AccordionContent className='pb-5 text-muted-foreground'>
-                <p className='text-base leading-7 text-muted-foreground'>{faq.answer}</p>
-              </AccordionContent>
-            </AccordionItem>
+                <AccordionTrigger
+                  className={`py-5 text-left text-base font-semibold leading-7 text-foreground transition-colors duration-200 hover:no-underline ${a.hoverText} ${a.hoverTextDark} ${a.dataOpenText} ${a.dataOpenTextDark}`}
+                >
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className='pb-5 text-muted-foreground'>
+                  <p className='text-base leading-7 text-muted-foreground'>{faq.answer}</p>
+                </AccordionContent>
+              </AccordionItem>
+            </Reveal>
           ))}
         </Accordion>
       </div>
@@ -457,12 +516,8 @@ function FaqSection({ config, accentClasses: a }: { config: ExamGuideConfig; acc
 function ClosingCta({ config, accentClasses: a }: { config: ExamGuideConfig; accentClasses: AccentClasses }) {
   return (
     <div className='mx-auto max-w-5xl px-6 py-16 md:py-24 lg:px-8'>
-      <div
-        className={`relative overflow-hidden rounded-3xl border border-border bg-linear-to-br ${a.glowFrom10} via-card to-primary/5 p-10 text-center shadow-lg sm:p-14`}
-      >
-        <div
-          className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br ${a.gradientFrom} to-primary text-white shadow-lg`}
-        >
+      <Reveal className='card-elevated relative p-10 text-center sm:p-14'>
+        <div className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl ${a.bg10} ${a.text} ${a.textDark}`}>
           <Sparkles className='h-6 w-6' />
         </div>
         <h2 className='mt-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl'>{config.closingTitle}</h2>
@@ -471,7 +526,7 @@ function ClosingCta({ config, accentClasses: a }: { config: ExamGuideConfig; acc
           <Button
             size='lg'
             asChild
-            className='group w-full border-0 bg-linear-to-r from-primary to-secondary px-8 font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:brightness-110 sm:w-auto'
+            className='group w-full bg-primary px-8 font-semibold text-primary-foreground shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.5)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-[0_12px_32px_-8px_hsl(var(--primary)/0.55)] sm:w-auto'
           >
             <WaspRouterLink to={routes.SignupRoute.to}>
               Create free account
@@ -484,11 +539,16 @@ function ClosingCta({ config, accentClasses: a }: { config: ExamGuideConfig; acc
             <WaspRouterLink to={routes.PricingPageRoute.to}>View pricing</WaspRouterLink>
           </Button>
         </div>
-        <p className='mt-8 text-xs text-muted-foreground'>
-          LicenseDent is an independent exam-prep platform and is not affiliated with, endorsed by, or acting
-          on behalf of any licensing authority.
-        </p>
-      </div>
+        <Callout.Root variant='soft' color='gray' size='1' className='mt-8 text-left'>
+          <Callout.Icon>
+            <Info className='h-4 w-4' />
+          </Callout.Icon>
+          <Callout.Text>
+            LicenseDent is an independent exam-prep platform and is not affiliated with, endorsed by, or acting
+            on behalf of any licensing authority.
+          </Callout.Text>
+        </Callout.Root>
+      </Reveal>
     </div>
   );
 }

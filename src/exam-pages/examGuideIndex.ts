@@ -1,4 +1,4 @@
-import { accentPalettes } from './accentPalette';
+import { accentPalettes, type AccentId } from './accentPalette';
 import { dhaExamGuide } from './dhaContent';
 import type { ExamGuideConfig } from './examGuideTypes';
 import { haadExamGuide } from './haadContent';
@@ -48,6 +48,7 @@ export interface ExamGuideCard {
   authorityLabel: string;
   description: string;
   gradient: string;
+  accent: AccentId;
   quickChips: [string, string];
 }
 
@@ -60,6 +61,7 @@ function guideCard(config: ExamGuideConfig): ExamGuideCard {
     authorityLabel: authorityLabel ?? config.badgeLabel,
     description: config.seo.description,
     gradient: `${accent.gradientFrom} ${accent.gradientTo}`,
+    accent: config.accent,
     quickChips: [config.quickFacts[0].value, config.quickFacts[1].value],
   };
 }
