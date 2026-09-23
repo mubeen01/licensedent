@@ -2,8 +2,10 @@
 <!--
   PRD-006 L10: generated at build time by scripts/generate-sitemap.mjs from
   main.wasp.ts's real public route list -- do not hand-edit, edit ROUTES in
-  that script instead. lastmod is each route's source file's real last git
-  commit date, so this can't go stale the way a hand-written file did.
+  that script instead. lastmod is each static route's source file's real
+  last git commit date, so this can't go stale the way a hand-written file
+  did. Published blog posts (PRD-007 S11) are appended from a live DB query
+  instead, since they're rows, not files.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -85,6 +87,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://licensedent.com/blog</loc>
+    <lastmod>2026-09-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://licensedent.com/demo-exam</loc>
     <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
@@ -107,5 +115,11 @@
     <lastmod>2026-09-23</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://licensedent.com/blog/how-many-questions-dha-exam</loc>
+    <lastmod>2026-09-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

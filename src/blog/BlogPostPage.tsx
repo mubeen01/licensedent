@@ -93,7 +93,16 @@ export default function BlogPostPage() {
     dateModified: post.updatedAt.toString(),
     keywords: post.tags.map(formatTagLabel).join(', '),
     author: { '@type': 'EducationalOrganization', name: post.authorName, url: SITE_ORIGIN },
-    publisher: { '@type': 'EducationalOrganization', name: 'LicenseDent', url: SITE_ORIGIN },
+    // `publisher.logo` as an ImageObject (not a bare URL string) is what
+    // Google's own Article rich-result guidelines ask for -- the same
+    // PNG/112x112-minimum reasoning as OrganizationJsonLd.tsx's site-wide
+    // `logo` field, reused here rather than picking a different asset.
+    publisher: {
+      '@type': 'EducationalOrganization',
+      name: 'LicenseDent',
+      url: SITE_ORIGIN,
+      logo: { '@type': 'ImageObject', url: `${SITE_ORIGIN}/logo/apple-touch-icon.png` },
+    },
   };
 
   const breadcrumbJsonLd = {

@@ -23,4 +23,6 @@ Disallow: /video-lectures
 Sitemap: https://licensedent.com/sitemap.xml
 # PRD-007: the blog is no longer a separate Astro/Starlight site needing its
 # own sitemap -- it's DB-backed pages inside this same app (/blog,
-# /blog/:slug), already covered by the one sitemap.xml above.
+# /blog/:slug), covered by the one sitemap.xml above (PRD-007 S11: /blog
+# itself plus every *published* post are both generated into it -- see
+# scripts/generate-sitemap.mjs).

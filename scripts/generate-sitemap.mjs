@@ -37,6 +37,14 @@ const ROUTES = [
   { loc: '/exams/sha', source: 'src/exam-pages/shaContent.ts', changefreq: 'monthly', priority: '0.9' },
   { loc: '/exams/idc-ireland', source: 'src/exam-pages/idcContent.ts', changefreq: 'monthly', priority: '0.9' },
   { loc: '/pricing', source: 'src/payment/PricingPage.tsx', changefreq: 'monthly', priority: '0.8' },
+  // PRD-007 S11 fix: /blog is `prerender: true` in main.wasp.ts (has been
+  // since PRD-007 S7) but was never added here -- assertRoutesMatchMainWasp()
+  // below should have caught this at the next real `wasp build`, but that
+  // hook only runs on `apply: 'build'` (vite.config.ts), never during
+  // `wasp start`, so the drift went unnoticed through several dev sessions.
+  // Individual /blog/:slug posts are NOT here -- they're not a fixed route,
+  // see the DB-driven `blogPostUrls` block in generate() below instead.
+  { loc: '/blog', source: 'src/blog/BlogIndexPage.tsx', changefreq: 'weekly', priority: '0.7' },
   { loc: '/demo-exam', source: 'src/demo-exam/DemoExamPage.tsx', changefreq: 'monthly', priority: '0.7' },
   { loc: '/legal', source: 'src/legal/LegalPage.tsx', changefreq: 'yearly', priority: '0.3' },
   { loc: '/about', source: 'src/about/AboutPage.tsx', changefreq: 'yearly', priority: '0.3' },
@@ -88,20 +96,72 @@ function lastCommitDate(relPath) {
   return new Date().toISOString().slice(0, 10);
 }
 
-function generate() {
+// PRD-007 S11: published blog posts are DB rows, not files under `src/`, so
+// they can't go in the static ROUTES list above the way every other page
+// does -- there's no fixed set of them and no source file whose git history
+// would make sense as `lastmod`. Queried directly via `@prisma/client`
+// (already present in node_modules -- hoisted from Wasp's own generated
+// server workspace, see package.json's `workspaces` field) rather than
+// going through Wasp's server bundle, which doesn't exist yet at this point
+// in the build. Failure here (no DATABASE_URL in this shell, DB
+// unreachable, etc.) must never fail the whole production build over a
+// sitemap being one page short -- falls back to zero blog-post URLs with a
+// loud console.warn instead of throwing.
+async function fetchPublishedBlogPostUrls() {
+  let PrismaClient;
+  try {
+    ({ PrismaClient } = await import('@prisma/client'));
+  } catch (err) {
+    console.warn('[generate-sitemap] @prisma/client not available, skipping blog post URLs:', err.message);
+    return [];
+  }
+
+  const prisma = new PrismaClient();
+  try {
+    const posts = await prisma.blogPost.findMany({
+      where: { status: 'published' },
+      select: { slug: true, updatedAt: true },
+    });
+    return posts.map((p) => ({
+      loc: `/blog/${p.slug}`,
+      lastmod: p.updatedAt.toISOString().slice(0, 10),
+      changefreq: 'monthly',
+      priority: '0.6',
+    }));
+  } catch (err) {
+    console.warn('[generate-sitemap] Could not query published blog posts, skipping blog post URLs:', err.message);
+    return [];
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+async function generate() {
   assertRoutesMatchMainWasp();
 
-  const urls = ROUTES.map(({ loc, source, changefreq, priority }) => {
-    const lastmod = lastCommitDate(source);
-    return `  <url>\n    <loc>${SITE_ORIGIN}${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
-  }).join('\n');
+  const staticUrls = ROUTES.map(({ loc, source, changefreq, priority }) => ({
+    loc,
+    lastmod: lastCommitDate(source),
+    changefreq,
+    priority,
+  }));
+  const blogPostUrls = await fetchPublishedBlogPostUrls();
+
+  const urls = [...staticUrls, ...blogPostUrls]
+    .map(
+      ({ loc, lastmod, changefreq, priority }) =>
+        `  <url>\n    <loc>${SITE_ORIGIN}${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`
+    )
+    .join('\n');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <!--
   PRD-006 L10: generated at build time by scripts/generate-sitemap.mjs from
   main.wasp.ts's real public route list -- do not hand-edit, edit ROUTES in
-  that script instead. lastmod is each route's source file's real last git
-  commit date, so this can't go stale the way a hand-written file did.
+  that script instead. lastmod is each static route's source file's real
+  last git commit date, so this can't go stale the way a hand-written file
+  did. Published blog posts (PRD-007 S11) are appended from a live DB query
+  instead, since they're rows, not files.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls}
@@ -109,7 +169,9 @@ ${urls}
 `;
 
   writeFileSync(path.join(appRoot, 'public', 'sitemap.xml'), xml, 'utf-8');
-  console.log(`[generate-sitemap] wrote public/sitemap.xml (${ROUTES.length} URLs)`);
+  console.log(
+    `[generate-sitemap] wrote public/sitemap.xml (${staticUrls.length} static + ${blogPostUrls.length} blog post URLs)`
+  );
 }
 
-generate();
+await generate();
