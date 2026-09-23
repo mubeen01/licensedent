@@ -2,14 +2,21 @@ import { ArrowRight } from 'lucide-react';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { getPublishedBlogPosts, useQuery } from 'wasp/client/operations';
 import BlogPostCard from '../../blog/components/BlogPostCard';
+import { getSnapshotPostList } from '../../blog/blogSnapshot';
 import SectionTitle from './SectionTitle';
 
 // Same "render nothing while empty" rule as TestimonialsSection -- while
 // there are zero published posts this section simply doesn't exist on the
 // homepage, rather than showing an empty-state placeholder on the most
 // important page on the site.
+//
+// `initialData` (PRD-007 S12): the homepage (`/`) is prerender: true, but a
+// live useQuery doesn't resolve during that build-time pass -- without
+// this, every prerendered/pre-hydration view of the homepage showed zero
+// blog links here (silently rendered null, since `posts` was `undefined`),
+// same root cause as BlogIndexPage/BlogPostPage. See blogBuildTimeData.ts.
 export default function BlogPreviewSection() {
-  const { data: posts } = useQuery(getPublishedBlogPosts);
+  const { data: posts } = useQuery(getPublishedBlogPosts, undefined, { initialData: getSnapshotPostList() });
 
   if (!posts || posts.length === 0) return null;
 

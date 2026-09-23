@@ -8,17 +8,22 @@ import Eyebrow from '../landing-page/components/Eyebrow';
 import Reveal from '../landing-page/components/Reveal';
 import BlogPostCard from './components/BlogPostCard';
 import { formatTagLabel } from './blogUtils';
+import { getSnapshotPostList } from './blogSnapshot';
 
-// Not `prerender: true` on this file's data -- the post list itself comes
-// from a live useQuery, which (per PRD-01 S2.2's own established finding)
-// doesn't resolve during Wasp's build-time prerender pass, only after
-// client hydration. The route is still marked prerender: true in
-// main.wasp.ts because the surrounding shell (title, intro copy, JSON-LD
-// for the blog itself) IS static and worth freezing -- same partial-
-// prerender shape as AllExamsPage's live bank-stats overlay. See
-// docs/18-blog-content-plan-PRD-007.md for the full tradeoff writeup.
+// PRD-007 S12 (2026-09-23): the post list used to be genuinely absent from
+// this page's frozen prerendered HTML -- a live useQuery (per PRD-01 S2.2's
+// finding) doesn't resolve during Wasp's build-time prerender pass, only
+// after client hydration, so a non-JS crawler saw the static shell (title,
+// intro copy, JSON-LD) with zero post links. `initialData` from the
+// build-time snapshot (blogBuildTimeData.ts) fixes that: react-query treats
+// it as already-resolved on the very first render, including during
+// prerender. A live browser still refetches immediately after hydration
+// (react-query's default `staleTime: 0`), so a real visitor always ends up
+// seeing the current list regardless -- only the frozen pre-hydration HTML
+// is capped at "as of the last rebuild," the same PRD-007 S12 tradeoff
+// BlogPostPage accepts.
 export default function BlogIndexPage() {
-  const { data: posts, isLoading } = useQuery(getPublishedBlogPosts);
+  const { data: posts, isLoading } = useQuery(getPublishedBlogPosts, undefined, { initialData: getSnapshotPostList() });
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTag = searchParams.get('tag');
 

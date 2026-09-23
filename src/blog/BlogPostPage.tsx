@@ -8,6 +8,7 @@ import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import Reveal from '../landing-page/components/Reveal';
 import BlogPostCard from './components/BlogPostCard';
 import { estimateReadingTime, formatBlogDate, formatTagLabel } from './blogUtils';
+import { getSnapshotPost, getSnapshotPostList } from './blogSnapshot';
 
 function CopyLinkButton({ url }: { url: string }) {
   const [copied, setCopied] = useState(false);
@@ -37,8 +38,13 @@ function CopyLinkButton({ url }: { url: string }) {
 
 export default function BlogPostPage() {
   const { slug = '' } = useParams();
-  const { data: post, isLoading, error } = useQuery(getPublishedBlogPostBySlug, { slug });
-  const { data: allPosts } = useQuery(getPublishedBlogPosts);
+  // `initialData` (PRD-007 S12) is what actually makes prerendering work for
+  // this page -- see blogBuildTimeData.ts's header comment. Wasp's prerender
+  // pass can't resolve a live useQuery on its own; this gives react-query a
+  // value to render with immediately (including during that pass), while a
+  // live browser still refetches right after hydration for freshness.
+  const { data: post, isLoading, error } = useQuery(getPublishedBlogPostBySlug, { slug }, { initialData: getSnapshotPost(slug) });
+  const { data: allPosts } = useQuery(getPublishedBlogPosts, undefined, { initialData: getSnapshotPostList() });
 
   const relatedPosts = useMemo(() => {
     if (!post || !allPosts) return [];
@@ -89,8 +95,13 @@ export default function BlogPostPage() {
     description: post.excerpt,
     url: canonicalUrl,
     image: post.coverImageUrl ?? DEFAULT_OG_IMAGE,
-    datePublished: (post.publishedAt ?? post.createdAt).toString(),
-    dateModified: post.updatedAt.toString(),
+    // .toISOString(), not .toString() -- Google's structured-data
+    // guidelines require ISO 8601 for datePublished/dateModified.
+    // .toString() (confirmed live, e.g. "Wed Sep 16 2026 00:00:00 GMT+0000
+    // (Coordinated Universal Time)") is not valid ISO 8601 and would fail
+    // real Rich Results validation.
+    datePublished: (post.publishedAt ?? post.createdAt).toISOString(),
+    dateModified: post.updatedAt.toISOString(),
     keywords: post.tags.map(formatTagLabel).join(', '),
     author: { '@type': 'EducationalOrganization', name: post.authorName, url: SITE_ORIGIN },
     // `publisher.logo` as an ImageObject (not a bare URL string) is what
@@ -124,8 +135,8 @@ export default function BlogPostPage() {
         ogImage={post.coverImageUrl ?? undefined}
         keywords={['dental licensing exam', ...post.tags.map(formatTagLabel)]}
         ogType='article'
-        articlePublishedTime={(post.publishedAt ?? post.createdAt).toString()}
-        articleModifiedTime={post.updatedAt.toString()}
+        articlePublishedTime={(post.publishedAt ?? post.createdAt).toISOString()}
+        articleModifiedTime={post.updatedAt.toISOString()}
         articleTags={post.tags.map(formatTagLabel)}
         extraJsonLd={[articleJsonLd, breadcrumbJsonLd]}
       />

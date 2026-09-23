@@ -30,6 +30,7 @@ import BlogIndexPage from './src/blog/BlogIndexPage' with { type: 'ref' }
 import BlogPostPage from './src/blog/BlogPostPage' with { type: 'ref' }
 import AdminBlog from './src/admin/dashboards/blog/BlogManagementPage' with { type: 'ref' }
 import { getPublishedBlogPosts, getPublishedBlogPostBySlug } from './src/blog/operations' with { type: 'ref' }
+import { prepareBlogBuildTimeData } from './src/blog/blogBuildTimeData'
 import {
   createBlogPost,
   updateBlogPost,
@@ -272,6 +273,12 @@ import {
   rejectFastTrackApplication,
 } from './src/fast-track/operations' with { type: 'ref' }
 
+// PRD-007 S12: concrete `/blog/<slug>` paths to prerender, resolved once
+// per `wasp start`/`wasp build` -- see getPublishedSlugsForBuild.ts's own
+// header comment for why this lives outside the generated server and the
+// staleness tradeoff it accepts.
+const publishedBlogPostPaths = await prepareBlogBuildTimeData();
+
 export default app({
   name: 'LicenseDent',
   wasp: { version: '^0.25.0' },
@@ -432,15 +439,28 @@ export default app({
     route('ContactRoute', '/contact', page(ContactPage), { prerender: true }),
 
     // Blog (public — PRD-007: DB-backed, admin-managed; replaces the earlier
-    // separate Astro/Starlight blog/ site). BlogIndexRoute is prerender: true
-    // for its static shell/JSON-LD (the post list itself is a live query --
-    // doesn't resolve at prerender time, see BlogIndexPage.tsx's own note).
-    // BlogPostRoute is a dynamic route with no prerender config: Wasp's
-    // prerender only freezes static HTML at build time, which would bake in
-    // an empty shell for any post published after that build -- worse than
-    // an honest client-rendered page for genuinely admin-editable content.
+    // separate Astro/Starlight blog/ site). Both routes are prerender: true
+    // now (PRD-007 S12, 2026-09-23) -- BlogIndexRoute for its own path,
+    // BlogPostRoute for every currently *published* post's concrete path
+    // (`publishedBlogPostPaths`, resolved above). Marking the route alone
+    // is NOT sufficient by itself, though -- confirmed empirically that
+    // Wasp's prerender pass can't resolve a live `useQuery` (PRD-01 S2.2's
+    // finding), so both pages ALSO feed `useQuery(..., { initialData })`
+    // from `publishedPostsSnapshot.generated.json` (written by
+    // blogBuildTimeData.ts in the same DB round-trip as the paths above) --
+    // see that file's header comment for the full mechanism. This is what
+    // actually gets a non-JS crawler/schema validator real HTML + JSON-LD
+    // instead of a frozen loading spinner. Deliberately accepted tradeoff:
+    // editing an already-published post's title/body won't reach its
+    // frozen HTML until the next rebuild/restart -- same staleness class
+    // this project's own sitemap.xml already lives with. A post published
+    // *after* the last rebuild has no entry yet either -- it still renders
+    // correctly client-side (`initialData`/`prerender` only ever add a
+    // frozen head-start on top of the existing live-query page, never
+    // replace it), it just isn't frozen until the next rebuild picks it up.
+    // See blogBuildTimeData.ts and PRD-007 S12 for the full reasoning.
     route('BlogIndexRoute', '/blog', page(BlogIndexPage), { prerender: true }),
-    route('BlogPostRoute', '/blog/:slug', page(BlogPostPage)),
+    route('BlogPostRoute', '/blog/:slug', page(BlogPostPage), { prerender: publishedBlogPostPaths }),
     route('AdminBlogRoute', '/admin/blog', page(AdminBlog, { authRequired: true })),
     query(getPublishedBlogPosts, { entities: ['BlogPost'] }),
     query(getPublishedBlogPostBySlug, { entities: ['BlogPost'] }),
