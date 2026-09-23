@@ -136,7 +136,7 @@ export default function Footer({
         {/* Bottom bar */}
         <div className='mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row'>
           <p className='text-xs text-muted-foreground'>
-            &copy; {new Date().getFullYear()} LicenseDent. All rights reserved.
+            &copy; {new Date().getFullYear()} LicenseDent, operated by ThreePeak Group LLC (Wyoming, USA). All rights reserved.
           </p>
           <p className='text-xs text-muted-foreground'>
             Not affiliated with DHA, HAAD, DOH, MOH, SHA, SCFHS, QCHP, DHP, Kuwait MOH, NHRA, OMSB, Dental Council of Ireland or any licensing

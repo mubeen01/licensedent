@@ -20,17 +20,28 @@ import SeoHead from '../client/components/SeoHead';
  * data-subject rights, a formal DPA with each processor, etc.) should get
  * a real legal review before this is treated as final -- flagged here
  * rather than silently assumed complete.
+ *
+ * 2026-09-23 pre-launch pass: added the entity/governing-law line
+ * (ThreePeak Group LLC, Wyoming -- confirmed directly by the user, not
+ * invented), a limitation-of-liability clause, and an explicit
+ * no-CE-credit / not-ADA-CERP / not-AGD-PACE disclaimer. Codebase-wide
+ * grep before this pass found zero existing CE/CERP/PACE claims anywhere
+ * -- this only makes the absence explicit rather than correcting a false
+ * claim that existed.
  */
 const sections = [
   {
     id: 'terms',
     title: 'Terms of Service',
     body: [
-      'LicenseDent ("we", "us", "the platform") provides exam-preparation software and practice content for Gulf and Ireland dental licensing examinations. By creating an account or purchasing a plan you agree to these terms.',
+      'LicenseDent ("we", "us", "the platform") is operated by ThreePeak Group LLC, a Wyoming, USA limited liability company. LicenseDent provides exam-preparation software and practice content for Gulf and Ireland dental licensing examinations. By creating an account or purchasing a plan you agree to these terms.',
+      'What you are purchasing: time-limited access to our question banks, mock exams, and study tools for the plan and duration you select. A purchase is not a credential, certificate, license, or guarantee of any exam result — see the Disclaimers section below.',
       'Access is personal. Your account and purchased access are for your own use and may not be shared, resold, or distributed to others. We may suspend accounts that share credentials or content.',
       'Plans are one-time purchases granting access for a fixed duration (30, 90, or 180 days). Access does not auto-renew; if you wish to continue after your access period you can purchase again at the then-current price.',
       'You may not scrape, copy, redistribute, or attempt to prevent copy-deterrence measures applied to purchased content. Screenshots of your own study progress (scores, certificates) may be shared for personal use.',
       'The platform is provided "as is". We work hard to keep question content accurate and verified, but we cannot guarantee the content will be error-free. Use our in-app support to report any question you believe is wrong.',
+      'Limitation of liability: to the maximum extent permitted by law, ThreePeak Group LLC and LicenseDent will not be liable for any indirect, incidental, or consequential damages arising from your use of the platform, including any exam outcome, and our total liability for any claim is limited to the amount you paid us in the 12 months before the claim arose.',
+      'Governing law: these terms are governed by the laws of the State of Wyoming, USA, without regard to conflict-of-law principles.',
       'We may update these terms. Material changes will be announced in-app.',
     ],
   },
@@ -65,6 +76,7 @@ const sections = [
       'LicenseDent is an independent exam-preparation service. We are not affiliated with, endorsed by, or connected to the Dubai Health Authority (DHA), Department of Health (DOH/HAAD), Ministry of Health (MOH), Sharjah Health Authority (SHA), Saudi Commission for Health Specialties (SCFHS/SMLE), Qatar Council for Healthcare Practitioners (QCHP), Kuwait Ministry of Health, National Health Regulatory Authority (NHRA, Bahrain), Oman Medical Specialty Board (OMSB), the Dental Council of Ireland, or any other licensing authority whose name, code, or exam appears on this platform. All authority names and trademarks are the property of their respective owners and are used for identification only.',
       'Content on this platform is study-preparation material. It is not clinical advice, and does not replace professional judgement, official syllabi, or your own clinical training. Always cross-check against current official guidelines.',
       'Using this platform does not guarantee passing any examination. Results depend on many individual factors, including prior knowledge and preparation time.',
+      'LicenseDent is not an ADA CERP Recognized Provider or an AGD PACE-approved provider, and no plan, course, or activity on this platform confers continuing education (CE) credit of any kind. Nothing on this site should be read as a claim of CE-credit approval by any dental board, association, or accrediting body.',
     ],
   },
 ];
@@ -83,7 +95,7 @@ export default function LegalPage() {
       <main className='mx-auto max-w-3xl px-6 py-16 sm:py-20'>
         <h1 className='text-3xl font-bold tracking-tight sm:text-4xl'>Terms, Privacy, Refunds &amp; Disclaimers</h1>
         <p className='mt-3 text-sm text-muted-foreground'>
-          Last updated: 20 September 2026 · Questions? Message us at{' '}
+          Last updated: 23 September 2026 · Questions? Message us at{' '}
           <a href='mailto:support@licensedent.com' className='text-primary underline-offset-2 hover:underline'>
             support@licensedent.com
           </a>

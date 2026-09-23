@@ -13,11 +13,13 @@ import TrustSection from '../landing-page/components/TrustSection';
 /**
  * PRD-006 M20: the site's core claim -- "every answer checked by a
  * dentist" -- had no page saying who does that. Content stays deliberately
- * generic (no individual names) and omits legal-entity details (jurisdiction,
- * registration number): both were explicit calls from the user (2026-09-20)
- * rather than something to invent. "LicenseDent" is used as the operating
- * name only; add real legal-entity details here once the user provides them
- * (see docs/09-work-changelog.md same-date entry for that conversation).
+ * generic (no individual names): an explicit call from the user (2026-09-20)
+ * rather than something to invent.
+ *
+ * 2026-09-23: the legal-entity line below (ThreePeak Group LLC, Wyoming,
+ * USA) was confirmed directly by the user for the pre-launch compliance
+ * pass -- no longer withheld pending that fact. See LegalPage.tsx and
+ * Footer.tsx for the matching Terms/governing-law and footer copy.
  *
  * 2026-09-23: rebuilt on the landing page's own building blocks (Eyebrow /
  * Reveal / SectionTitle / card-elevated / TrustSection / CTABanner) instead
@@ -152,6 +154,26 @@ export default function AboutPage() {
           <TrustSection />
         </div>
 
+        {/* Accreditation status — stated plainly here, not just in the Terms */}
+        <div className='mx-auto max-w-3xl px-6 py-14 lg:px-8'>
+          <Reveal>
+            <div className='card-elevated p-6 sm:p-8'>
+              <h2 className='text-lg font-semibold text-foreground'>What LicenseDent is — and isn't</h2>
+              <p className='mt-3 text-sm leading-6 text-muted-foreground'>
+                LicenseDent is independent exam-preparation content: question banks, mock exams, and
+                study tools written or reviewed by a panel of licensed, practicing dentists. It is not
+                a substitute for your official qualification, clinical training, or licensure.
+              </p>
+              <p className='mt-3 text-sm leading-6 text-muted-foreground'>
+                LicenseDent is not an ADA CERP Recognized Provider or an AGD PACE-approved provider, and
+                no plan on this platform confers continuing education (CE) credit. We are not
+                affiliated with, endorsed by, or connected to any dental licensing authority whose name
+                or exam appears on this site.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+
         {/* Get in touch */}
         <div className='mx-auto max-w-4xl px-6 py-16 md:py-24 lg:px-8'>
           <Reveal>
@@ -172,6 +194,9 @@ export default function AboutPage() {
                   <WaspRouterLink to={routes.PricingPageRoute.to}>View plans</WaspRouterLink>
                 </Button>
               </div>
+              <p className='mt-2 text-xs text-muted-foreground'>
+                LicenseDent is operated by ThreePeak Group LLC, a Wyoming, USA limited liability company.
+              </p>
             </div>
           </Reveal>
         </div>
