@@ -512,6 +512,7 @@ export const footerNavigation = {
     // used to be a bare mailto: -- it now points at the real /contact page,
     // which still surfaces the direct email for anyone who prefers that.
     { name: 'About', href: '/about' },
+    { name: 'Blog', href: '/blog' },
     { name: 'Contact', href: '/contact' },
     { name: 'Terms of Service', href: '/legal#terms' },
     // PRD-006 H2: added -- the cookie-consent banner already linked to a

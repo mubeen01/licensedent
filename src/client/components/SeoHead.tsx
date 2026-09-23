@@ -17,7 +17,7 @@ interface SeoHeadProps {
   extraJsonLd?: Record<string, unknown>[];
   /** True for authRequired-but-publicly-rendered pages (checkout, auth funnel) that should never be indexed. */
   noindex?: boolean;
-  /** Overrides the default site-wide social preview image (path under SITE_ORIGIN, e.g. '/logo/og-image.png'). */
+  /** Overrides the default site-wide social preview image -- either a path under SITE_ORIGIN (e.g. '/logo/og-image.png') or a full absolute URL (e.g. an S3-hosted blog cover image). */
   ogImage?: string;
   /**
    * PRD-006 H5: true for pages that don't correspond to a single real URL --
@@ -57,7 +57,10 @@ const DEFAULT_OG_IMAGE_HEIGHT = 630;
 
 export default function SeoHead({ title, description, path, faqs, extraJsonLd, noindex, ogImage, noCanonical }: SeoHeadProps) {
   const canonicalUrl = `${SITE_ORIGIN}${path}`;
-  const resolvedOgImage = ogImage ? `${SITE_ORIGIN}${ogImage}` : DEFAULT_OG_IMAGE;
+  // PRD-007: blog cover images live on S3, not this domain -- an absolute
+  // URL (http/https) is used as-is; a relative path (the original,
+  // still-supported case) is resolved under SITE_ORIGIN as before.
+  const resolvedOgImage = ogImage ? (/^https?:\/\//.test(ogImage) ? ogImage : `${SITE_ORIGIN}${ogImage}`) : DEFAULT_OG_IMAGE;
 
   const faqJsonLd =
     faqs && faqs.length > 0

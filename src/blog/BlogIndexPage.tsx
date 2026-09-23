@@ -49,8 +49,12 @@ export default function BlogIndexPage() {
             <Link
               key={post.id}
               to={`/blog/${post.slug}`}
-              className='card-elevated card-elevated-hover block p-6'
+              className='card-elevated card-elevated-hover block overflow-hidden'
             >
+              {post.coverImageUrl && (
+                <img src={post.coverImageUrl} alt='' className='aspect-video w-full object-cover' />
+              )}
+              <div className='p-6'>
               <div className='flex items-center gap-2 text-xs text-muted-foreground'>
                 <FileText className='h-3.5 w-3.5' />
                 {post.tags.slice(0, 3).map((t) => (
@@ -71,6 +75,7 @@ export default function BlogIndexPage() {
                   })}
                 </div>
               )}
+              </div>
             </Link>
           ))}
         </div>

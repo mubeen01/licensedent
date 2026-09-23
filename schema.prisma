@@ -782,6 +782,14 @@ model BlogPost {
   status                    BlogPostStatus  @default(draft)
   authorName                String          @default("LicenseDent")
 
+  // S3 object key (e.g. "blog-images/<uuid>.jpg"), not a URL -- unlike
+  // Question.imageUrl's private-bucket signed-URL pattern, blog cover images
+  // are served from a public bucket/prefix (they need a stable URL for
+  // social previews, OG tags, and Article JSON-LD `image`, none of which can
+  // tolerate an expiring signed URL). Resolved to a real public URL at read
+  // time by src/blog and admin/dashboards/blog's operations, never stored.
+  coverImageKey             String?
+
   // Null while status is draft; set the moment status first becomes
   // published, and never moved backward by a later edit -- dateModified
   // (updatedAt) is what tracks later edits.
@@ -789,4 +797,37 @@ model BlogPost {
 
   createdAt                 DateTime        @default(now())
   updatedAt                 DateTime        @updatedAt
+}
+
+// Real student testimonials only -- deliberately built with zero seed rows.
+// A prior session removed an earlier version of this section from
+// LandingPage.tsx specifically because it had placeholder names implying
+// real outcomes nobody actually reported; this table exists so genuine,
+// name-cleared quotes can be added through /admin/testimonials as they
+// come in, never invented. The public section renders nothing at all while
+// this table is empty -- see src/landing-page/components/TestimonialsSection.tsx.
+model Testimonial {
+  id                        String    @id @default(uuid())
+  name                      String
+
+  // Free text, not an Exam relation -- e.g. "DHA, passed 2026" or "IDC
+  // Ireland candidate" -- deliberately loose since a testimonial may
+  // reference more than one exam or no specific result at all.
+  context                   String
+
+  quote                     String
+
+  // Same public-bucket/stable-URL pattern as BlogPost.coverImageKey, just a
+  // different key prefix (testimonial-images/) -- see s3Utils.ts.
+  avatarImageKey            String?
+
+  isPublished               Boolean   @default(false)
+
+  // Manual display order on the public section, lowest first. Ties broken
+  // by createdAt so a fresh row without an explicit order still sorts
+  // somewhere deterministic rather than randomly.
+  displayOrder              Int       @default(0)
+
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
 }

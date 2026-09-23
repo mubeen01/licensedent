@@ -36,7 +36,19 @@ import {
   deleteBlogPost,
   getBlogPostsForAdmin,
   getBlogPostForAdmin,
+  getBlogImageUploadUrl,
 } from './src/admin/dashboards/blog/operations' with { type: 'ref' }
+
+// Testimonials (PRD-007) -- real quotes only, admin-managed, never seeded
+import AdminTestimonials from './src/admin/dashboards/testimonials/TestimonialsManagementPage' with { type: 'ref' }
+import { getPublishedTestimonials } from './src/landing-page/testimonialsOperations' with { type: 'ref' }
+import {
+  createTestimonial,
+  updateTestimonial,
+  deleteTestimonial,
+  getTestimonialsForAdmin,
+  getTestimonialImageUploadUrl,
+} from './src/admin/dashboards/testimonials/operations' with { type: 'ref' }
 
 // Demo Exam
 import DemoExamPage from './src/demo-exam/DemoExamPage' with { type: 'ref' }
@@ -437,6 +449,16 @@ export default app({
     action(createBlogPost, { entities: ['BlogPost'] }),
     action(updateBlogPost, { entities: ['BlogPost'] }),
     action(deleteBlogPost, { entities: ['BlogPost'] }),
+    action(getBlogImageUploadUrl),
+
+    // Testimonials (PRD-007)
+    route('AdminTestimonialsRoute', '/admin/testimonials', page(AdminTestimonials, { authRequired: true })),
+    query(getPublishedTestimonials, { entities: ['Testimonial'] }),
+    query(getTestimonialsForAdmin, { entities: ['Testimonial'] }),
+    action(createTestimonial, { entities: ['Testimonial'] }),
+    action(updateTestimonial, { entities: ['Testimonial'] }),
+    action(deleteTestimonial, { entities: ['Testimonial'] }),
+    action(getTestimonialImageUploadUrl),
 
     // Demo Exam (public, front-end only — no auth, no DB, sample questions)
     route('DemoExamRoute', '/demo-exam', page(DemoExamPage), { prerender: true }),

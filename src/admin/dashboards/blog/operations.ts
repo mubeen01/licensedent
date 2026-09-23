@@ -3,13 +3,20 @@ import { HttpError } from 'wasp/server';
 import {
   type CreateBlogPost,
   type DeleteBlogPost,
+  type GetBlogImageUploadUrl,
   type GetBlogPostForAdmin,
   type GetBlogPostsForAdmin,
   type UpdateBlogPost,
 } from 'wasp/server/operations';
 import * as z from 'zod';
+import { getBlogImageUploadSignedURL, getPublicImageUrl } from '../../../file-upload/s3Utils';
 import { logAdminAction } from '../../../server/adminAudit';
 import { ensureArgsSchemaOrThrowHttpError } from '../../../server/validation';
+
+// Same list as QuestionReviewCard.tsx/questions/operations.ts's
+// ALLOWED_IMAGE_TYPES -- duplicated rather than shared, matching this
+// codebase's existing convention for that constant.
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
 function ensureAdmin(user: { isAdmin: boolean } | undefined) {
   if (!user) {
@@ -19,6 +26,26 @@ function ensureAdmin(user: { isAdmin: boolean } | undefined) {
     throw new HttpError(403, 'Only admins are allowed to perform this operation');
   }
 }
+
+export type BlogPostWithCoverImage = BlogPost & { coverImageUrl: string | null };
+function withCoverImageUrl(post: BlogPost): BlogPostWithCoverImage {
+  return { ...post, coverImageUrl: getPublicImageUrl(post.coverImageKey) };
+}
+
+const getBlogImageUploadUrlInputSchema = z.object({
+  fileName: z.string().nonempty(),
+  fileType: z.enum(ALLOWED_IMAGE_TYPES),
+});
+type GetBlogImageUploadUrlInput = z.infer<typeof getBlogImageUploadUrlInputSchema>;
+
+export const getBlogImageUploadUrl: GetBlogImageUploadUrl<
+  GetBlogImageUploadUrlInput,
+  { s3UploadUrl: string; s3UploadFields: Record<string, string>; key: string; publicUrl: string | null }
+> = async (rawArgs, context) => {
+  ensureAdmin(context.user);
+  const args = ensureArgsSchemaOrThrowHttpError(getBlogImageUploadUrlInputSchema, rawArgs);
+  return getBlogImageUploadSignedURL(args);
+};
 
 // Same shape as exams/operations.ts's slugify -- URL-safe, no invented
 // uniqueness handling here since the DB's own @unique constraint on slug
@@ -33,18 +60,23 @@ function slugify(title: string): string {
   return base || 'post';
 }
 
-export const getBlogPostsForAdmin: GetBlogPostsForAdmin<void, BlogPost[]> = async (_args, context) => {
+export const getBlogPostsForAdmin: GetBlogPostsForAdmin<void, BlogPostWithCoverImage[]> = async (_args, context) => {
   ensureAdmin(context.user);
-  return context.entities.BlogPost.findMany({ orderBy: { createdAt: 'desc' } });
+  const posts = await context.entities.BlogPost.findMany({ orderBy: { createdAt: 'desc' } });
+  return posts.map(withCoverImageUrl);
 };
 
 const postIdInputSchema = z.object({ id: z.string().nonempty() });
 type PostIdInput = z.infer<typeof postIdInputSchema>;
 
-export const getBlogPostForAdmin: GetBlogPostForAdmin<PostIdInput, BlogPost> = async (rawArgs, context) => {
+export const getBlogPostForAdmin: GetBlogPostForAdmin<PostIdInput, BlogPostWithCoverImage> = async (
+  rawArgs,
+  context
+) => {
   ensureAdmin(context.user);
   const { id } = ensureArgsSchemaOrThrowHttpError(postIdInputSchema, rawArgs);
-  return context.entities.BlogPost.findUniqueOrThrow({ where: { id } });
+  const post = await context.entities.BlogPost.findUniqueOrThrow({ where: { id } });
+  return withCoverImageUrl(post);
 };
 
 const createInputSchema = z.object({
@@ -54,10 +86,11 @@ const createInputSchema = z.object({
   bodyMarkdown: z.string().trim().min(1, 'Body is required'),
   tags: z.array(z.string().trim().min(1)).max(20).default([]),
   status: z.enum(['draft', 'published']).default('draft'),
+  coverImageKey: z.string().nonempty().nullable().optional(),
 });
 type CreateInput = z.infer<typeof createInputSchema>;
 
-export const createBlogPost: CreateBlogPost<CreateInput, BlogPost> = async (rawArgs, context) => {
+export const createBlogPost: CreateBlogPost<CreateInput, BlogPostWithCoverImage> = async (rawArgs, context) => {
   ensureAdmin(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(createInputSchema, rawArgs);
 
@@ -70,6 +103,7 @@ export const createBlogPost: CreateBlogPost<CreateInput, BlogPost> = async (rawA
       tags: args.tags,
       status: args.status,
       publishedAt: args.status === 'published' ? new Date() : null,
+      coverImageKey: args.coverImageKey ?? null,
     },
   });
 
@@ -80,7 +114,7 @@ export const createBlogPost: CreateBlogPost<CreateInput, BlogPost> = async (rawA
     details: { title: post.title, status: post.status },
   });
 
-  return post;
+  return withCoverImageUrl(post);
 };
 
 const updateInputSchema = z.object({
@@ -91,10 +125,11 @@ const updateInputSchema = z.object({
   bodyMarkdown: z.string().trim().min(1),
   tags: z.array(z.string().trim().min(1)).max(20),
   status: z.enum(['draft', 'published']),
+  coverImageKey: z.string().nonempty().nullable().optional(),
 });
 type UpdateInput = z.infer<typeof updateInputSchema>;
 
-export const updateBlogPost: UpdateBlogPost<UpdateInput, BlogPost> = async (rawArgs, context) => {
+export const updateBlogPost: UpdateBlogPost<UpdateInput, BlogPostWithCoverImage> = async (rawArgs, context) => {
   ensureAdmin(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(updateInputSchema, rawArgs);
 
@@ -116,11 +151,12 @@ export const updateBlogPost: UpdateBlogPost<UpdateInput, BlogPost> = async (rawA
       tags: args.tags,
       status: args.status,
       publishedAt,
+      coverImageKey: args.coverImageKey ?? null,
     },
   });
 
   const changedFields = (Object.keys(args) as (keyof UpdateInput)[]).filter(
-    (key) => key !== 'id' && before[key as keyof BlogPost] !== args[key]
+    (key) => key !== 'id' && String(before[key as keyof BlogPost]) !== String(args[key])
   );
   if (changedFields.length > 0) {
     await logAdminAction(context, {
@@ -131,7 +167,7 @@ export const updateBlogPost: UpdateBlogPost<UpdateInput, BlogPost> = async (rawA
     });
   }
 
-  return updated;
+  return withCoverImageUrl(updated);
 };
 
 export const deleteBlogPost: DeleteBlogPost<PostIdInput, void> = async (rawArgs, context) => {

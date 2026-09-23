@@ -6,6 +6,7 @@ import {
   History,
   LayoutDashboard,
   MessageCircleMore,
+  MessageSquareQuote,
   Rocket,
   Upload,
   Users as UsersIcon,
@@ -36,6 +37,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
       { to: routes.AdminExamsRoute.to, end: true, label: 'Exams', icon: GraduationCap },
       { to: routes.AdminLessonsRoute.to, end: true, label: 'Lessons', icon: BookOpen },
       { to: routes.AdminBlogRoute.to, end: true, label: 'Blog', icon: FileText },
+      { to: routes.AdminTestimonialsRoute.to, end: true, label: 'Testimonials', icon: MessageSquareQuote },
     ],
   },
   {

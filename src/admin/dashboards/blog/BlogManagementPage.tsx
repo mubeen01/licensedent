@@ -1,15 +1,16 @@
-import { CheckCircle2, ExternalLink, FileText, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { CheckCircle2, ExternalLink, FileText, ImagePlus, Plus, Trash2, X } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { type AuthUser } from 'wasp/auth';
 import {
   createBlogPost,
   deleteBlogPost,
+  getBlogImageUploadUrl,
   getBlogPostsForAdmin,
   updateBlogPost,
   useQuery,
 } from 'wasp/client/operations';
-import { type BlogPost } from 'wasp/entities';
+import { type BlogPostWithCoverImage } from './operations';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
@@ -18,6 +19,8 @@ import { Textarea } from '../../../components/ui/textarea';
 import Breadcrumb from '../../layout/Breadcrumb';
 import DefaultLayout from '../../layout/DefaultLayout';
 import LoadingSpinner from '../../layout/LoadingSpinner';
+
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
 function slugify(title: string): string {
   return (
@@ -78,7 +81,7 @@ function PostForm({
   onCancel,
   onSaved,
 }: {
-  post?: BlogPost;
+  post?: BlogPostWithCoverImage;
   onCancel: () => void;
   onSaved: () => void;
 }) {
@@ -89,10 +92,48 @@ function PostForm({
   const [bodyMarkdown, setBodyMarkdown] = useState(post?.bodyMarkdown ?? '');
   const [tagsInput, setTagsInput] = useState(post?.tags.join(', ') ?? '');
   const [status, setStatus] = useState<'draft' | 'published'>((post?.status as 'draft' | 'published') ?? 'draft');
+  const [coverImageKey, setCoverImageKey] = useState<string | null>(post?.coverImageKey ?? null);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(post?.coverImageUrl ?? null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isEditing = !!post;
+
+  async function handleImageSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (!file) return;
+
+    if (!(ALLOWED_IMAGE_TYPES as readonly string[]).includes(file.type)) {
+      setImageError('Only JPEG, PNG or WebP images are supported.');
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setImageError(null);
+    try {
+      const { s3UploadUrl, s3UploadFields, key, publicUrl } = await getBlogImageUploadUrl({
+        fileName: file.name,
+        fileType: file.type as (typeof ALLOWED_IMAGE_TYPES)[number],
+      });
+
+      const formData = new FormData();
+      Object.entries(s3UploadFields).forEach(([k, v]) => formData.append(k, v));
+      formData.append('file', file);
+      const uploadRes = await fetch(s3UploadUrl, { method: 'POST', body: formData });
+      if (!uploadRes.ok) throw new Error('Upload to storage failed');
+
+      setCoverImageKey(key);
+      setCoverImageUrl(publicUrl);
+    } catch (e: any) {
+      setImageError(e?.message ?? 'Failed to upload image');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  }
 
   function handleTitleChange(value: string) {
     setTitle(value);
@@ -113,9 +154,17 @@ function PostForm({
     setError(null);
     try {
       if (isEditing) {
-        await updateBlogPost({ id: post.id, title, slug, excerpt, bodyMarkdown, tags, status });
+        await updateBlogPost({ id: post.id, title, slug, excerpt, bodyMarkdown, tags, status, coverImageKey });
       } else {
-        await createBlogPost({ title, slug: slug || slugify(title), excerpt, bodyMarkdown, tags, status });
+        await createBlogPost({
+          title,
+          slug: slug || slugify(title),
+          excerpt,
+          bodyMarkdown,
+          tags,
+          status,
+          coverImageKey,
+        });
       }
       onSaved();
     } catch (e: any) {
@@ -145,6 +194,48 @@ function PostForm({
             }}
           />
         </div>
+      </div>
+
+      <div>
+        <Label className='text-xs text-muted-foreground'>
+          Cover image (used for the /blog card, social previews, and schema.org <code>image</code>)
+        </Label>
+        <input
+          ref={fileInputRef}
+          type='file'
+          accept={ALLOWED_IMAGE_TYPES.join(',')}
+          className='hidden'
+          onChange={handleImageSelected}
+        />
+        {coverImageUrl ? (
+          <div className='mt-1.5 flex items-center gap-3'>
+            <img src={coverImageUrl} alt='' className='h-20 w-32 rounded-lg object-cover' />
+            <Button
+              size='sm'
+              variant='outline'
+              disabled={isUploadingImage}
+              onClick={() => {
+                setCoverImageKey(null);
+                setCoverImageUrl(null);
+              }}
+            >
+              <X className='h-3.5 w-3.5 mr-1.5' />
+              Remove
+            </Button>
+          </div>
+        ) : (
+          <Button
+            size='sm'
+            variant='outline'
+            className='mt-1.5'
+            disabled={isUploadingImage}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <ImagePlus className='h-3.5 w-3.5 mr-1.5' />
+            {isUploadingImage ? 'Uploading…' : 'Upload image'}
+          </Button>
+        )}
+        {imageError && <p className='mt-1 text-xs text-destructive'>{imageError}</p>}
       </div>
 
       <div>
@@ -202,7 +293,7 @@ function PostRow({
   onSaved,
   onDeleted,
 }: {
-  post: BlogPost;
+  post: BlogPostWithCoverImage;
   onSaved: () => void;
   onDeleted: () => void;
 }) {
@@ -237,9 +328,13 @@ function PostRow({
     <div className='rounded-2xl border border-border bg-card shadow-xs hover:shadow-md transition-shadow p-5 md:p-6 flex flex-col gap-3'>
       <div className='flex items-start justify-between gap-4'>
         <div className='flex items-start gap-3'>
-          <span className='flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-linear-to-br from-primary/10 to-secondary/10 text-primary'>
-            <FileText className='h-5 w-5' />
-          </span>
+          {post.coverImageUrl ? (
+            <img src={post.coverImageUrl} alt='' className='h-10 w-10 flex-none rounded-xl object-cover' />
+          ) : (
+            <span className='flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-linear-to-br from-primary/10 to-secondary/10 text-primary'>
+              <FileText className='h-5 w-5' />
+            </span>
+          )}
           <div>
             <p className='font-bold text-foreground'>{post.title}</p>
             <p className='text-xs text-muted-foreground font-mono'>/blog/{post.slug}</p>

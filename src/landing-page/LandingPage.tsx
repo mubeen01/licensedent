@@ -10,6 +10,7 @@ import ProductWalkthrough from './components/ProductWalkthrough';
 import ScrollToTop from './components/ScrollToTop';
 import StatsBar from './components/StatsBar';
 import SubjectsStrip from './components/SubjectsStrip';
+import TestimonialsSection from './components/TestimonialsSection';
 import TrustSection from './components/TrustSection';
 import TryItDemo from './components/TryItDemo';
 import Clients from './components/Clients';
@@ -100,10 +101,14 @@ export default function LandingPage() {
           <FAQ faqs={faqs} />
         </SectionBand>
 
-        {/* 9 · Final call — dark, bookends the hero. (Social-proof
-            testimonial section removed: it contained placeholder names that
-            implied real student outcomes. It returns once we have genuine,
-            written, name-cleared reviews from the pilot cohort.) */}
+        {/* 9 · Testimonials (PRD-007) -- the section removed for having
+            placeholder names is back, now backed by a real Testimonial
+            table with zero seed rows. Renders nothing until at least one
+            real, name-cleared quote is added and published via
+            /admin/testimonials -- see that component's own comment. */}
+        <TestimonialsSection />
+
+        {/* 10 · Final call — dark, bookends the hero. */}
         <CTABanner questionCount={bankStats?.publishedQuestionCount} examCount={bankStats?.examCount} />
       </main>
 

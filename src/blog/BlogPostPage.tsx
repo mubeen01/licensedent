@@ -50,7 +50,7 @@ export default function BlogPostPage() {
     headline: post.title,
     description: post.excerpt,
     url: canonicalUrl,
-    image: DEFAULT_OG_IMAGE,
+    image: post.coverImageUrl ?? DEFAULT_OG_IMAGE,
     datePublished: (post.publishedAt ?? post.createdAt).toString(),
     dateModified: post.updatedAt.toString(),
     author: { '@type': 'EducationalOrganization', name: post.authorName, url: SITE_ORIGIN },
@@ -73,12 +73,21 @@ export default function BlogPostPage() {
         title={`${post.title} | LicenseDent`}
         description={post.excerpt}
         path={`/blog/${post.slug}`}
+        ogImage={post.coverImageUrl ?? undefined}
         extraJsonLd={[articleJsonLd, breadcrumbJsonLd]}
       />
       <main className='mx-auto max-w-3xl px-6 py-16 sm:py-20'>
         <Link to='/blog' className='inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary'>
           <ArrowLeft className='h-4 w-4' /> Back to blog
         </Link>
+
+        {post.coverImageUrl && (
+          <img
+            src={post.coverImageUrl}
+            alt=''
+            className='mt-6 aspect-video w-full rounded-2xl object-cover'
+          />
+        )}
 
         <div className='mt-6 flex flex-wrap items-center gap-3 text-xs text-muted-foreground'>
           {post.tags.map((t) => (
