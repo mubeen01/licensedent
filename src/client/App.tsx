@@ -64,6 +64,33 @@ export default function App() {
     }
   }, [location]);
 
+  // main.wasp.ts's required `title:` field bakes a static, generic <title>
+  // into every page's raw HTML *outside* React's tree (Wasp's own base
+  // template, not the `head:` array SeoHead.tsx's own doc comment already
+  // covers). Per-page routes then render their own <title> via SeoHead.tsx,
+  // so every route ends up with 2 <title> elements. Per the HTML spec,
+  // `document.title` resolves to the FIRST <title> in tree order -- which is
+  // always the static generic one, since it's emitted before anything React
+  // renders. That silently defeated every page's own SEO title (confirmed
+  // live via curl: e.g. /exams/dha rendered both
+  // "LicenseDent - Gulf + Ireland Dental Licensing Exam Prep" *and*
+  // "DHA Exam Guide 2026 -- Dubai Dental Licensing | LicenseDent", in that
+  // order, first one winning) -- the same bug PRD-006 C4 already found and
+  // fixed for description/OG/Twitter tags, just not caught for <title>
+  // itself since it isn't part of the `head:` array those tags lived in.
+  // One-time cleanup on first mount: React 19's own head-tag hoisting
+  // already dedupes titles it renders itself across client-side navigation
+  // (only ever keeps its latest one), so the static leftover only needs
+  // removing once, here, not per-SeoHead-render.
+  useEffect(() => {
+    const titleElements = document.head.querySelectorAll('title');
+    if (titleElements.length > 1) {
+      titleElements.forEach((el, i) => {
+        if (i < titleElements.length - 1) el.remove();
+      });
+    }
+  }, []);
+
   // Mandatory one-time onboarding gate. Only checked on app-shell routes (not
   // on public/marketing pages) so a logged-in-but-not-onboarded user browsing
   // e.g. /pricing is never interrupted -- the gate fires the moment they
