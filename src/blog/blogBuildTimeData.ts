@@ -103,7 +103,23 @@ export async function prepareBlogBuildTimeData(): Promise<string[]> {
 // blogSnapshot.ts for how this gets consumed.
 export const publishedPostsSnapshot = ${JSON.stringify(snapshot, null, 2)} as const;
 `;
-    writeFileSync(SNAPSHOT_PATH, fileContents, 'utf-8');
+    // Only write if the content actually changed. This file lives under
+    // src/blog/, inside the same tree Wasp's own top-level watcher (and
+    // nodemon) watch -- an unconditional writeFileSync here re-triggers
+    // "Recompiling on file change", which re-runs this function, which
+    // writes again, forever (confirmed live: `wasp start` never reached
+    // "Server listening", stuck re-compiling every ~18s). Skipping the
+    // write when nothing published actually changed breaks that loop after
+    // at most one extra cycle.
+    let previousContents: string | null = null;
+    try {
+      previousContents = readFileSync(SNAPSHOT_PATH, 'utf-8');
+    } catch {
+      // First run, or file briefly missing -- fall through and write it.
+    }
+    if (previousContents !== fileContents) {
+      writeFileSync(SNAPSHOT_PATH, fileContents, 'utf-8');
+    }
 
     return posts.map((p) => `/blog/${p.slug}`);
   } catch (err) {
