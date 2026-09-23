@@ -46,7 +46,7 @@ function BillingPage({ user }: { user: AuthUser }) {
                   <div>
                     <p className='text-sm font-medium text-foreground'>
                       {prettyPaymentPlanName(parsePaymentPlanId(sub.planType))}
-                      {sub.allExamsAccess ? ' · all exams' : ''}
+                      {sub.allExamsAccess ? ' · all Gulf exams' : ''}
                     </p>
                     <p className='text-xs text-muted-foreground'>
                       Purchased {new Date(sub.createdAt).toLocaleDateString()} · {sub.durationDays} days access

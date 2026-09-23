@@ -197,7 +197,7 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
                 <span className='text-muted-foreground'>
                   {prettyPaymentPlanName(parsePaymentPlanId(subscription.planType))}
                   {subscription.allExamsAccess ? (
-                    ' · all exams'
+                    ' · all Gulf exams'
                   ) : subscription.examAccess ? (
                     <>
                       {' · '}

@@ -466,7 +466,7 @@ export const faqs = [
     id: 5,
     question: 'Can I switch exams mid-plan?',
     answer:
-      'Fast Track and Standard plans are scoped to one exam. If you need more than one, the Extended plan unlocks every exam we cover for the full 6 months.',
+      'Fast Track and Standard plans are scoped to one exam. If you need more than one, the Extended plan unlocks every Gulf exam (DHA, HAAD, MOH, SMLE, OMSB, QCHP, KMLE, NHRA, SHA) for the full 6 months. IDC Ireland is a separate plan (IDC Pathway) since it’s a different exam format.',
   },
   {
     id: 6,

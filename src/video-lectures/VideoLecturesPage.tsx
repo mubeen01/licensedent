@@ -76,7 +76,7 @@ export default function VideoLecturesPage({ user }: { user: AuthUser }) {
       ) : (
         <ExtendedPlanUpsell
           feature='Video Lectures'
-          description='Recorded, subject-wise video lectures are coming to the Extended plan, alongside access to every exam we cover. The Extended plan includes the lecture library as it launches.'
+          description='Recorded, subject-wise video lectures are coming to the Extended plan, alongside access to every Gulf exam we cover. The Extended plan includes the lecture library as it launches.'
         />
       )}
     </DashboardLayout>

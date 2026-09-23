@@ -27,7 +27,7 @@ export function ExamAccessSummary() {
   const isExpired = expiresAt.getTime() < Date.now();
 
   const examBadge = subscription.allExamsAccess ? (
-    '(all exams) '
+    '(all Gulf exams) '
   ) : subscription.examAccess ? (
     <>
       (<ExamFlag emoji={subscription.examAccess.flagEmoji} /> {subscription.examAccess.code ?? subscription.examAccess.name}){' '}
