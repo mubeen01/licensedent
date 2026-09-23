@@ -196,7 +196,16 @@ export async function importMcqBatches(prismaClient: PrismaClient) {
       }
     } else {
       for (const mcq of mcqs) {
-        const rawName = mcq.subjectName?.trim() || 'Unsorted';
+        // A genuinely missing subjectName (as opposed to an off-label one
+        // SUBJECT_LABEL_ALIASES already normalizes) used to default to
+        // "Unsorted" -- but that's the same Subject the PDF-import pipeline
+        // uses for its human-review queue (0 published questions there by
+        // convention, see docs/05-status-and-gaps.md), which would silently
+        // strand these MCQs unpublished forever instead of going through
+        // this script's normal auto-approve loop like every other batch.
+        // "General" is its own Subject (find-or-create below, same as any
+        // other), published immediately like the rest of this pipeline.
+        const rawName = mcq.subjectName?.trim() || 'General';
         const name = SUBJECT_LABEL_ALIASES[rawName] ?? rawName;
         if (!bySubject.has(name)) bySubject.set(name, []);
         bySubject.get(name)!.push(mcq);
