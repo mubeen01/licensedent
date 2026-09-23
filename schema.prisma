@@ -34,6 +34,8 @@ model User {
 
   userAttempts              UserAttempt[]
   subscriptions             Subscription[]
+  fastTrackApplications     FastTrackApplication[]        @relation("FastTrackApplicant")
+  reviewedFastTrackApplications FastTrackApplication[]    @relation("FastTrackReviewer")
 
   verifiedQuestions         Question[]        @relation("QuestionVerifiedBy")
   rejectedQuestions         Question[]        @relation("QuestionRejectedBy")
@@ -196,6 +198,7 @@ model Exam {
   subscriptionsWithAccess   Subscription[]
   userProfiles              UserProfile[]
   lessons                   Lesson[]
+  fastTrackApplications     FastTrackApplication[]
 }
 
 model Subject {
@@ -539,6 +542,39 @@ model Subscription {
   // set when the plan is scoped to a single exam (i.e. allExamsAccess is false)
   examAccess                Exam?                 @relation(fields: [examAccessId], references: [id])
   examAccessId               String?
+}
+
+enum FastTrackApplicationStatus {
+  pending
+  approved
+  rejected
+}
+
+// A logged-in user applies for a free, admin-vetted Fast Track pilot slot
+// (no Stripe purchase) -- see docs/09-work-changelog.md for the 2026-09-23
+// pilot-cohort decision. Approving an application creates a real
+// Subscription row via the same grantUserSubscription logic admin comps
+// already use (source: admin_grant), so downstream access checks
+// (payment/access.ts) treat it identically to a purchase.
+model FastTrackApplication {
+  id                        String                      @id @default(uuid())
+  createdAt                 DateTime                    @default(now())
+
+  user                      User                        @relation("FastTrackApplicant", fields: [userId], references: [id])
+  userId                    String
+
+  exam                      Exam                        @relation(fields: [examId], references: [id])
+  examId                    String
+
+  city                      String
+  experience                String
+  whyThisExam               String
+
+  status                    FastTrackApplicationStatus  @default(pending)
+
+  reviewedBy                User?                       @relation("FastTrackReviewer", fields: [reviewedById], references: [id])
+  reviewedById              String?
+  reviewedAt                DateTime?
 }
 
 // A student's personal "important" flag + notepad on a question, independent

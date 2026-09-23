@@ -236,6 +236,17 @@ import {
   getUnreadMessageCount,
 } from './src/admin/dashboards/messages/operations' with { type: 'ref' }
 
+// Fast Track pilot applications (free, admin-vetted -- no Stripe purchase)
+import FastTrackApplyPage from './src/fast-track/ApplyPage' with { type: 'ref' }
+import AdminFastTrackApplications from './src/admin/dashboards/fastTrack/FastTrackApplicationsPage' with { type: 'ref' }
+import {
+  createFastTrackApplication,
+  getMyFastTrackApplication,
+  getFastTrackApplications,
+  approveFastTrackApplication,
+  rejectFastTrackApplication,
+} from './src/fast-track/operations' with { type: 'ref' }
+
 export default app({
   name: 'LicenseDent',
   wasp: { version: '^0.25.0' },
@@ -628,5 +639,18 @@ export default app({
     action(markMessageRead, { entities: ['ContactFormMessage'] }),
     action(markMessageReplied, { entities: ['ContactFormMessage'] }),
     query(getUnreadMessageCount, { entities: ['ContactFormMessage'] }),
+
+    // Fast Track pilot applications
+    route('FastTrackApplyRoute', '/fast-track/apply', page(FastTrackApplyPage, { authRequired: true })),
+    route(
+      'AdminFastTrackApplicationsRoute',
+      '/admin/fast-track-applications',
+      page(AdminFastTrackApplications, { authRequired: true })
+    ),
+    action(createFastTrackApplication, { entities: ['FastTrackApplication', 'Exam'] }),
+    query(getMyFastTrackApplication, { entities: ['FastTrackApplication'] }),
+    query(getFastTrackApplications, { entities: ['FastTrackApplication'] }),
+    action(approveFastTrackApplication, { entities: ['FastTrackApplication', 'Subscription', 'Exam'] }),
+    action(rejectFastTrackApplication, { entities: ['FastTrackApplication'] }),
   ],
 })

@@ -2,7 +2,7 @@ import { CheckCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from 'wasp/client/auth';
-import { routes } from 'wasp/client/router';
+import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import {
   generateCheckoutSession,
   getCustomerPortalUrl,
@@ -383,7 +383,21 @@ const PricingPage = () => {
                   </ul>
                 </div>
                 <div className='mt-8'>
-                  {!isAvailable ? (
+                  {!isAvailable && planId === PaymentPlanId.FastTrack ? (
+                    // 2026-09-23 pilot-cohort decision: while Fast Track has no
+                    // real Stripe price id, don't dead-end on "email us" --
+                    // point at the free, admin-vetted pilot application
+                    // instead (see src/fast-track/). Every other unavailable
+                    // plan keeps the original "Coming soon" fallback below.
+                    <div className='space-y-2'>
+                      <Button asChild className='w-full'>
+                        <WaspRouterLink to={routes.FastTrackApplyRoute.to}>Apply for free access</WaspRouterLink>
+                      </Button>
+                      <p className='text-center text-xs text-muted-foreground'>
+                        A limited number of free pilot passes, reviewed by hand.
+                      </p>
+                    </div>
+                  ) : !isAvailable ? (
                     // PRD-006 M21: the "email us" instruction was previously
                     // only in a `title` tooltip on a disabled button --
                     // unreachable by keyboard and screen readers, and

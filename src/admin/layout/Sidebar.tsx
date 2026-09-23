@@ -5,6 +5,7 @@ import {
   History,
   LayoutDashboard,
   MessageCircleMore,
+  Rocket,
   Upload,
   Users as UsersIcon,
   X,
@@ -40,6 +41,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { to: routes.AdminUsersRoute.to, end: true, label: 'Users', icon: UsersIcon },
       { to: routes.AdminMessagesRoute.to, end: true, label: 'Messages', icon: MessageCircleMore },
+      { to: routes.AdminFastTrackApplicationsRoute.to, end: true, label: 'Fast Track Applications', icon: Rocket },
     ],
   },
   {
