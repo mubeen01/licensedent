@@ -374,6 +374,22 @@ export const saveQuestionNote: SaveQuestionNote<SaveQuestionNoteInput, { ok: tru
   const user = ensureUser(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(saveQuestionNoteInputSchema, rawArgs);
 
+  // Backend audit fix (2026-09-23): previously accepted any questionId with
+  // no check at all -- a valid own-user note, but for a draft/unpublished
+  // question or one belonging to an exam this user has no access to. No
+  // content was ever leaked back (a note is write-only from the client's own
+  // perspective), but there's no reason to let a note attach to a question
+  // outside what this user can legitimately see, same exam-scoping every
+  // other read in this file already enforces.
+  const accessibleExamIds = await getAccessibleExamIds(user.id, context.entities);
+  const question = await context.entities.Question.findFirst({
+    where: { id: args.questionId, status: 'published', exams: { some: { id: { in: accessibleExamIds } } } },
+    select: { id: true },
+  });
+  if (!question) {
+    throw new HttpError(404, 'Question not found');
+  }
+
   const trimmedNote = args.note?.trim() || null;
 
   // An empty, unmarked note is nothing to keep around -- delete rather than

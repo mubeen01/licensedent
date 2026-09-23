@@ -175,6 +175,16 @@ export const updateLesson: UpdateLesson<UpdateLessonInput, void> = async (rawArg
       ...(args.subjectId !== undefined ? { subjectId: args.subjectId } : {}),
     },
   });
+
+  // Audit-blindness fix (backend audit, 2026-09-23): this write, along with
+  // reorderLesson/updateLessonPart/reorderLessonPart/unassign below, logged
+  // nothing -- only create/delete/assign did.
+  await logAdminAction(context, {
+    action: 'lesson.update',
+    entityType: 'Lesson',
+    entityId: args.id,
+    details: { title: args.title, isActive: args.isActive },
+  });
 };
 
 export const deleteLesson: DeleteLesson<{ id: string }, void> = async (rawArgs, context) => {
@@ -221,6 +231,15 @@ export const reorderLesson: ReorderLesson<ReorderLessonInput, void> = async (raw
     context.entities.Lesson.update({ where: { id: a.id }, data: { order: b.order } }),
     context.entities.Lesson.update({ where: { id: b.id }, data: { order: a.order } }),
   ]);
+
+  // Audit-blindness fix (backend audit, 2026-09-23) -- see updateLesson's
+  // comment above.
+  await logAdminAction(context, {
+    action: 'lesson.reorder',
+    entityType: 'Lesson',
+    entityId: args.id,
+    details: { otherId: args.otherId, examId: a.examId },
+  });
 };
 
 /* -------------------------------------------------------------------------- */
@@ -318,6 +337,15 @@ export const updateLessonPart: UpdateLessonPart<UpdateLessonPartInput, void> = a
       sourcePages: args.sourcePages || null,
     },
   });
+
+  // Audit-blindness fix (backend audit, 2026-09-23) -- see updateLesson's
+  // comment above.
+  await logAdminAction(context, {
+    action: 'lessonPart.update',
+    entityType: 'LessonPart',
+    entityId: args.id,
+    details: { lessonId: current.lessonId, title: args.title },
+  });
 };
 
 const reorderLessonPartInputSchema = z.object({ id: z.string().nonempty(), otherId: z.string().nonempty() });
@@ -349,6 +377,15 @@ export const reorderLessonPart: ReorderLessonPart<ReorderLessonPartInput, void> 
     context.entities.LessonPart.update({ where: { id: b.id }, data: { order: a.order } }),
     context.entities.LessonPart.update({ where: { id: a.id }, data: { order: b.order } }),
   ]);
+
+  // Audit-blindness fix (backend audit, 2026-09-23) -- see updateLesson's
+  // comment above.
+  await logAdminAction(context, {
+    action: 'lessonPart.reorder',
+    entityType: 'LessonPart',
+    entityId: args.id,
+    details: { otherId: args.otherId, lessonId: a.lessonId },
+  });
 };
 
 export const deleteLessonPart: DeleteLessonPart<{ id: string }, void> = async (rawArgs, context) => {
@@ -487,6 +524,15 @@ export const unassignQuestionFromLessonPart: UnassignQuestionFromLessonPart<
   await context.entities.LessonPart.update({
     where: { id: args.lessonPartId },
     data: { questions: { disconnect: { id: args.questionId } } },
+  });
+
+  // Audit-blindness fix (backend audit, 2026-09-23) -- see updateLesson's
+  // comment above; the assign side (above) already logged, unassign didn't.
+  await logAdminAction(context, {
+    action: 'lessonPart.unassignQuestion',
+    entityType: 'LessonPart',
+    entityId: args.lessonPartId,
+    details: { questionId: args.questionId },
   });
 };
 

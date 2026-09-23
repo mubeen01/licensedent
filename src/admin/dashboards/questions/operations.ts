@@ -761,10 +761,21 @@ export const updateReviewQuestion: UpdateReviewQuestion<UpdateReviewQuestionInpu
     });
   }
 
-  return context.entities.Question.update({
+  const updated = await context.entities.Question.update({
     where: { id },
     data,
   });
+
+  // Audit-blindness fix (backend audit, 2026-09-23) -- see approveQuestion's
+  // comment above for the full context.
+  await logAdminAction(context, {
+    action: 'question.updateReview',
+    entityType: 'Question',
+    entityId: id,
+    details: { subjectId: existing.subjectId, fieldsChanged: Object.keys(data) },
+  });
+
+  return updated;
 };
 
 const approveQuestionInputSchema = z.object({ id: z.string().nonempty() });
@@ -823,7 +834,7 @@ export const approveQuestion: ApproveQuestion<ApproveQuestionInput, Question> = 
   // above on the same pending question. Without this, both branches would
   // run -- publishing twice is harmless, but the ImportBatch counters below
   // would be permanently double-incremented with no self-healing path.
-  return prisma.$transaction(async (tx) => {
+  const published = await prisma.$transaction(async (tx) => {
     const { count } = await tx.question.updateMany({
       where: { id, status: question.status },
       data: {
@@ -843,6 +854,18 @@ export const approveQuestion: ApproveQuestion<ApproveQuestionInput, Question> = 
     }
     return tx.question.findUniqueOrThrow({ where: { id } });
   });
+
+  // Audit-blindness fix (backend audit, 2026-09-23): approve/reject/
+  // update-review/import previously logged nothing, making the most
+  // sensitive review actions invisible in AdminAuditLog.
+  await logAdminAction(context, {
+    action: 'question.approve',
+    entityType: 'Question',
+    entityId: id,
+    details: { subjectId: question.subjectId, previousStatus: question.status },
+  });
+
+  return published;
 };
 
 const unpublishQuestionInputSchema = z.object({ id: z.string().nonempty() });
@@ -938,6 +961,15 @@ export const rejectQuestion: RejectQuestion<RejectQuestionInput, { id: string }>
         data: { totalReviewed: { increment: 1 } },
       });
     }
+  });
+
+  // Audit-blindness fix (backend audit, 2026-09-23) -- see approveQuestion's
+  // comment above for the full context.
+  await logAdminAction(context, {
+    action: 'question.reject',
+    entityType: 'Question',
+    entityId: id,
+    details: { subjectId: question.subjectId, previousStatus: question.status },
   });
 
   return { id };
@@ -1672,7 +1704,7 @@ export const importQuestionsFromText: ImportQuestionsFromText<ImportQuestionsFro
     else aiErrors += 1;
   }
 
-  return {
+  const result = {
     batchId: batch.id,
     totalDetected: allEntries.length,
     inserted,
@@ -1688,6 +1720,19 @@ export const importQuestionsFromText: ImportQuestionsFromText<ImportQuestionsFro
     aiSkippedCap,
     aiSkipped,
   };
+
+  // Audit-blindness fix (backend audit, 2026-09-23) -- see approveQuestion's
+  // comment above for the full context. Logged as one event for the whole
+  // import (not per-question), same granularity as the bulk review actions
+  // elsewhere in this file.
+  await logAdminAction(context, {
+    action: 'question.import',
+    entityType: 'ImportBatch',
+    entityId: batch.id,
+    details: { examId: args.examId, subjectId, fileName: args.fileName, inserted, skippedDuplicate, skippedInvalid },
+  });
+
+  return result;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -1718,6 +1763,15 @@ export const draftAiSuggestion: DraftAiSuggestion<DraftAiSuggestionInput, Questi
   if (outcome === 'error') {
     throw new HttpError(502, 'AI request failed -- try again in a moment.');
   }
+
+  // Audit-blindness fix (backend audit, 2026-09-23) -- see approveQuestion's
+  // comment above for the full context.
+  await logAdminAction(context, {
+    action: 'question.draftAiSuggestion',
+    entityType: 'Question',
+    entityId: id,
+    details: { subjectId: question.subjectId },
+  });
 
   return context.entities.Question.findUniqueOrThrow({ where: { id } });
 };
@@ -1837,6 +1891,15 @@ export const setQuestionImage: SetQuestionImage<SetQuestionImageInput, { imageUr
   await context.entities.Question.update({
     where: { id: args.questionId },
     data: { imageUrl: args.key },
+  });
+
+  // Audit-blindness fix (backend audit, 2026-09-23) -- see approveQuestion's
+  // comment above for the full context.
+  await logAdminAction(context, {
+    action: 'question.setImage',
+    entityType: 'Question',
+    entityId: args.questionId,
+    details: { subjectId: question.subjectId, cleared: args.key === null },
   });
 
   return { imageUrl: await resolveOptionalImageUrl(args.key) };

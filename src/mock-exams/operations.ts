@@ -191,7 +191,7 @@ type MockTestMeta = {
 };
 
 export const getMockTestMeta: GetMockTestMeta<GetMockTestMetaInput, MockTestMeta> = async (rawArgs, context) => {
-  ensureUser(context.user);
+  const user = ensureUser(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(getMockTestMetaInputSchema, rawArgs);
 
   const mockTest = await context.entities.MockTest.findUnique({
@@ -201,6 +201,12 @@ export const getMockTestMeta: GetMockTestMeta<GetMockTestMetaInput, MockTestMeta
   if (!mockTest || !mockTest.isActive) {
     throw new HttpError(404, 'Mock exam not found');
   }
+
+  // Backend audit fix (2026-09-23): this was auth-only -- any signed-in user
+  // (including one with no plan, or a plan scoped to a different exam) could
+  // read any mock test's title/duration/question count by ID, the same
+  // per-exam access startMockExamAttempt already enforces below.
+  requireActivePlan(await getEffectiveAccessForExam(user.id, mockTest.examId, context.entities), 'This mock exam');
 
   return {
     id: mockTest.id,

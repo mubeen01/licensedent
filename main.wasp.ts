@@ -632,7 +632,7 @@ export default app({
     query(getPracticeQuestions, { entities: ['Question', 'QuestionNote', 'Subscription', 'UserAttempt', 'Exam'] }),
     action(submitAnswer, { entities: ['Question', 'UserAttempt', 'ReviewSchedule', 'Subscription', 'Exam'] }),
     route('ReviewRoute', '/practice/review', page(ReviewPage, { authRequired: true })),
-    action(saveQuestionNote, { entities: ['QuestionNote'] }),
+    action(saveQuestionNote, { entities: ['QuestionNote', 'Question', 'Subscription', 'UserAttempt', 'Exam'] }),
     query(getMyMarkedQuestions, { entities: ['QuestionNote', 'Subscription', 'UserAttempt', 'Exam'] }),
     route('SmartReviewRoute', '/practice/smart-review', page(SmartReviewPage, { authRequired: true })),
     query(getDueReviewQuestions, {
@@ -672,7 +672,7 @@ export default app({
     query(getMockExamResults, { entities: ['MockExamAttempt'] }),
     query(getExamReadiness, { entities: ['MockTest', 'MockExamAttempt', 'Exam', 'Subscription', 'UserAttempt'] }),
     query(getReadinessScore, { entities: ['MockExamAttempt', 'UserAttempt', 'Subject'] }),
-    query(getMockTestMeta, { entities: ['MockTest'] }),
+    query(getMockTestMeta, { entities: ['MockTest', 'Subscription', 'UserAttempt', 'Exam'] }),
     action(startMockExamAttempt, {
       entities: ['MockTest', 'MockExamAttempt', 'Question', 'Subscription', 'Exam', 'UserAttempt'],
     }),
