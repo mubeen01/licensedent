@@ -761,3 +761,32 @@ model LessonPartQuizAttemptItem {
 
   @@unique([attemptId, questionId])
 }
+
+enum BlogPostStatus {
+  draft
+  published
+}
+
+// PRD-007: replaces the separate Astro/Starlight blog/ site -- posts are now
+// admin-managed rows here instead of hand-edited markdown files, rendered by
+// this app's own /blog + /blog/:slug pages (same SeoHead/Article JSON-LD
+// pattern as the exam guides), so publishAt/updatedAt give real dates for
+// datePublished/dateModified without needing a build-time git-log lookup.
+model BlogPost {
+  id                        String          @id @default(uuid())
+  slug                      String          @unique
+  title                     String
+  excerpt                   String
+  bodyMarkdown              String
+  tags                      String[]        @default([])
+  status                    BlogPostStatus  @default(draft)
+  authorName                String          @default("LicenseDent")
+
+  // Null while status is draft; set the moment status first becomes
+  // published, and never moved backward by a later edit -- dateModified
+  // (updatedAt) is what tracks later edits.
+  publishedAt               DateTime?
+
+  createdAt                 DateTime        @default(now())
+  updatedAt                 DateTime        @updatedAt
+}

@@ -1,6 +1,7 @@
 import {
   BookOpen,
   ClipboardCheck,
+  FileText,
   GraduationCap,
   History,
   LayoutDashboard,
@@ -34,6 +35,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
       { to: routes.AdminImportQuestionsRoute.to, end: true, label: 'Import Questions', icon: Upload },
       { to: routes.AdminExamsRoute.to, end: true, label: 'Exams', icon: GraduationCap },
       { to: routes.AdminLessonsRoute.to, end: true, label: 'Lessons', icon: BookOpen },
+      { to: routes.AdminBlogRoute.to, end: true, label: 'Blog', icon: FileText },
     ],
   },
   {

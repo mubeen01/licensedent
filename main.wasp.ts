@@ -4,7 +4,7 @@ import { app, page, route, query, action, api } from '@wasp.sh/spec'
 import { getVerificationEmailContent, getPasswordResetEmailContent } from './src/auth/email-and-pass/emails' with { type: 'ref' }
 import { getEmailUserFields } from './src/auth/userSignupFields' with { type: 'ref' }
 import { onBeforeLoginHook } from './src/auth/hooks' with { type: 'ref' }
-import { seedMockUsers } from './src/server/scripts/dbSeeds' with { type: 'ref' }
+import { seedMockUsers, migrateBlogPostsFromMarkdown } from './src/server/scripts/dbSeeds' with { type: 'ref' }
 import { importLessonFolder } from './src/server/scripts/importLessonFolder' with { type: 'ref' }
 import { importMcqBatches } from './src/server/scripts/importMcqBatches' with { type: 'ref' }
 import { importGulf180Videos } from './src/server/scripts/importGulf180Videos' with { type: 'ref' }
@@ -24,6 +24,19 @@ import AboutPage from './src/about/AboutPage' with { type: 'ref' }
 
 // Contact
 import ContactPage from './src/contact/ContactPage' with { type: 'ref' }
+
+// Blog (PRD-007)
+import BlogIndexPage from './src/blog/BlogIndexPage' with { type: 'ref' }
+import BlogPostPage from './src/blog/BlogPostPage' with { type: 'ref' }
+import AdminBlog from './src/admin/dashboards/blog/BlogManagementPage' with { type: 'ref' }
+import { getPublishedBlogPosts, getPublishedBlogPostBySlug } from './src/blog/operations' with { type: 'ref' }
+import {
+  createBlogPost,
+  updateBlogPost,
+  deleteBlogPost,
+  getBlogPostsForAdmin,
+  getBlogPostForAdmin,
+} from './src/admin/dashboards/blog/operations' with { type: 'ref' }
 
 // Demo Exam
 import DemoExamPage from './src/demo-exam/DemoExamPage' with { type: 'ref' }
@@ -355,6 +368,11 @@ export default app({
       // see the file header for what it checks and why it's not deleted
       // like the other verifyPhaseN... scripts.
       verifyPRD005AllPhases,
+      // PRD-007: one-time migration of the 2 posts that existed as markdown
+      // files in the now-retired blog/ Astro site into the BlogPost table.
+      // Run with `wasp db seed migrateBlogPostsFromMarkdown`. Safe to rerun
+      // -- skips any slug that already exists.
+      migrateBlogPostsFromMarkdown,
     ],
   },
 
@@ -400,6 +418,25 @@ export default app({
     // Contact (public — real contact form; signed-in visitors post straight
     // into ContactFormMessage, signed-out visitors get a prefilled mailto:)
     route('ContactRoute', '/contact', page(ContactPage), { prerender: true }),
+
+    // Blog (public — PRD-007: DB-backed, admin-managed; replaces the earlier
+    // separate Astro/Starlight blog/ site). BlogIndexRoute is prerender: true
+    // for its static shell/JSON-LD (the post list itself is a live query --
+    // doesn't resolve at prerender time, see BlogIndexPage.tsx's own note).
+    // BlogPostRoute is a dynamic route with no prerender config: Wasp's
+    // prerender only freezes static HTML at build time, which would bake in
+    // an empty shell for any post published after that build -- worse than
+    // an honest client-rendered page for genuinely admin-editable content.
+    route('BlogIndexRoute', '/blog', page(BlogIndexPage), { prerender: true }),
+    route('BlogPostRoute', '/blog/:slug', page(BlogPostPage)),
+    route('AdminBlogRoute', '/admin/blog', page(AdminBlog, { authRequired: true })),
+    query(getPublishedBlogPosts, { entities: ['BlogPost'] }),
+    query(getPublishedBlogPostBySlug, { entities: ['BlogPost'] }),
+    query(getBlogPostsForAdmin, { entities: ['BlogPost'] }),
+    query(getBlogPostForAdmin, { entities: ['BlogPost'] }),
+    action(createBlogPost, { entities: ['BlogPost'] }),
+    action(updateBlogPost, { entities: ['BlogPost'] }),
+    action(deleteBlogPost, { entities: ['BlogPost'] }),
 
     // Demo Exam (public, front-end only — no auth, no DB, sample questions)
     route('DemoExamRoute', '/demo-exam', page(DemoExamPage), { prerender: true }),
