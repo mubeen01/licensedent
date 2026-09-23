@@ -40,6 +40,7 @@ const ROUTES = [
   { loc: '/demo-exam', source: 'src/demo-exam/DemoExamPage.tsx', changefreq: 'monthly', priority: '0.7' },
   { loc: '/legal', source: 'src/legal/LegalPage.tsx', changefreq: 'yearly', priority: '0.3' },
   { loc: '/about', source: 'src/about/AboutPage.tsx', changefreq: 'yearly', priority: '0.3' },
+  { loc: '/contact', source: 'src/contact/ContactPage.tsx', changefreq: 'yearly', priority: '0.3' },
 ];
 
 // Parses main.wasp.ts's actual `route('Name', '/path', page(X), { ... prerender: true ... })`

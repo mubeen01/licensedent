@@ -28,7 +28,7 @@ import { Badge, Callout } from '@radix-ui/themes';
 import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../components/ui/accordion';
 import { Button } from '../../components/ui/button';
-import SeoHead, { SITE_ORIGIN } from '../../client/components/SeoHead';
+import SeoHead, { SITE_ORIGIN, DEFAULT_OG_IMAGE } from '../../client/components/SeoHead';
 import Eyebrow from '../../landing-page/components/Eyebrow';
 import Reveal from '../../landing-page/components/Reveal';
 import ScrollToTop from '../../landing-page/components/ScrollToTop';
@@ -88,6 +88,10 @@ export default function ExamGuidePage({ config }: { config: ExamGuideConfig }) {
     headline: shortName,
     description: config.seo.description,
     url: canonicalUrl,
+    // Google's Article rich-result eligibility requires `image` -- reusing
+    // the same real, correctly-proportioned (1200x630) site-wide OG asset
+    // PricingPage's Product JSON-LD already reuses, not a new invented one.
+    image: DEFAULT_OG_IMAGE,
     author: { '@type': 'EducationalOrganization', name: 'LicenseDent', url: SITE_ORIGIN },
     publisher: { '@type': 'EducationalOrganization', name: 'LicenseDent', url: SITE_ORIGIN },
     about: {

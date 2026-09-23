@@ -49,7 +49,9 @@ export const SITE_ORIGIN = 'https://licensedent.com';
 // `sharp`'s `contain` fit. Used here so every page gets correct per-page
 // og:image:width/height tags, which didn't exist anywhere before this (only
 // the twitter:-prefixed dimension tags did).
-const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/logo/og-image.png`;
+// Exported so other JSON-LD builders (Article, Product) can reuse the same
+// real, correctly-proportioned asset instead of inventing their own.
+export const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/logo/og-image.png`;
 const DEFAULT_OG_IMAGE_WIDTH = 1200;
 const DEFAULT_OG_IMAGE_HEIGHT = 630;
 

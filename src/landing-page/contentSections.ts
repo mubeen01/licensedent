@@ -464,7 +464,7 @@ export const faqs = [
   },
   {
     id: 5,
-    question: 'Can I switch exams mid-subscription?',
+    question: 'Can I switch exams mid-plan?',
     answer:
       'Fast Track and Standard plans are scoped to one exam. If you need more than one, the Extended plan unlocks every exam we cover for the full 6 months.',
   },

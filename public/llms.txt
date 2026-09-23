@@ -33,3 +33,4 @@
 - [Free demo exam](https://licensedent.com/demo-exam): 20-question, 15-minute DHA-style exam, no login required.
 - [Terms, privacy, refunds & disclaimers](https://licensedent.com/legal): Terms of service, privacy policy, 7-day refund policy, regulator-affiliation disclaimer.
 - [About](https://licensedent.com/about): Who verifies our content, what we do, and how to get in touch.
+- [Contact](https://licensedent.com/contact): Reach the team by email or web form for account, billing, or content-correction questions.
