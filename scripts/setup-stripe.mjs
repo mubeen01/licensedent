@@ -135,7 +135,7 @@ async function main() {
   );
   console.log(
     '\nStill manual (not created by this script):\n' +
-      '  - STRIPE_WEBHOOK_SECRET: run `stripe listen --forward-to localhost:3001/payments-webhook` ' +
+      '  - STRIPE_WEBHOOK_SECRET: run `stripe listen --forward-to localhost:3101/payments-webhook` ' +
       'for local dev, or create a webhook endpoint for /payments-webhook in the Stripe Dashboard for production.\n' +
       '  - STRIPE_CUSTOMER_PORTAL_URL: Stripe Dashboard -> Settings -> Billing -> Customer portal.'
   );
