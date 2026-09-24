@@ -22,8 +22,10 @@ export function ExamAccessSummary() {
   }
 
   const planName = prettyPaymentPlanName(parsePaymentPlanId(subscription.planType));
-  const expiresAt = new Date(subscription.createdAt);
-  expiresAt.setDate(expiresAt.getDate() + subscription.durationDays);
+  // Stored expiresAt wins (same rule as payment/access.ts effectiveExpiryOf).
+  const expiresAt = subscription.expiresAt
+    ? new Date(subscription.expiresAt)
+    : new Date(new Date(subscription.createdAt).getTime() + subscription.durationDays * 86400000);
   const isExpired = expiresAt.getTime() < Date.now();
 
   const examBadge = subscription.allExamsAccess ? (

@@ -6,6 +6,7 @@ import {
   type GetMyStudyPlan,
 } from 'wasp/server/operations';
 import { computeStreak } from './streak';
+import { getAccessibleExamIds } from '../payment/access';
 
 export type SubjectProgress = {
   subjectId: string;
@@ -57,14 +58,49 @@ export type RecentActivityItem = {
   createdAt: string;
 };
 
+export type DailyActivity = {
+  // Local calendar day on the server (same day boundaries as computeStreak), YYYY-MM-DD.
+  date: string;
+  attempted: number;
+  correct: number;
+};
+
 export type DashboardOverview = {
   totalAttempted: number;
   totalCorrect: number;
   accuracy: number;
   subjectsCovered: number;
   thisWeekAttempted: number;
+  todayAttempted: number;
+  todayCorrect: number;
+  // Oldest first, one entry per day (zeros included), last ACTIVITY_WINDOW_DAYS days ending today.
+  dailyActivity: DailyActivity[];
   recentActivity: RecentActivityItem[];
 };
+
+const ACTIVITY_WINDOW_DAYS = 182; // 26 weeks: the dashboard's activity map + 14-day sparklines
+
+function localDateKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function buildDailyActivity(attempts: { isCorrect: boolean; createdAt: Date }[], now: Date): DailyActivity[] {
+  const byDay = new Map<string, { attempted: number; correct: number }>();
+  for (const a of attempts) {
+    const key = localDateKey(a.createdAt);
+    const entry = byDay.get(key) ?? { attempted: 0, correct: 0 };
+    entry.attempted += 1;
+    if (a.isCorrect) entry.correct += 1;
+    byDay.set(key, entry);
+  }
+  const days: DailyActivity[] = [];
+  for (let i = ACTIVITY_WINDOW_DAYS - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const key = localDateKey(d);
+    days.push({ date: key, ...(byDay.get(key) ?? { attempted: 0, correct: 0 }) });
+  }
+  return days;
+}
 
 // Real, DB-backed dashboard summary for the logged-in user only — no fabricated
 // numbers (unlike adverizeo's Math.random() usage stats). Empty/zero fields just
@@ -93,6 +129,8 @@ export const getMyDashboardOverview: GetMyDashboardOverview<void, DashboardOverv
 
   const subjectIds = new Set(attempts.map((a) => a.question.subjectId));
   const totalCorrect = attempts.filter((a) => a.isCorrect).length;
+  const dailyActivity = buildDailyActivity(attempts, new Date());
+  const today = dailyActivity[dailyActivity.length - 1];
 
   return {
     totalAttempted: attempts.length,
@@ -100,6 +138,9 @@ export const getMyDashboardOverview: GetMyDashboardOverview<void, DashboardOverv
     accuracy: attempts.length > 0 ? Math.round((totalCorrect / attempts.length) * 100) : 0,
     subjectsCovered: subjectIds.size,
     thisWeekAttempted: attempts.filter((a) => a.createdAt > weekAgo).length,
+    todayAttempted: today.attempted,
+    todayCorrect: today.correct,
+    dailyActivity,
     recentActivity: attempts.slice(0, 5).map((a) => ({
       id: a.id,
       subjectName: a.question.subject.name,
@@ -225,11 +266,24 @@ export const getMyStudyPlan: GetMyStudyPlan<void, StudyPlan> = async (_args, con
   }
   const userId = context.user.id;
 
-  const [profile, activeSubjects, progress] = await Promise.all([
-    context.entities.UserProfile.findUnique({ where: { userId }, select: { targetExamDate: true } }),
-    context.entities.Subject.findMany({ where: { isActive: true }, select: { id: true, name: true } }),
+  const [profile, accessibleExamIds, progress] = await Promise.all([
+    context.entities.UserProfile.findUnique({ where: { userId }, select: { targetExamDate: true, examId: true } }),
+    getAccessibleExamIds(userId, context.entities),
     getMyProgress(undefined, context),
   ]);
+  // Only suggest subjects the student can actually practise: ones with published
+  // questions in their plan's exam(s), or their onboarding exam if they have no
+  // plan. Without this, a DHA student was pointed at IDC-only subjects.
+  const examIds = accessibleExamIds.length > 0 ? accessibleExamIds : profile?.examId ? [profile.examId] : [];
+  const activeSubjects = await context.entities.Subject.findMany({
+    where: {
+      isActive: true,
+      ...(examIds.length > 0 && {
+        questions: { some: { status: 'published', exams: { some: { id: { in: examIds } } } } },
+      }),
+    },
+    select: { id: true, name: true },
+  });
 
   const progressBySubjectId = new Map(progress.map((p) => [p.subjectId, p]));
   const weakOrUnattempted = activeSubjects

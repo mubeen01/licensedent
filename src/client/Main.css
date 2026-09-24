@@ -197,6 +197,26 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
+  /* Dashboard design tokens (student dashboard redesign, 2026-09-24).
+     A Radix-style stepped scale derived from the active theme's --primary
+     and --card, so Gulf teal, Ireland indigo and dark mode all follow
+     automatically. Steps: 2 = subtle surface, 3 = element bg, 4 = hover,
+     6 = border, 9 = solid, 11 = accessible text on neutral. */
+  --color-brand-2: color-mix(in oklab, hsl(var(--primary)) 5%, hsl(var(--card)));
+  --color-brand-3: color-mix(in oklab, hsl(var(--primary)) 10%, hsl(var(--card)));
+  --color-brand-4: color-mix(in oklab, hsl(var(--primary)) 16%, hsl(var(--card)));
+  --color-brand-6: color-mix(in oklab, hsl(var(--primary)) 32%, hsl(var(--card)));
+  --color-brand-9: hsl(var(--primary));
+  --color-brand-11: color-mix(in oklab, hsl(var(--primary)) 82%, hsl(var(--foreground)));
+  --color-surface: hsl(var(--card));
+  --color-surface-2: color-mix(in oklab, hsl(var(--foreground)) 3%, hsl(var(--card)));
+  --color-line: color-mix(in oklab, hsl(var(--foreground)) 9%, hsl(var(--card)));
+  --color-line-strong: color-mix(in oklab, hsl(var(--foreground)) 16%, hsl(var(--card)));
+  --color-ink-2: color-mix(in oklab, hsl(var(--foreground)) 72%, hsl(var(--card)));
+  --color-ink-3: color-mix(in oklab, hsl(var(--foreground)) 52%, hsl(var(--card)));
+  --shadow-e1: 0 1px 0 rgb(0 0 0 / 0.02), 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-e2: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(0 0 0 / 0.12);
+
   @keyframes rotating {
     0%,
     100% {
@@ -318,6 +338,13 @@
 @utility card-elevated {
   @apply relative overflow-hidden rounded-2xl border border-border/60 bg-linear-to-br from-card to-card-subtle/50 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_32px_-20px_rgba(0,0,0,0.18)] backdrop-blur-sm transition-all duration-300;
   @apply dark:border-white/10 dark:from-card dark:to-card-subtle/80 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_20px_40px_-20px_rgba(0,0,0,0.6)];
+}
+
+/* Flat panel for the redesigned student dashboard: neutral surface, hairline
+   border, a barely-there shadow in light mode and none in dark (where the
+   border alone carries the edge). No gradients, no blur. */
+@utility panel {
+  @apply rounded-xl border border-line bg-surface shadow-e1 dark:shadow-none;
 }
 
 @utility card-elevated-hover {

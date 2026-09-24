@@ -700,7 +700,7 @@ export default app({
     route('DashboardHomeRoute', '/dashboard', page(DashboardHomePage, { authRequired: true })),
     query(getMyDashboardOverview, { entities: ['UserAttempt'] }),
     query(getMyStudyStats, { entities: ['UserAttempt', 'MockExamAttempt'] }),
-    query(getMyStudyPlan, { entities: ['UserAttempt', 'Subject', 'UserProfile'] }),
+    query(getMyStudyPlan, { entities: ['UserAttempt', 'Subject', 'UserProfile', 'Subscription', 'Exam'] }),
 
     // Onboarding (mandatory one-time profile capture before dashboard access)
     route('OnboardingRoute', '/onboarding', page(OnboardingPage, { authRequired: true })),

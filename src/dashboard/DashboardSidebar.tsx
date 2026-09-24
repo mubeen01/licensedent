@@ -83,19 +83,20 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
 
   const isActive = (to: string) => location.pathname === to;
 
-  const daysRemaining = subscription
-    ? Math.max(
-        0,
-        Math.ceil(
-          (new Date(subscription.createdAt).getTime() +
-            subscription.durationDays * 86400000 -
-            Date.now()) /
-            86400000
-        )
-      )
+  // Same rule as the server's effectiveExpiryOf (payment/access.ts): the stored
+  // expiresAt wins; createdAt + durationDays is only a fallback for old rows.
+  // (Previously ignored expiresAt, so admin grants and expired passes showed the wrong days left.)
+  const expiresAtMs = subscription
+    ? subscription.expiresAt
+      ? new Date(subscription.expiresAt).getTime()
+      : new Date(subscription.createdAt).getTime() + subscription.durationDays * 86400000
     : 0;
+  const totalMs = subscription ? Math.max(86400000, expiresAtMs - new Date(subscription.createdAt).getTime()) : 1;
+  const daysRemaining = subscription ? Math.max(0, Math.ceil((expiresAtMs - Date.now()) / 86400000)) : 0;
   const percentRemaining = subscription
-    ? Math.max(4, Math.round((daysRemaining / subscription.durationDays) * 100))
+    ? daysRemaining === 0
+      ? 0
+      : Math.max(4, Math.round(((expiresAtMs - Date.now()) / totalMs) * 100))
     : 0;
 
   const handleLogout = async () => {
@@ -109,15 +110,15 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
   return (
     <div className='h-full flex flex-col bg-card border-r border-border overflow-hidden'>
       {/* Brand header */}
-      <div className='flex items-center justify-between px-5 py-4 border-b border-border shrink-0 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent'>
+      <div className='flex items-center justify-between px-5 py-4 border-b border-line shrink-0'>
         <WaspRouterLink to='/' className='flex items-center space-x-2.5'>
-          <div className='w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0 shadow-xs ring-2 ring-primary/25 ring-offset-1 ring-offset-background'>
+          <div className='w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0 ring-1 ring-line'>
             <img src='/logo/licensedent-icon.svg' alt='LicenseDent' width={512} height={512} className='h-full w-full object-cover' />
           </div>
           <div>
             <h1 className='text-sm font-semibold text-foreground leading-tight'>LicenseDent</h1>
             {isIreland ? (
-              <span className='inline-flex items-center gap-1 mt-0.5 rounded-full bg-gradient-to-r from-primary to-secondary px-1.5 py-px text-[10px] font-semibold text-primary-foreground leading-tight'>
+              <span className='inline-flex items-center gap-1 mt-0.5 rounded-md bg-brand-3 px-1.5 py-px text-[10px] font-semibold text-brand-11 leading-tight'>
                 IDC Ireland
               </span>
             ) : (
@@ -149,23 +150,21 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
                 // signal sighted users get from the highlight.
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all group relative',
-                  active
-                    ? 'bg-gradient-to-r from-primary/15 to-secondary/10 text-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.2)]'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent hover:translate-x-0.5'
+                  'w-full flex items-center px-2.5 py-2 text-sm font-medium rounded-lg transition-colors group relative',
+                  active ? 'bg-brand-3 text-brand-11' : 'text-ink-2 hover:text-foreground hover:bg-surface-2'
                 )}
               >
                 <span
                   className={cn(
-                    'mr-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg transition-colors',
-                    active && 'bg-gradient-to-br from-primary/20 to-secondary/20'
+                    'mr-2.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors',
+                    active ? 'text-brand-11' : 'text-ink-3 group-hover:text-ink-2'
                   )}
                 >
                   <item.icon className='h-4 w-4 shrink-0' />
                 </span>
                 <span className='flex-1 text-left truncate'>{item.label}</span>
                 {'badge' in item && item.badge && !active && (
-                  <span className='ml-2 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground'>
+                  <span className='ml-2 rounded-md border border-line px-1.5 py-px text-[10px] font-medium tabular-nums text-ink-3'>
                     {item.badge}
                   </span>
                 )}
@@ -177,18 +176,17 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
 
       {/* Exam access widget (real data, not fabricated) */}
       <div className='p-3 border-t border-border shrink-0'>
-        <div className='relative overflow-hidden rounded-xl p-3 border border-primary/15 bg-gradient-to-br from-primary/[0.07] to-secondary/[0.07]'>
-          <div className='pointer-events-none absolute -top-6 -right-6 h-20 w-20 rounded-full bg-secondary/15 blur-2xl' />
+        <div className='rounded-lg p-3 border border-line bg-surface-2'>
           <div className='flex items-center justify-between mb-2'>
             <span className='font-medium text-xs text-foreground'>Exam Access</span>
-            {subscription && <span className='text-sm font-semibold text-primary'>{daysRemaining}d</span>}
+            {subscription && <span className='text-[12px] font-medium tabular-nums text-ink-2'>{daysRemaining} days left</span>}
           </div>
 
           {subscription ? (
             <>
-              <div className='w-full rounded-full h-1.5 mb-2 overflow-hidden bg-muted'>
+              <div className='w-full rounded-full h-1.5 mb-2 overflow-hidden bg-line'>
                 <div
-                  className='h-1.5 rounded-full transition-all duration-700 bg-gradient-to-r from-primary to-secondary'
+                  className='h-1.5 rounded-full transition-all duration-700 bg-brand-9'
                   style={{ width: `${percentRemaining}%` }}
                 />
               </div>
@@ -220,7 +218,7 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       {user?.email && (
         <div className='p-3 border-t border-border shrink-0'>
           <div className='flex items-center space-x-2 p-2 rounded-lg'>
-            <div className='w-8 h-8 rounded-lg flex items-center justify-center text-primary-foreground font-medium text-xs shrink-0 bg-gradient-to-br from-primary to-secondary'>
+            <div className='w-8 h-8 rounded-full flex items-center justify-center font-semibold text-xs shrink-0 bg-brand-3 text-brand-11'>
               {user.email[0].toUpperCase()}
             </div>
             <div className='flex-1 min-w-0'>

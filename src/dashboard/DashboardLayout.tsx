@@ -37,7 +37,7 @@ export default function DashboardLayout({ user, pageTitle, children }: Dashboard
   const isIreland = dashboardScope?.kind === 'ireland';
 
   return (
-    <div className={cn('h-screen bg-muted/30 flex overflow-hidden', isIreland && 'theme-ireland')}>
+    <div className={cn('h-screen bg-background flex overflow-hidden', isIreland && 'theme-ireland')}>
       {sidebarOpen && (
         <div
           className='fixed inset-0 z-40 bg-black/40 backdrop-blur-xs lg:hidden'
@@ -54,8 +54,8 @@ export default function DashboardLayout({ user, pageTitle, children }: Dashboard
       </div>
 
       <div className='flex-1 flex flex-col overflow-hidden'>
-        <header className='bg-background/80 backdrop-blur-xl border-b border-border shrink-0'>
-          <div className='px-6 py-4 flex items-center justify-between'>
+        <header className='bg-background border-b border-line shrink-0'>
+          <div className='px-4 sm:px-6 h-16 flex items-center justify-between'>
             <div className='flex items-center space-x-4'>
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -64,8 +64,8 @@ export default function DashboardLayout({ user, pageTitle, children }: Dashboard
                 <Menu className='w-5 h-5 text-foreground' />
               </button>
               <div>
-                <h1 className='text-lg lg:text-xl font-semibold tracking-tight text-foreground'>{pageTitle}</h1>
-                <p className='text-sm text-muted-foreground mt-0.5'>
+                <h1 className='text-base font-semibold tracking-tight text-foreground'>{pageTitle}</h1>
+                <p className='text-[13px] text-ink-3'>
                   {pageGreetings[pageTitle] ?? `Welcome, ${firstName}`}
                 </p>
               </div>
@@ -77,7 +77,7 @@ export default function DashboardLayout({ user, pageTitle, children }: Dashboard
         <main className='flex-1 overflow-auto'>{children}</main>
 
         {/* Mobile bottom nav */}
-        <div className='lg:hidden bg-background/90 backdrop-blur-xl border-t border-border px-4 py-2 shrink-0'>
+        <div className='lg:hidden bg-background border-t border-line px-4 py-1.5 shrink-0'>
           <div className='flex items-center justify-around'>
             <WaspRouterLink to={routes.DashboardHomeRoute.to} className='flex flex-col items-center gap-1 p-2 text-muted-foreground'>
               <LayoutDashboard className='w-5 h-5' />
