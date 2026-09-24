@@ -15,6 +15,8 @@ import { type PrismaClient } from '@prisma/client';
  * Idempotent: rows with an empty link are skipped (an existing id is never
  * cleared), and re-running with the same links changes nothing. Accepts any
  * link form the admin page accepts (youtu.be, watch?v=, embed, shorts, bare id).
+ * Also sets LessonPart.durationMinutes from the optional "Minutes" column
+ * (measured with ffprobe when the checklist was built).
  */
 
 const DEFAULT_CSV = '/mnt/d/Dental/lessons/IDC-YOUTUBE-CHECKLIST.csv';
@@ -80,6 +82,7 @@ export async function attachIdcVideos(prismaClient: PrismaClient) {
   const iSlug = col('lesson_slug');
   const iPart = col('part');
   const iLink = col('YouTube link');
+  const iMinutes = header.indexOf('Minutes');
 
   let attached = 0;
   let unchanged = 0;
@@ -101,21 +104,23 @@ export async function attachIdcVideos(prismaClient: PrismaClient) {
     }
     const part = await prismaClient.lessonPart.findFirst({
       where: { order, lesson: { slug } },
-      select: { id: true, youtubeId: true },
+      select: { id: true, youtubeId: true, durationMinutes: true },
     });
     if (!part) {
       problems.push(`${slug} part ${order}: no such lesson part in this database`);
       continue;
     }
-    if (part.youtubeId === youtubeId) {
+    const minutes = iMinutes >= 0 ? Number(r[iMinutes]) || null : null;
+    const durationMinutes = minutes ?? part.durationMinutes;
+    if (part.youtubeId === youtubeId && part.durationMinutes === durationMinutes) {
       unchanged++;
       continue;
     }
     if (!dryRun) {
-      await prismaClient.lessonPart.update({ where: { id: part.id }, data: { youtubeId } });
+      await prismaClient.lessonPart.update({ where: { id: part.id }, data: { youtubeId, durationMinutes } });
     }
     attached++;
-    console.log(`  ${dryRun ? '[dry run] would attach' : 'attached'} ${slug} part ${order} -> ${youtubeId}${part.youtubeId ? ` (was ${part.youtubeId})` : ''}`);
+    console.log(`  ${dryRun ? '[dry run] would attach' : 'attached'} ${slug} part ${order} -> ${youtubeId}, ${durationMinutes ?? '?'} min${part.youtubeId && part.youtubeId !== youtubeId ? ` (was ${part.youtubeId})` : ''}`);
   }
 
   console.log(
