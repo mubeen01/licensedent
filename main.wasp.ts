@@ -10,6 +10,8 @@ import { importMcqBatches } from './src/server/scripts/importMcqBatches' with { 
 import { importGulf180Videos } from './src/server/scripts/importGulf180Videos' with { type: 'ref' }
 import { verifyPRD005AllPhases } from './src/server/scripts/verifyPRD005AllPhases' with { type: 'ref' }
 import { syncGulfSharedPool } from './src/server/scripts/syncGulfSharedPool' with { type: 'ref' }
+import { seedLaunchAccounts } from './src/server/scripts/seedLaunchAccounts' with { type: 'ref' }
+import { attachIdcVideos } from './src/server/scripts/attachIdcVideos' with { type: 'ref' }
 import App from './src/client/App' with { type: 'ref' }
 import { serverMiddlewareFn } from './src/server/serverSetup' with { type: 'ref' }
 
@@ -392,6 +394,12 @@ export default app({
       // RAID I-02: tag every Gulf question to every Gulf exam (shared bank).
       // Idempotent; DRY_RUN=1 only counts. See the script's header.
       syncGulfSharedPool,
+      // Launch accounts: 2 admins + 2 full-access students, same in dev and prod.
+      // Needs LAUNCH_ACCOUNTS_PASSWORD. Idempotent. See the script's header.
+      seedLaunchAccounts,
+      // Bulk-attach IDC YouTube links from lessons/IDC-YOUTUBE-CHECKLIST.csv.
+      // DRY_RUN=1 reports only. Idempotent. See the script's header.
+      attachIdcVideos,
       // PRD-007: one-time migration of the 2 posts that existed as markdown
       // files in the now-retired blog/ Astro site into the BlogPost table.
       // Run with `wasp db seed migrateBlogPostsFromMarkdown`. Safe to rerun
