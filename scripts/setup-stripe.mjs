@@ -25,7 +25,8 @@ const envPath = path.join(appRoot, '.env.server');
 function readEnvFile(filePath) {
   if (!existsSync(filePath)) return {};
   const vars = {};
-  for (const line of readFileSync(filePath, 'utf8').split('\n')) {
+  // \r?\n: .env.server is edited on Windows (CRLF), and a trailing \r would end up inside the key.
+  for (const line of readFileSync(filePath, 'utf8').split(/\r?\n/)) {
     const match = line.match(/^([A-Z0-9_]+)=(.*)$/);
     if (match) vars[match[1]] = match[2];
   }
@@ -45,6 +46,12 @@ if (!apiKey || apiKey === 'sk_test_...' || !apiKey.startsWith('sk_')) {
 }
 
 const stripe = new Stripe(apiKey, { apiVersion: '2025-04-30.basil' });
+
+// "Training Services - Self-study Web-based". Required: Stripe accounts have
+// Managed Payments on by default, and without a product tax_code every
+// checkout.sessions.create fails ("the product tax code is missing").
+// Verified against the test account 2026-09-24.
+const TAX_CODE = 'txcd_20060058';
 
 // Mirrors src/payment/plans.ts (getPlanPrice) and
 // src/landing-page/contentSections.ts's pricingTeaserPlans -- kept as plain
@@ -84,6 +91,7 @@ const PLANS = [
 async function ensurePrice(plan) {
   const existing = await stripe.prices.list({ lookup_keys: [plan.lookupKey], active: true, limit: 1 });
   if (existing.data.length > 0) {
+    await stripe.products.update(existing.data[0].product, { tax_code: TAX_CODE });
     console.log(`  reusing existing price for ${plan.name}: ${existing.data[0].id}`);
     return existing.data[0].id;
   }
@@ -91,6 +99,7 @@ async function ensurePrice(plan) {
   const product = await stripe.products.create({
     name: plan.name,
     description: plan.description,
+    tax_code: TAX_CODE,
     metadata: { app: 'licensedent' },
   });
   const price = await stripe.prices.create({
