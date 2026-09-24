@@ -31,6 +31,7 @@ import BlogPostPage from './src/blog/BlogPostPage' with { type: 'ref' }
 import AdminBlog from './src/admin/dashboards/blog/BlogManagementPage' with { type: 'ref' }
 import { getPublishedBlogPosts, getPublishedBlogPostBySlug } from './src/blog/operations' with { type: 'ref' }
 import { prepareBlogBuildTimeData } from './src/blog/blogBuildTimeData'
+import { SITE_TITLE } from './src/shared/siteTitle'
 import {
   createBlogPost,
   updateBlogPost,
@@ -283,7 +284,7 @@ export default app({
   name: 'LicenseDent',
   wasp: { version: '^0.25.0' },
 
-  title: 'LicenseDent - Gulf + Ireland Dental Licensing Exam Prep',
+  title: SITE_TITLE,
 
   head: [
     // SVG favicon for modern browsers + Google Search (which supports SVG

@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { wasp } from 'wasp/client/vite'
 import { defineConfig, type Plugin } from 'vite'
+import { SITE_TITLE } from './src/shared/siteTitle'
 
 // PRD-006 L10: sitemap.xml used to be hand-maintained and went stale. This
 // regenerates it from the real route list (scripts/generate-sitemap.mjs)
@@ -18,8 +19,37 @@ function generateSitemapPlugin(): Plugin {
   }
 }
 
+// Wasp's generated root layout (.wasp/out/sdk/wasp/client/app/layout.tsx)
+// renders main.wasp.ts's `title:` as a literal <title> inside <head>, and
+// every page then renders its own via SeoHead.tsx -- so each prerendered
+// page shipped two <title> tags. Crawlers and `document.title` take the
+// first one, so non-JS crawlers saw the generic sitewide title on every
+// page. App.tsx's mount-time cleanup only fixed this for JS-executing
+// clients; this fixes the served HTML itself. The layout lives in generated
+// code we can't edit, but its output (dev SSR responses and every
+// prerendered build entry) goes through Vite's transformIndexHtml, so the
+// stray tag is removed here. Only strips it when a second <title> exists,
+// so a page that forgets SeoHead still keeps a title.
+const TITLE_TAG_RE = /<title[^>]*>([\s\S]*?)<\/title>/gi
+
+function stripDuplicateSiteTitlePlugin(): Plugin {
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const staticTitle = new Set([SITE_TITLE, escapeHtml(SITE_TITLE)])
+  return {
+    name: 'strip-duplicate-site-title',
+    transformIndexHtml(html) {
+      const titles = [...html.matchAll(TITLE_TAG_RE)]
+      if (titles.length < 2) return html
+      const stray = titles.find((m) => staticTitle.has(m[1].trim()))
+      if (!stray || stray.index === undefined) return html
+      return html.slice(0, stray.index) + html.slice(stray.index + stray[0].length)
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [wasp(), generateSitemapPlugin()],
+  plugins: [wasp(), generateSitemapPlugin(), stripDuplicateSiteTitlePlugin()],
   server: {
     port: 3100,
     open: true,

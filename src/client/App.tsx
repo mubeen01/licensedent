@@ -78,6 +78,11 @@ export default function App() {
   // order, first one winning) -- the same bug PRD-006 C4 already found and
   // fixed for description/OG/Twitter tags, just not caught for <title>
   // itself since it isn't part of the `head:` array those tags lived in.
+  // The served/prerendered HTML itself is now fixed at build time by
+  // stripDuplicateSiteTitlePlugin (vite.config.ts), so non-JS crawlers see
+  // one title. This effect stays as the client-side half: Wasp's generated
+  // layout still renders the static <title> in React's tree, so hydration
+  // can re-insert it, and it would again land first.
   // One-time cleanup on first mount: React 19's own head-tag hoisting
   // already dedupes titles it renders itself across client-side navigation
   // (only ever keeps its latest one), so the static leftover only needs
