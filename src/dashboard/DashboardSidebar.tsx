@@ -46,11 +46,11 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
       badge: dueReviewCount ? String(dueReviewCount) : undefined,
     },
     { to: routes.ReviewRoute.to, label: 'Review', icon: Bookmark },
-    // Structured Lessons (PRD-002 Phase I5) only has real content for Ireland
-    // Pathway today -- shown only in Ireland scope rather than exposing an
-    // empty page to Gulf/Extended users. The schema itself is exam-agnostic,
-    // so this is a content-availability call, not a hard architectural limit.
-    { to: routes.LessonsRoute.to, label: 'Lessons', icon: BookOpen, showOnlyForIreland: true },
+    // Structured Lessons: IDC lessons for Ireland scope, the Gulf-180 video
+    // lessons (general_dentist) for everyone else -- shown to Gulf students
+    // since 2026-09-24 (RAID I-03). Server resolves which set; see
+    // lessons/operations.ts resolveLessonExam.
+    { to: routes.LessonsRoute.to, label: 'Lessons', icon: BookOpen },
     // PRD-002 Phase I8.2: Quiz Builder is also an IDC Pathway perk now
     // (server-scoped to Ireland content only), so it's shown for Ireland
     // scope too -- the "Extended" badge would be actively misleading there
@@ -78,7 +78,6 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
   ];
   const navItems = allNavItems.filter((item) => {
     if ('hideForIreland' in item && item.hideForIreland && isIreland) return false;
-    if ('showOnlyForIreland' in item && item.showOnlyForIreland && !isIreland) return false;
     return true;
   });
 

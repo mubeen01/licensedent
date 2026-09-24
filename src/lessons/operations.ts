@@ -9,7 +9,7 @@ import {
 } from 'wasp/server/operations';
 import * as z from 'zod';
 import { resolveOptionalImageUrl } from '../file-upload/s3Utils';
-import { getAccessibleExamIds, getEffectiveAccessForExam, requireActivePlan } from '../payment/access';
+import { getAccessibleExamIds, getEffectiveAccessForExam } from '../payment/access';
 import { orderOptions, shuffle, type Option } from '../server/shuffleUtils';
 import { ensureArgsSchemaOrThrowHttpError } from '../server/validation';
 
@@ -20,32 +20,60 @@ function ensureUser<T extends { id: string } | undefined>(user: T): NonNullable<
   return user as NonNullable<T>;
 }
 
-// Lessons doesn't expose an exam switcher yet (only IDC Ireland has real
-// Lesson rows) -- default to the caller's own accessible exam when it's
-// unambiguous (exactly one). When it's NOT unambiguous (free users with no
-// live subscription at all, or an Extended/allExamsAccess plan covering
-// several Gulf exams at once), this must NOT fall back to IDC -- that would
-// hand Ireland's lesson list/structure to a Gulf free or Extended-plan user
-// who never bought Ireland Pathway access (getLessons has no plan gate of
-// its own; the sidebar hiding it is client-side only). Falls back to the
-// shared Gulf pool instead (general_dentist, same neutral default
-// resolveExamId in questions/operations.ts uses), which currently has zero
-// Lesson rows -- so an ambiguous-scope caller correctly sees an empty
-// Lessons list rather than someone else's exam's content.
-// SECURITY: an explicit `examId` is only honored if it's one the caller can
-// actually access -- otherwise any authenticated user could POST
-// `{ examId: <IDC's id> }` directly and read Ireland's lesson list, bypassing
-// exam scoping entirely regardless of what the UI sends.
-async function resolveExamId(
-  examEntity: { findFirst: (args: any) => Promise<{ id: string } | null> },
-  examId: string | undefined,
+// Lessons live on one exam per market: IDC Ireland (a standalone pack) or
+// the shared Gulf pool `general_dentist` (the Gulf-180 video lessons). The 9
+// branded Gulf exams have no Lesson rows of their own. Since 2026-09-24 (RAID
+// I-03) a plan for ANY Gulf exam (e.g. DHA-only Fast Track) covers the Gulf
+// lessons, the same way it covers the shared Gulf question bank.
+//
+// Resolution:
+//  - an explicit `examId` is honoured only if the caller can access it
+//    (SECURITY: otherwise any user could POST IDC's id and read Ireland's
+//    lesson list); a Gulf exam id maps to general_dentist;
+//  - a caller whose access is standalone-only (IDC Pathway) gets that exam;
+//  - everyone else (Gulf plans, Extended, free users) gets general_dentist.
+//    Free users see the list with every part locked and no notes or video
+//    (see lessonAccessFor below), never another market's content.
+type LessonExamRow = { id: string; slug: string; standalonePackOnly: boolean };
+
+async function resolveLessonExam(
+  examEntity: {
+    findFirst: (args: any) => Promise<LessonExamRow | null>;
+    findMany: (args: any) => Promise<LessonExamRow[]>;
+  },
+  requestedExamId: string | undefined,
   accessibleExamIds: string[]
-): Promise<string> {
-  if (examId && accessibleExamIds.includes(examId)) return examId;
-  if (accessibleExamIds.length === 1) return accessibleExamIds[0];
-  const fallback = await examEntity.findFirst({ where: { slug: 'general_dentist' } });
-  if (!fallback) throw new HttpError(500, 'No default exam configured for Lessons');
-  return fallback.id;
+): Promise<LessonExamRow> {
+  const select = { id: true, slug: true, standalonePackOnly: true };
+  const accessible = accessibleExamIds.length
+    ? await examEntity.findMany({ where: { id: { in: accessibleExamIds } }, select })
+    : [];
+  const gulfPool = await examEntity.findFirst({ where: { slug: 'general_dentist' }, select });
+  if (!gulfPool) throw new HttpError(500, 'No default exam configured for Lessons');
+
+  const requested = requestedExamId ? accessible.find((e) => e.id === requestedExamId) : undefined;
+  if (requested) return requested.standalonePackOnly ? requested : gulfPool;
+
+  const standalone = accessible.filter((e) => e.standalonePackOnly);
+  if (standalone.length > 0 && standalone.length === accessible.length) return standalone[0];
+  return gulfPool;
+}
+
+// Does the caller have a live plan covering this lesson exam? Standalone
+// exams need a plan for that exam; the Gulf pool is covered by a plan for
+// any Gulf exam (single-exam or allExamsAccess).
+async function lessonAccessFor(
+  userId: string,
+  lessonExam: LessonExamRow,
+  entities: Parameters<typeof getAccessibleExamIds>[1]
+): Promise<boolean> {
+  if (lessonExam.standalonePackOnly) {
+    return (await getEffectiveAccessForExam(userId, lessonExam.id, entities)).active;
+  }
+  const accessibleExamIds = await getAccessibleExamIds(userId, entities);
+  if (accessibleExamIds.length === 0) return false;
+  const gulfExams = await entities.Exam.findMany({ where: { standalonePackOnly: false }, select: { id: true } });
+  return gulfExams.some((e) => accessibleExamIds.includes(e.id));
 }
 
 // Part 1 of a Lesson is always unlocked; Part N+1 unlocks only once Part N
@@ -85,6 +113,7 @@ type LessonPartSummary = {
   notesMarkdown: string | null;
   questionCount: number;
   isLocked: boolean;
+  lockReason: 'plan' | 'previous-part' | null;
   bestPercent: number | null;
   passed: boolean;
   inProgressAttemptId: string | null;
@@ -95,6 +124,9 @@ type LessonSummary = {
   title: string;
   order: number;
   passThresholdPercent: number;
+  // false = no live plan covers this lesson's exam: every part is locked and
+  // notes/video are withheld (the list itself is a preview for the upsell).
+  hasAccess: boolean;
   parts: LessonPartSummary[];
 };
 
@@ -102,10 +134,11 @@ export const getLessons: GetLessons<GetLessonsInput, LessonSummary[]> = async (r
   const user = ensureUser(context.user);
   const args = ensureArgsSchemaOrThrowHttpError(getLessonsInputSchema, rawArgs);
   const accessibleExamIds = await getAccessibleExamIds(user.id, context.entities);
-  const examId = await resolveExamId(context.entities.Exam, args.examId, accessibleExamIds);
+  const lessonExam = await resolveLessonExam(context.entities.Exam, args.examId, accessibleExamIds);
+  const hasAccess = await lessonAccessFor(user.id, lessonExam, context.entities);
 
   const lessons = await context.entities.Lesson.findMany({
-    where: { isActive: true, examId },
+    where: { isActive: true, examId: lessonExam.id },
     orderBy: { order: 'asc' },
     include: {
       parts: {
@@ -136,15 +169,17 @@ export const getLessons: GetLessons<GetLessonsInput, LessonSummary[]> = async (r
       title: lesson.title,
       order: lesson.order,
       passThresholdPercent: lesson.passThresholdPercent,
+      hasAccess,
       parts: partsComputed.map(({ part, bestPercent, passed, inProgress }) => ({
         id: part.id,
         order: part.order,
         title: part.title,
-        youtubeId: part.youtubeId,
+        youtubeId: hasAccess ? part.youtubeId : null,
         durationMinutes: part.durationMinutes,
-        notesMarkdown: part.notesMarkdown,
+        notesMarkdown: hasAccess ? part.notesMarkdown : null,
         questionCount: part.questions.length,
-        isLocked: !unlockedOrders.has(part.order),
+        isLocked: !hasAccess || !unlockedOrders.has(part.order),
+        lockReason: !hasAccess ? ('plan' as const) : !unlockedOrders.has(part.order) ? ('previous-part' as const) : null,
         bestPercent,
         passed,
         inProgressAttemptId: inProgress?.id ?? null,
@@ -169,13 +204,15 @@ export const startLessonPartQuizAttempt: StartLessonPartQuizAttempt<
 
   const part = await context.entities.LessonPart.findUnique({
     where: { id: args.lessonPartId },
-    include: { lesson: true },
+    include: { lesson: { include: { exam: { select: { id: true, slug: true, standalonePackOnly: true } } } } },
   });
   if (!part || !part.lesson.isActive) {
     throw new HttpError(404, 'Lesson part not found');
   }
 
-  requireActivePlan(await getEffectiveAccessForExam(user.id, part.lesson.examId, context.entities), 'This lesson');
+  if (!(await lessonAccessFor(user.id, part.lesson.exam, context.entities))) {
+    throw new HttpError(403, 'This lesson needs an active plan. Pick one on the Pricing page -- access starts instantly.');
+  }
 
   // Server-side lock check (not just a client-side hide) -- recompute this
   // lesson's unlock ladder fresh rather than trusting whatever getLessons

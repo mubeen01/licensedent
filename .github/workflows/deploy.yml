@@ -16,12 +16,16 @@ name: Wasp Deploy
 #      this commit) for pushes to main to trigger anything.
 
 on:
+  # Both repos use `master` today; `main` is kept so a later rename to
+  # `main` needs no workflow change (RAID I-01, 2026-09-24).
   push:
     branches:
       - main
+      - master
   pull_request:
     branches:
       - main
+      - master
 
 jobs:
   # Runs on every push and PR -- a typecheck gate before anything reaches
@@ -48,7 +52,7 @@ jobs:
 
   deploy:
     needs: verify
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     env:
       WASP_VERSION: '0.25'

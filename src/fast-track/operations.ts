@@ -1,5 +1,6 @@
 import { type Exam, type FastTrackApplication } from 'wasp/entities';
 import { HttpError } from 'wasp/server';
+import { emailSender } from 'wasp/server/email';
 import {
   type ApproveFastTrackApplication,
   type CreateFastTrackApplication,
@@ -126,6 +127,30 @@ type ApplicationIdInput = z.infer<typeof applicationIdInputSchema>;
 // duration/allExamsAccess from payment/plans.ts -- never admin-entered), so
 // this pilot slot is indistinguishable from a paid Fast Track purchase to
 // every downstream access check (see payment/access.ts).
+// RAID I-07: tell the applicant the outcome by email. Best-effort only: a
+// mail failure (e.g. Resend down) must never undo or block the decision,
+// which is already saved and visible on /fast-track/apply.
+async function notifyApplicant(
+  userEntity: { findUnique: (args: any) => Promise<{ email: string | null } | null> },
+  userId: string,
+  decision: 'approved' | 'rejected'
+) {
+  try {
+    const applicant = await userEntity.findUnique({ where: { id: userId }, select: { email: true } });
+    if (!applicant?.email) return;
+    const approved = decision === 'approved';
+    const subject = approved
+      ? 'Your free LicenseDent Fast Track pass is active'
+      : 'Your LicenseDent Fast Track application';
+    const text = approved
+      ? 'Good news: your application was approved and your free 30-day Fast Track pass is now active. Log in to LicenseDent and open your dashboard to start practising.'
+      : 'Thank you for applying for a free Fast Track pass. We could not offer you a place in this round. You can still try the free demo exam, practise 15 questions a day for free, or pick a plan on the Pricing page.';
+    await emailSender.send({ to: applicant.email, subject, text, html: `<p>${text}</p>` });
+  } catch (err) {
+    console.error('[fast-track] applicant notification email failed:', err);
+  }
+}
+
 export const approveFastTrackApplication: ApproveFastTrackApplication<ApplicationIdInput, FastTrackApplication> = async (
   rawArgs,
   context
@@ -158,6 +183,8 @@ export const approveFastTrackApplication: ApproveFastTrackApplication<Applicatio
     details: { userId: application.userId, examId: application.examId },
   });
 
+  await notifyApplicant(context.entities.User, application.userId, 'approved');
+
   return updated;
 };
 
@@ -186,6 +213,8 @@ export const rejectFastTrackApplication: RejectFastTrackApplication<ApplicationI
     entityType: 'FastTrackApplication',
     entityId: applicationId,
   });
+
+  await notifyApplicant(context.entities.User, application.userId, 'rejected');
 
   return updated;
 };

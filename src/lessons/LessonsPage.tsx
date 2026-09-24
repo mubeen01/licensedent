@@ -8,6 +8,7 @@ import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import DashboardLayout from '../dashboard/DashboardLayout';
+import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { cn } from '../lib/utils';
 
 function LessonsPage({ user }: { user: AuthUser }) {
@@ -29,6 +30,22 @@ function LessonsPage({ user }: { user: AuthUser }) {
                 Structured video lessons with topic quizzes are being produced. They'll appear here the moment
                 they're ready — your access already includes them.
               </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {lessons && lessons.length > 0 && !lessons[0].hasAccess && (
+          <Card>
+            <CardContent className='p-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+              <div>
+                <p className='font-bold text-foreground'>Unlock the video lessons</p>
+                <p className='mt-1 text-sm text-muted-foreground leading-6'>
+                  Every lesson below comes with notes and a short quiz. Any plan for your exam unlocks them.
+                </p>
+              </div>
+              <Button asChild className='shrink-0'>
+                <WaspRouterLink to={routes.PricingPageRoute.to}>See plans</WaspRouterLink>
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -88,6 +105,7 @@ function LessonPartRow({
     notesMarkdown: string | null;
     questionCount: number;
     isLocked: boolean;
+    lockReason: 'plan' | 'previous-part' | null;
     bestPercent: number | null;
     passed: boolean;
     inProgressAttemptId: string | null;
@@ -118,7 +136,11 @@ function LessonPartRow({
           <p className='text-sm font-semibold text-muted-foreground'>
             Part {part.order} · {part.title}
           </p>
-          <p className='text-xs text-muted-foreground'>Locked until you pass the part before this one</p>
+          <p className='text-xs text-muted-foreground'>
+            {part.lockReason === 'plan'
+              ? 'Needs an active plan'
+              : 'Locked until you pass the part before this one'}
+          </p>
         </div>
       </div>
     );

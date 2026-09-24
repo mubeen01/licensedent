@@ -97,6 +97,11 @@ async function processQuestionBatch(opts: {
   dryRun: boolean;
   assignToPartId: string | null;
   summary: BatchSummary;
+  // Dry run only: stems seen so far across ALL batches of this run. A real
+  // run commits Parts 1-3 before the extra pool is checked, so the extra
+  // pool is deduped against them; the dry run must do the same or it
+  // under-reports duplicates (PRD-003 "dry-run duplicate-count gap").
+  dryRunNorms: { norms: string[] | null };
 }) {
   const text = mcqsToPlainText(opts.mcqs);
   const { parsed, flagged } = parseQuestionsFromText(text, opts.fileName);
@@ -110,8 +115,11 @@ async function processQuestionBatch(opts: {
     // up front. Confirmed for real: an earlier version of this dry-run
     // reported "~0 likely duplicate" for a batch where the real (non-dry)
     // run then skipped one entry as an intra-batch duplicate.
-    const existing = await opts.prismaClient.question.findMany({ select: { stem: true } });
-    const existingNorms = existing.map((q) => normalizeStem(q.stem));
+    if (opts.dryRunNorms.norms === null) {
+      const existing = await opts.prismaClient.question.findMany({ select: { stem: true } });
+      opts.dryRunNorms.norms = existing.map((q) => normalizeStem(q.stem));
+    }
+    const existingNorms = opts.dryRunNorms.norms;
     let dupCount = 0;
     let invalidCount = 0;
     let wouldPending = 0;
@@ -272,6 +280,7 @@ export async function importLessonFolder(prismaClient: PrismaClient) {
   }
 
   const summary: BatchSummary = { published: 0, duplicates: 0, invalid: 0, flagged: [] };
+  const dryRunNorms: { norms: string[] | null } = { norms: null };
   let partsSeen = 0;
 
   let partNum = 1;
@@ -319,6 +328,7 @@ export async function importLessonFolder(prismaClient: PrismaClient) {
       dryRun,
       assignToPartId: part?.id ?? null,
       summary,
+      dryRunNorms,
     });
 
     partNum += 1;
@@ -346,6 +356,7 @@ export async function importLessonFolder(prismaClient: PrismaClient) {
         dryRun,
         assignToPartId: null,
         summary,
+        dryRunNorms,
       });
     }
   }

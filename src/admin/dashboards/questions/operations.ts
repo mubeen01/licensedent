@@ -1590,6 +1590,19 @@ export const importQuestionsFromText: ImportQuestionsFromText<ImportQuestionsFro
     throw new HttpError(404, 'Exam not found');
   }
 
+  // The Gulf exams share one question bank (all 9 branded Gulf exams plus the
+  // internal general_dentist pool). Importing into any of them tags the
+  // question to every non-standalone exam. Single-exam Gulf plans (e.g.
+  // DHA-only) resolve to their own exam, while Extended resolves to
+  // general_dentist, so tagging only one exam left DHA buyers with a fraction
+  // of the bank. Standalone packs (IDC Ireland) stay isolated.
+  // `wasp db seed syncGulfSharedPool` backfills questions imported before this.
+  const targetExamIds = exam.standalonePackOnly
+    ? [exam.id]
+    : (await context.entities.Exam.findMany({ where: { standalonePackOnly: false }, select: { id: true } })).map(
+        (e) => e.id
+      );
+
   const { parsed, flagged } = parseQuestionsFromText(args.text, args.fileName);
   const allEntries = [
     ...parsed.map((entry) => ({ entry, status: 'pending' as const })),
@@ -1663,7 +1676,7 @@ export const importQuestionsFromText: ImportQuestionsFromText<ImportQuestionsFro
         status,
         subject: { connect: { id: subjectId } },
         importBatch: { connect: { id: batch.id } },
-        exams: { connect: { id: args.examId } },
+        exams: { connect: targetExamIds.map((id) => ({ id })) },
       },
     });
 

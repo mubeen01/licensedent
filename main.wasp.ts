@@ -9,6 +9,7 @@ import { importLessonFolder } from './src/server/scripts/importLessonFolder' wit
 import { importMcqBatches } from './src/server/scripts/importMcqBatches' with { type: 'ref' }
 import { importGulf180Videos } from './src/server/scripts/importGulf180Videos' with { type: 'ref' }
 import { verifyPRD005AllPhases } from './src/server/scripts/verifyPRD005AllPhases' with { type: 'ref' }
+import { syncGulfSharedPool } from './src/server/scripts/syncGulfSharedPool' with { type: 'ref' }
 import App from './src/client/App' with { type: 'ref' }
 import { serverMiddlewareFn } from './src/server/serverSetup' with { type: 'ref' }
 
@@ -388,6 +389,9 @@ export default app({
       // see the file header for what it checks and why it's not deleted
       // like the other verifyPhaseN... scripts.
       verifyPRD005AllPhases,
+      // RAID I-02: tag every Gulf question to every Gulf exam (shared bank).
+      // Idempotent; DRY_RUN=1 only counts. See the script's header.
+      syncGulfSharedPool,
       // PRD-007: one-time migration of the 2 posts that existed as markdown
       // files in the now-retired blog/ Astro site into the BlogPost table.
       // Run with `wasp db seed migrateBlogPostsFromMarkdown`. Safe to rerun
@@ -730,7 +734,7 @@ export default app({
     action(createFastTrackApplication, { entities: ['FastTrackApplication', 'Exam'] }),
     query(getMyFastTrackApplication, { entities: ['FastTrackApplication'] }),
     query(getFastTrackApplications, { entities: ['FastTrackApplication'] }),
-    action(approveFastTrackApplication, { entities: ['FastTrackApplication', 'Subscription', 'Exam'] }),
-    action(rejectFastTrackApplication, { entities: ['FastTrackApplication'] }),
+    action(approveFastTrackApplication, { entities: ['FastTrackApplication', 'Subscription', 'Exam', 'User'] }),
+    action(rejectFastTrackApplication, { entities: ['FastTrackApplication', 'User'] }),
   ],
 })
