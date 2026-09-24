@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 /**
  * Per-page SEO metadata. Renders <title>/<meta>/<link> anywhere in the tree
  * -- React 19 automatically hoists these into <head> during both client
@@ -80,6 +82,13 @@ export default function SeoHead({
   articleModifiedTime,
   articleTags,
 }: SeoHeadProps) {
+  // Keep the browser tab title in sync. See App.tsx's tab-title effect:
+  // Wasp's layout <title> comes first in <head>, so the <title> element
+  // rendered below alone doesn't change `document.title`.
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
+
   const canonicalUrl = `${SITE_ORIGIN}${path}`;
   // PRD-007: blog cover images live on S3, not this domain -- an absolute
   // URL (http/https) is used as-is; a relative path (the original,

@@ -633,3 +633,9 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* NavigationProgress.tsx: the top loading bar's sliding segment. */
+@keyframes nav-progress {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}

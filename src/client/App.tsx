@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { Navigate, Outlet, useLocation } from 'react-router';
+import { Navigate, Outlet, useLocation, useNavigationType } from 'react-router';
 import { useAuth } from 'wasp/client/auth';
 import { getMyOnboardingProfile, useQuery } from 'wasp/client/operations';
 import { routes } from 'wasp/client/router';
@@ -9,8 +9,32 @@ import NavBar from './components/NavBar/NavBar';
 import { marketingNavigationItems } from './components/NavBar/constants';
 import CookieConsentBanner from './components/cookie-consent/Banner';
 import OrganizationJsonLd from './components/OrganizationJsonLd';
+import NavigationProgress from './components/NavigationProgress';
+import { usePrefetchSectionRoutes } from './hooks/usePrefetchSectionRoutes';
 import Footer from '../landing-page/components/Footer';
 import { footerNavigation } from '../landing-page/contentSections';
+import { SITE_TITLE } from '../shared/siteTitle';
+
+// Every logged-in "app" area (student dashboard + admin panel) has its own
+// self-contained header/sidebar chrome -- the public marketing NavBar
+// (Practice / Free Demo Exam / Pricing / Blog) must never layer on top of it.
+// '/onboarding' gets the same bare-Outlet treatment: it's a full self-
+// contained page, not a dashboard sub-page.
+const APP_SHELL_PREFIXES = [
+  '/admin',
+  '/dashboard',
+  '/practice',
+  '/mock-exams',
+  '/quiz-builder',
+  '/video-lectures',
+  '/progress',
+  '/account',
+  '/billing',
+  '/onboarding',
+];
+// Student-sidebar targets preloaded by usePrefetchSectionRoutes. '/lessons'
+// is a sidebar item (Ireland scope) but isn't an app-shell prefix above.
+const STUDENT_SECTION_PREFIXES = APP_SHELL_PREFIXES.filter((p) => p !== '/admin' && p !== '/onboarding').concat('/lessons');
 
 /**
  * use this component to wrap all child components
@@ -33,27 +57,25 @@ export default function App() {
     return !STANDALONE_AUTH_PATHS.includes(location.pathname);
   }, [location]);
 
-  // Every logged-in "app" area (student dashboard + admin panel) has its own
-  // self-contained header/sidebar chrome -- the public marketing NavBar
-  // (Practice / Free Demo Exam / Pricing / Blog) must never layer on top of it.
-  // '/onboarding' gets the same bare-Outlet treatment: it's a full self-
-  // contained page, not a dashboard sub-page.
-  const APP_SHELL_PREFIXES = [
-    '/admin',
-    '/dashboard',
-    '/practice',
-    '/mock-exams',
-    '/quiz-builder',
-    '/video-lectures',
-    '/progress',
-    '/account',
-    '/billing',
-    '/onboarding',
-  ];
   const isAppShell = useMemo(() => {
     return APP_SHELL_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
   }, [location]);
 
+  // Preload the rest of the current area's pages (admin or student) so
+  // sidebar clicks don't wait on a lazy-route code download -- see the hook.
+  usePrefetchSectionRoutes(
+    location.pathname.startsWith('/admin') ? 'admin' : isAppShell ? 'student' : null,
+    STUDENT_SECTION_PREFIXES
+  );
+
+  // Scroll on navigation. Previously only #hash links scrolled, so clicking
+  // e.g. "Blog" in the footer opened /blog still scrolled to the bottom
+  // (an SPA route change keeps the old window scroll position). New pages
+  // now start at the top; back/forward (POP) is left alone so the browser
+  // keeps its usual restore-where-you-were behaviour. Depends on the whole
+  // `location` object (new key per navigation), so re-clicking the link for
+  // the page you're already on also returns you to the top.
+  const navigationType = useNavigationType();
   useEffect(() => {
     if (location.hash) {
       const id = location.hash.replace('#', '');
@@ -61,40 +83,51 @@ export default function App() {
       if (element) {
         element.scrollIntoView();
       }
+      return;
     }
-  }, [location]);
+    if (navigationType !== 'POP') {
+      window.scrollTo(0, 0);
+    }
+  }, [location, navigationType]);
 
-  // main.wasp.ts's required `title:` field bakes a static, generic <title>
-  // into every page's raw HTML *outside* React's tree (Wasp's own base
-  // template, not the `head:` array SeoHead.tsx's own doc comment already
-  // covers). Per-page routes then render their own <title> via SeoHead.tsx,
-  // so every route ends up with 2 <title> elements. Per the HTML spec,
-  // `document.title` resolves to the FIRST <title> in tree order -- which is
-  // always the static generic one, since it's emitted before anything React
-  // renders. That silently defeated every page's own SEO title (confirmed
-  // live via curl: e.g. /exams/dha rendered both
-  // "LicenseDent - Gulf + Ireland Dental Licensing Exam Prep" *and*
-  // "DHA Exam Guide 2026 -- Dubai Dental Licensing | LicenseDent", in that
-  // order, first one winning) -- the same bug PRD-006 C4 already found and
-  // fixed for description/OG/Twitter tags, just not caught for <title>
-  // itself since it isn't part of the `head:` array those tags lived in.
-  // The served/prerendered HTML itself is now fixed at build time by
-  // stripDuplicateSiteTitlePlugin (vite.config.ts), so non-JS crawlers see
-  // one title. This effect stays as the client-side half: Wasp's generated
-  // layout still renders the static <title> in React's tree, so hydration
-  // can re-insert it, and it would again land first.
-  // One-time cleanup on first mount: React 19's own head-tag hoisting
-  // already dedupes titles it renders itself across client-side navigation
-  // (only ever keeps its latest one), so the static leftover only needs
-  // removing once, here, not per-SeoHead-render.
+  // Safety net for the "page freezes after clicking a menu item" bug: Radix
+  // modal Sheet/DropdownMenu set `pointer-events: none` on <body> while
+  // open, and if the menu is unmounted mid-close by the route change (the
+  // marketing NavBar disappears entirely on /login, /dashboard, etc.) that
+  // style can be left behind, making the whole page unclickable. After each
+  // navigation, clear it unless a Radix layer is genuinely still open.
   useEffect(() => {
-    const titleElements = document.head.querySelectorAll('title');
-    if (titleElements.length > 1) {
-      titleElements.forEach((el, i) => {
-        if (i < titleElements.length - 1) el.remove();
-      });
-    }
-  }, []);
+    const id = window.setTimeout(() => {
+      const hasOpenLayer = document.querySelector(
+        '[role="dialog"][data-state="open"], [role="menu"][data-state="open"], [role="alertdialog"][data-state="open"]'
+      );
+      if (!hasOpenLayer && document.body.style.pointerEvents === 'none') {
+        document.body.style.pointerEvents = '';
+      }
+    }, 400);
+    return () => window.clearTimeout(id);
+  }, [location.pathname]);
+
+  // Tab title. Wasp's generated root layout renders the app-level `title:`
+  // as a <title> in <head>, and pages that use SeoHead render a second one.
+  // `document.title` reads the FIRST <title>, which is the layout's generic
+  // one. Setting `document.title` updates that first element's text in
+  // place, so it always shows the current page's title.
+  //
+  // This used to be done by deleting the extra <title> elements from the
+  // DOM (c4ae0d6). That crashed navigation: React owns those nodes, and on
+  // the homepage (whose title text equals the site title) the removed node
+  // was the one React later tried to unmount. The result was
+  // "NotFoundError: removeChild", the old page frozen on screen, and the
+  // app hanging on the next click. Never remove React-managed head nodes.
+  //
+  // Reset to the site title on every route change (layout effect, so it
+  // runs before SeoHead's own effect sets the page title). Pages without
+  // SeoHead (admin, dashboard) then show the site title instead of the last
+  // public page's.
+  useLayoutEffect(() => {
+    document.title = SITE_TITLE;
+  }, [location.pathname]);
 
   // Mandatory one-time onboarding gate. Only checked on app-shell routes (not
   // on public/marketing pages) so a logged-in-but-not-onboarded user browsing
@@ -129,6 +162,7 @@ export default function App() {
   return (
     <>
       <OrganizationJsonLd />
+      <NavigationProgress />
       <div className='min-h-screen bg-background text-foreground'>
         {isCheckingOnboardingGate ? null : needsOnboarding ? (
           <Navigate to={routes.OnboardingRoute.to} replace />

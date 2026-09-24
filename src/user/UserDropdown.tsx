@@ -15,7 +15,11 @@ export function UserDropdown({ user }: { user: Partial<UserEntity> }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    // modal={false}: a modal Radix menu locks <body> (pointer-events: none +
+    // scroll lock) while open. Most items here navigate into the app shell,
+    // where this NavBar unmounts mid-close -- the lock could be left behind
+    // and freeze the page. A plain account menu doesn't need modal behaviour.
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <button className='flex items-center duration-300 ease-in-out text-foreground hover:text-primary transition-colors'>
           <span className='hidden mr-2 text-right lg:block text-sm font-medium text-foreground'>

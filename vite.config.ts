@@ -24,8 +24,10 @@ function generateSitemapPlugin(): Plugin {
 // every page then renders its own via SeoHead.tsx -- so each prerendered
 // page shipped two <title> tags. Crawlers and `document.title` take the
 // first one, so non-JS crawlers saw the generic sitewide title on every
-// page. App.tsx's mount-time cleanup only fixed this for JS-executing
-// clients; this fixes the served HTML itself. The layout lives in generated
+// page. This fixes the served HTML itself. In the browser, App.tsx and
+// SeoHead.tsx keep `document.title` correct by setting it, never by
+// removing <title> nodes: React owns those, and removing one crashed
+// navigation. The layout lives in generated
 // code we can't edit, but its output (dev SSR responses and every
 // prerendered build entry) goes through Vite's transformIndexHtml, so the
 // stray tag is removed here. Only strips it when a second <title> exists,
@@ -53,6 +55,14 @@ export default defineConfig({
   server: {
     port: 3100,
     open: true,
+    // Pre-compile every page when the dev server starts. Pages are lazy
+    // routes, and Vite otherwise compiles each one (plus its imports) the
+    // first time you open it, which made the first click on a sidebar or
+    // menu item look frozen for several seconds. Dev-only: production builds
+    // are already compiled.
+    warmup: {
+      clientFiles: ['./src/**/*Page.tsx', './src/client/App.tsx'],
+    },
     // Polling instead of native fs events: this project lives on a
     // Windows drive mounted into WSL (/mnt/d), where inotify events from
     // edits made outside the WSL process often don't reach chokidar.

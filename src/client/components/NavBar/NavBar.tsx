@@ -150,7 +150,11 @@ function NavBarMobileMenu({
         <SheetContent side='right' className='w-[300px] sm:w-[400px]'>
           <SheetHeader>
             <SheetTitle className='flex items-center'>
-              <WaspRouterLink to={routes.LandingPageRoute.to} className='flex items-center gap-2'>
+              <WaspRouterLink
+                to={routes.LandingPageRoute.to}
+                className='flex items-center gap-2'
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 <NavLogo isScrolled={false} />
                 <span className='font-bold text-base text-foreground'>LicenseDent</span>
               </WaspRouterLink>
@@ -161,7 +165,11 @@ function NavBarMobileMenu({
               <ul className='space-y-2 py-6'>{renderNavigationItems(navigationItems, setMobileMenuOpen)}</ul>
               <div className='py-6'>
                 {isUserLoading ? null : !user ? (
-                  <WaspRouterLink to={routes.LoginRoute.to}>
+                  // Every link in the Sheet must close it: navigating while it's
+                  // still open (e.g. to /login, where the NavBar unmounts) could
+                  // leave Radix's body `pointer-events: none` lock behind and
+                  // freeze the page.
+                  <WaspRouterLink to={routes.LoginRoute.to} onClick={() => setMobileMenuOpen(false)}>
                     <div className='flex justify-end items-center duration-300 ease-in-out text-foreground hover:text-primary transition-colors'>
                       Log in <LogIn size='1.1rem' className='ml-1' />
                     </div>
