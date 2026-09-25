@@ -1,13 +1,16 @@
-import { type MiddlewareConfigFn, HttpError } from 'wasp/server';
+import { type MiddlewareConfigFn, HttpError, prisma } from 'wasp/server';
 import { type PaymentsWebhook } from 'wasp/server/api';
 import { type PrismaClient, type SubscriptionPlanType as PrismaSubscriptionPlanType } from '@prisma/client';
 import express from 'express';
 import type { Stripe } from 'stripe';
 import { stripe } from './stripeClient';
-import { paymentPlans, PaymentPlanId, SubscriptionStatus, type PaymentPlanEffect } from '../plans';
+import { paymentPlans, PaymentPlanId, SubscriptionStatus, getPlanPrice, prettyPaymentPlanName, type PaymentPlanEffect } from '../plans';
 import { updateUserStripePaymentDetails } from './paymentDetails';
 import { assertUnreachable } from '../../shared/utils';
 import { requireNodeEnvVar } from '../../server/utils';
+import { effectiveExpiryOf } from '../access';
+import { sendEmail } from '../../email/send';
+import { planActivatedTemplate } from '../../email/templates';
 import {
   parseWebhookPayload,
   type InvoicePaidData,
@@ -126,7 +129,7 @@ async function saveSuccessfulOneTimePayment(
     // from the exam the student picked on PricingPage) -- only meaningful for single-exam
     // plans. Sessions created before this metadata existed simply have none, so
     // examAccessId falls back to null rather than failing the whole payment record.
-    await prismaSubscriptionDelegate.create({
+    const subscription = await prismaSubscriptionDelegate.create({
       data: {
         userId: user.id,
         planType: planId as unknown as PrismaSubscriptionPlanType,
@@ -136,8 +139,41 @@ async function saveSuccessfulOneTimePayment(
         source: 'payment',
       },
     });
+    // PRD-008 Phase 3: best-effort only. A real purchase (already saved above)
+    // must never be undone or blocked by a mail failure.
+    await notifyPlanActivated(user, subscription, planId).catch((err) => {
+      console.error('[stripe] plan-activated email failed:', err);
+    });
   }
   return user;
+}
+
+async function notifyPlanActivated(
+  user: { id: string; email: string | null },
+  subscription: { id: string; createdAt: Date; durationDays: number; expiresAt: Date | null; allExamsAccess: boolean; examAccessId: string | null },
+  planId: PaymentPlanId
+) {
+  if (!user.email) return;
+  const examLabel = subscription.allExamsAccess
+    ? 'all exams'
+    : subscription.examAccessId
+      ? ((await prisma.exam.findUnique({ where: { id: subscription.examAccessId }, select: { name: true } }))?.name ?? 'your exam')
+      : 'your exam';
+  await sendEmail({
+    to: user.email,
+    userId: user.id,
+    category: 'transactional',
+    template: 'plan-activated',
+    dedupeKey: `plan-activated:${subscription.id}`,
+    render: () =>
+      planActivatedTemplate({
+        email: user.email!,
+        planName: prettyPaymentPlanName(planId),
+        examLabel,
+        validUntil: effectiveExpiryOf(subscription),
+        amountPaid: getPlanPrice(planId),
+      }),
+  });
 }
 
 // This is called when a subscription is successfully purchased or renewed and payment succeeds.

@@ -1,9 +1,9 @@
-import { app, page, route, query, action, api } from '@wasp.sh/spec'
+import { app, page, route, query, action, api, job } from '@wasp.sh/spec'
 
 // Auth-related src imports
 import { getVerificationEmailContent, getPasswordResetEmailContent } from './src/auth/email-and-pass/emails' with { type: 'ref' }
 import { getEmailUserFields } from './src/auth/userSignupFields' with { type: 'ref' }
-import { onBeforeLoginHook } from './src/auth/hooks' with { type: 'ref' }
+import { onBeforeLoginHook, onAfterEmailVerified } from './src/auth/hooks' with { type: 'ref' }
 import { seedMockUsers, migrateBlogPostsFromMarkdown } from './src/server/scripts/dbSeeds' with { type: 'ref' }
 import { importLessonFolder } from './src/server/scripts/importLessonFolder' with { type: 'ref' }
 import { importMcqBatches } from './src/server/scripts/importMcqBatches' with { type: 'ref' }
@@ -14,6 +14,7 @@ import { seedLaunchAccounts } from './src/server/scripts/seedLaunchAccounts' wit
 import { attachIdcVideos } from './src/server/scripts/attachIdcVideos' with { type: 'ref' }
 import EmailPreferencesPage from './src/email/EmailPreferencesPage' with { type: 'ref' }
 import { emailSelfTest } from './src/server/scripts/emailSelfTest' with { type: 'ref' }
+import { runDailyEmailAutomations } from './src/email/automations' with { type: 'ref' }
 import {
   getEmailPreferencesByToken,
   updateEmailPreferencesByToken,
@@ -378,6 +379,7 @@ export default app({
     onAuthFailedRedirectTo: '/login',
     onAuthSucceededRedirectTo: '/dashboard',
     onBeforeLogin: onBeforeLoginHook,
+    onAfterEmailVerified: onAfterEmailVerified,
   },
 
   db: {
@@ -566,6 +568,17 @@ export default app({
       entities: ['EmailLog', 'EmailPreference', 'User'],
       auth: false,
       middlewareConfigFn: resendWebhookMiddlewareConfigFn,
+    }),
+    // PRD-008 Phase 3: welcome series, free-to-paid nudges, plan-expiring/expired,
+    // inactivity nudges, weekly digest. 03:00 UTC -- late morning across
+    // India/Pakistan/Bangladesh/China, where LicenseDent's students are (see
+    // docs/21-email-system-PRD-008.md). sendEmail() itself uses wasp/server's
+    // own prisma (see email/send.ts), not context.entities -- the entities
+    // below are only for this job's own read queries.
+    job(runDailyEmailAutomations, {
+      executor: 'PgBoss',
+      entities: ['User', 'Subscription', 'UserAttempt', 'MockExamAttempt', 'ReviewSchedule'],
+      schedule: { cron: '0 3 * * *' },
     }),
 
     // Admin Dashboard

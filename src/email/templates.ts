@@ -244,6 +244,40 @@ export function welcomeSeriesTemplate(p: Recipient & Links & { step: 2 | 5 }): R
   });
 }
 
+// Nudges a free-tier student (no Subscription row ever) toward a plan, at
+// day 3 and day 7 since signup (see src/email/automations.ts). Same
+// "study emails" bucket as inactivity/digest -- E-D2 doesn't carve out an
+// exception for upgrade nudges, and gating it behind marketing opt-in would
+// mean most free users never see it.
+export function freeToPaidTemplate(p: Recipient & Links & { attempted: number; daysActive: number }): RenderedEmail {
+  const hasPracticed = p.attempted > 0;
+  return renderEmail({
+    category: 'lifecycle',
+    subject: hasPracticed ? `You've answered ${p.attempted.toLocaleString('en-US')} questions -- see full access` : 'Get full access to your exam prep',
+    preheader: 'Unlimited practice, Smart Review, full mock exams and video lectures.',
+    heading: hasPracticed ? 'Keep the momentum going' : 'Still deciding?',
+    greetingName: firstName(p.name),
+    blocks: [
+      {
+        type: 'paragraph',
+        text: hasPracticed
+          ? `You've answered **${p.attempted.toLocaleString('en-US')} questions** on the free plan so far. A plan unlocks unlimited daily practice, Smart Review and full mock exams with a readiness score.`
+          : `You created your account ${p.daysActive} days ago. The free plan gives you 15 questions a day -- a plan unlocks unlimited practice, Smart Review and full mock exams with a readiness score.`,
+      },
+      {
+        type: 'list',
+        items: [
+          '**Unlimited practice** questions every day, not just 15',
+          '**Full mock exams** with a readiness score',
+          `**Smart Review** so mistakes don't repeat on exam day`,
+        ],
+      },
+      { type: 'button', label: 'See plans', url: siteUrl('/pricing') },
+    ],
+    footer: { reason: STUDY_REASON, recipientEmail: p.email, preferencesUrl: p.preferencesUrl, unsubscribeUrl: p.unsubscribeUrl },
+  });
+}
+
 export function inactivityTemplate(
   p: Recipient & Links & { daysInactive: number; focusSubject?: string | null; dueReviews?: number; daysToExam?: number | null }
 ): RenderedEmail {
@@ -400,6 +434,8 @@ export function templateGallery(): { id: string; label: string; category: string
     { id: 'fast-track-rejected', label: 'Fast Track not approved', category: 'Plans', email: fastTrackDecisionTemplate({ ...r, approved: false }) },
     { id: 'series-2', label: 'Welcome series · day 2', category: 'Study', email: welcomeSeriesTemplate({ ...r, ...links, step: 2 }) },
     { id: 'series-5', label: 'Welcome series · day 5', category: 'Study', email: welcomeSeriesTemplate({ ...r, ...links, step: 5 }) },
+    { id: 'free-to-paid-active', label: 'Free -> paid nudge (has practiced)', category: 'Study', email: freeToPaidTemplate({ ...r, ...links, attempted: 42, daysActive: 7 }) },
+    { id: 'free-to-paid-inactive', label: 'Free -> paid nudge (never practiced)', category: 'Study', email: freeToPaidTemplate({ ...r, ...links, attempted: 0, daysActive: 3 }) },
     { id: 'inactivity', label: 'Inactive 3 days', category: 'Study', email: inactivityTemplate({ ...r, ...links, daysInactive: 3, focusSubject: 'Pharmacology', dueReviews: 23, daysToExam: 38 }) },
     { id: 'digest', label: 'Weekly digest', category: 'Study', email: weeklyDigestTemplate({ ...r, ...links, weekAnswered: 238, weekAccuracy: 74, streak: 6, readiness: 55, focusSubject: 'Pharmacology', daysToExam: 38 }) },
     {
