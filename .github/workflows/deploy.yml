@@ -36,6 +36,8 @@ jobs:
   # once real tests exist rather than fake the gate.
   verify:
     runs-on: ubuntu-latest
+    env:
+      WASP_VERSION: '0.25'
     steps:
       - uses: actions/checkout@v6
 
@@ -46,6 +48,19 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      # `wasp/entities`, `wasp/client/operations`, etc. (imported all over
+      # src/) only exist once Wasp generates .wasp/out/sdk -- node_modules/wasp
+      # is a symlink into it, created by the Wasp CLI, not by `npm install`.
+      # Confirmed missing here 2026-09-25: this job had no Wasp CLI step at
+      # all and would have failed "Cannot find module 'wasp/...'" on a clean
+      # runner (no .wasp/ dir -- it's gitignored) despite passing locally,
+      # where a leftover .wasp/out/sdk from a prior `wasp start` masked it.
+      - name: Install Wasp
+        run: npm i -g @wasp.sh/wasp-cli@$WASP_VERSION
+
+      - name: Generate Wasp SDK
+        run: wasp build
 
       - name: Typecheck
         run: npx tsc --noEmit -p tsconfig.src.json
