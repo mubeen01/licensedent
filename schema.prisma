@@ -50,6 +50,9 @@ model User {
   notes                     AdminUserNote[]   @relation("AdminUserNoteSubject")
   authoredUserNotes         AdminUserNote[]   @relation("AdminUserNoteAuthor")
   lessonPartQuizAttempts    LessonPartQuizAttempt[]
+
+  emailPreference           EmailPreference?
+  emailLogs                 EmailLog[]
 }
 
 model GptResponse {
@@ -830,4 +833,66 @@ model Testimonial {
 
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
+}
+
+// PRD-008 (docs/21-email-system-PRD-008.md). One row per user, created lazily on
+// first need. `token` is the unguessable id used in unsubscribe/preferences
+// links, so those pages work without logging in.
+model EmailPreference {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+  updatedAt                 DateTime        @updatedAt
+
+  user                      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                    String          @unique
+
+  token                     String          @unique
+
+  // E-D2: marketing is opt-in only (unticked checkbox), off by default.
+  marketingOptIn            Boolean         @default(false)
+  marketingOptInAt          DateTime?
+  // Study emails (welcome series, reminders, weekly digest, free-plan tips): on by default.
+  studyEmails               Boolean         @default(true)
+
+  // Set by bounce/complaint webhooks: stops every non-essential send to this address.
+  suppressedAt              DateTime?
+  suppressedReason          String?
+}
+
+enum EmailCategory {
+  transactional
+  lifecycle
+  marketing
+}
+
+// Every email the app sends (or deliberately skips). `dedupeKey` makes each
+// automation idempotent: e.g. "plan-expiring-7d:<subscriptionId>" can only
+// ever be sent once, however often the daily job runs.
+model EmailLog {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+
+  user                      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId                    String?
+  toEmail                   String
+  category                  EmailCategory
+  template                  String
+  subject                   String
+  dedupeKey                 String?         @unique
+  campaignId                String?
+
+  // sent | skipped | failed ; then updated by the Resend webhook
+  status                    String
+  error                     String?
+  providerId                String?         @unique
+
+  deliveredAt               DateTime?
+  openedAt                  DateTime?
+  clickedAt                 DateTime?
+  bouncedAt                 DateTime?
+  complainedAt              DateTime?
+
+  @@index([userId, createdAt])
+  @@index([template, createdAt])
+  @@index([campaignId])
 }

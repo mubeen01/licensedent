@@ -12,6 +12,18 @@ import { verifyPRD005AllPhases } from './src/server/scripts/verifyPRD005AllPhase
 import { syncGulfSharedPool } from './src/server/scripts/syncGulfSharedPool' with { type: 'ref' }
 import { seedLaunchAccounts } from './src/server/scripts/seedLaunchAccounts' with { type: 'ref' }
 import { attachIdcVideos } from './src/server/scripts/attachIdcVideos' with { type: 'ref' }
+import EmailPreferencesPage from './src/email/EmailPreferencesPage' with { type: 'ref' }
+import { emailSelfTest } from './src/server/scripts/emailSelfTest' with { type: 'ref' }
+import {
+  getEmailPreferencesByToken,
+  updateEmailPreferencesByToken,
+  getMyEmailPreferences,
+  updateMyEmailPreferences,
+  emailUnsubscribeOneClick,
+  emailUnsubscribeMiddlewareConfigFn,
+  resendWebhook,
+  resendWebhookMiddlewareConfigFn,
+} from './src/email/operations' with { type: 'ref' }
 import App from './src/client/App' with { type: 'ref' }
 import { serverMiddlewareFn } from './src/server/serverSetup' with { type: 'ref' }
 
@@ -347,7 +359,7 @@ export default app({
       email: {
         fromField: {
           name: 'LicenseDent',
-          email: 'support@licensedent.com',
+          email: 'hello@licensedent.com',
         },
         emailVerification: {
           clientRoute: 'EmailVerificationRoute',
@@ -400,6 +412,8 @@ export default app({
       // Bulk-attach IDC YouTube links from lessons/IDC-YOUTUBE-CHECKLIST.csv.
       // DRY_RUN=1 reports only. Idempotent. See the script's header.
       attachIdcVideos,
+      // PRD-008: send-pipeline self-test (consent, suppression, dedupe, Resend).
+      emailSelfTest,
       // PRD-007: one-time migration of the 2 posts that existed as markdown
       // files in the now-retired blog/ Astro site into the BlogPost table.
       // Run with `wasp db seed migrateBlogPostsFromMarkdown`. Safe to rerun
@@ -424,7 +438,7 @@ export default app({
       name: 'LicenseDent',
       // Must match a sender address verified with Resend for the
       // licensedent.com domain (DNS records added in Resend's dashboard).
-      email: 'support@licensedent.com',
+      email: 'hello@licensedent.com',
     },
   },
 
@@ -535,6 +549,23 @@ export default app({
     api('POST', '/payments-webhook', paymentsWebhook, {
       entities: ['User', 'Subscription'],
       middlewareConfigFn: paymentsMiddlewareConfigFn,
+    }),
+
+    // Email system (PRD-008, docs/21-email-system-PRD-008.md)
+    route('EmailPreferencesRoute', '/email/preferences', page(EmailPreferencesPage)),
+    query(getEmailPreferencesByToken, { entities: ['EmailPreference'], auth: false }),
+    action(updateEmailPreferencesByToken, { entities: ['EmailPreference'], auth: false }),
+    query(getMyEmailPreferences, { entities: ['EmailPreference'] }),
+    action(updateMyEmailPreferences, { entities: ['EmailPreference'] }),
+    api('POST', '/email/unsubscribe', emailUnsubscribeOneClick, {
+      entities: ['EmailPreference'],
+      auth: false,
+      middlewareConfigFn: emailUnsubscribeMiddlewareConfigFn,
+    }),
+    api('POST', '/webhooks/resend', resendWebhook, {
+      entities: ['EmailLog', 'EmailPreference', 'User'],
+      auth: false,
+      middlewareConfigFn: resendWebhookMiddlewareConfigFn,
     }),
 
     // Admin Dashboard

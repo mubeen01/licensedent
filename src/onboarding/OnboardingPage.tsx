@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { type AuthUser } from 'wasp/auth';
-import { completeOnboarding, getMyDashboardScope, getPublicExams, useQuery } from 'wasp/client/operations';
+import { completeOnboarding, getMyDashboardScope, getPublicExams, updateMyEmailPreferences, useQuery } from 'wasp/client/operations';
 import { useNavigate } from 'react-router';
 import { routes } from 'wasp/client/router';
 import { Button } from '../components/ui/button';
@@ -10,6 +10,7 @@ import { Label } from '../components/ui/label';
 import { Progress } from '../components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
+import { Checkbox } from '../components/ui/checkbox';
 import { cn } from '../lib/utils';
 import { todayISODate } from '../dashboard/greeting';
 import { COUNTRIES } from './countries';
@@ -68,6 +69,8 @@ function OnboardingPage({ user }: { user: AuthUser }) {
   const [formData, setFormData] = useState<FormData>(() => loadDraft().formData);
   const [currentStep, setCurrentStep] = useState<number>(() => loadDraft().currentStep);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // PRD-008 E-D2: marketing is opt-in only, so this starts unticked.
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { data: exams, isLoading: examsLoading } = useQuery(getPublicExams);
@@ -138,6 +141,10 @@ function OnboardingPage({ user }: { user: AuthUser }) {
         country: formData.country,
         address: formData.address.trim() || undefined,
       });
+      if (marketingOptIn) {
+        // Best-effort: consent is also editable later on the Account page.
+        await updateMyEmailPreferences({ marketingOptIn: true }).catch(() => undefined);
+      }
       localStorage.removeItem(DRAFT_KEY);
       navigate(routes.DashboardHomeRoute.to);
     } catch (e: unknown) {
@@ -333,6 +340,20 @@ function OnboardingPage({ user }: { user: AuthUser }) {
                   onChange={(e) => set('address', e.currentTarget.value)}
                   placeholder='Street, city'
                 />
+              </div>
+              <div className='flex items-start gap-3 rounded-lg border border-border p-3.5'>
+                <Checkbox
+                  id='marketingOptIn'
+                  checked={marketingOptIn}
+                  onCheckedChange={(v) => setMarketingOptIn(v === true)}
+                  className='mt-0.5'
+                />
+                <Label htmlFor='marketingOptIn' className='cursor-pointer font-normal leading-5'>
+                  <span className='font-medium text-foreground'>Send me exam news and offers</span>
+                  <span className='mt-0.5 block text-[13px] text-muted-foreground'>
+                    A few emails a month at most. You can unsubscribe any time.
+                  </span>
+                </Label>
               </div>
             </div>
           )}

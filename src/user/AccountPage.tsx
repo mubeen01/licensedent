@@ -4,6 +4,7 @@ import DashboardLayout from '../dashboard/DashboardLayout';
 import { ExamAccessSummary } from '../dashboard/ExamAccessSummary';
 import { Separator } from '../components/ui/separator';
 import ContactSupportCard from './ContactSupportCard';
+import AccountEmailPreferences from '../email/AccountEmailPreferences';
 
 export default function AccountPage({ user }: { user: AuthUser }) {
   return (
@@ -50,6 +51,10 @@ export default function AccountPage({ user }: { user: AuthUser }) {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className='mt-6'>
+          <AccountEmailPreferences />
         </div>
 
         <div className='mt-6'>
