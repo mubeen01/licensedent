@@ -129,8 +129,8 @@ export default function BlogPostPage() {
   return (
     <div className='bg-background text-foreground'>
       <SeoHead
-        title={`${post.title} | LicenseDent`}
-        description={post.excerpt}
+        title={post.seoTitle ? `${post.seoTitle} | LicenseDent` : `${post.title} | LicenseDent`}
+        description={post.seoDescription || post.excerpt}
         path={`/blog/${post.slug}`}
         ogImage={post.coverImageUrl ?? undefined}
         keywords={['dental licensing exam', ...post.tags.map(formatTagLabel)]}

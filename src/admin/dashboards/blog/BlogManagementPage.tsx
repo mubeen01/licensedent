@@ -35,6 +35,21 @@ function slugify(title: string): string {
   );
 }
 
+// Search-safe length guidance for the optional SEO title/description overrides --
+// informational only, never blocks saving. `emptyOk` covers these fields being
+// blank on purpose (falls back to title/excerpt), so 0 characters isn't flagged.
+function LengthHint({ length, min, max, emptyOk }: { length: number; min: number; max: number; emptyOk?: boolean }) {
+  if (length === 0 && emptyOk) {
+    return <span className='text-[11px] text-muted-foreground/70'>0 — will use fallback</span>;
+  }
+  const inRange = length >= min && length <= max;
+  return (
+    <span className={cn('text-[11px]', inRange ? 'text-success' : 'text-muted-foreground')}>
+      {length} / {min}–{max} chars{inRange ? '' : length < min ? ' (short)' : ' (long)'}
+    </span>
+  );
+}
+
 function BlogManagementPage({ user }: { user: AuthUser }) {
   const { data: posts, isLoading, refetch } = useQuery(getBlogPostsForAdmin);
   const [isAdding, setIsAdding] = useState(false);
@@ -92,6 +107,8 @@ function PostForm({
   const [slug, setSlug] = useState(post?.slug ?? '');
   const [slugTouched, setSlugTouched] = useState(!!post);
   const [excerpt, setExcerpt] = useState(post?.excerpt ?? '');
+  const [seoTitle, setSeoTitle] = useState(post?.seoTitle ?? '');
+  const [seoDescription, setSeoDescription] = useState(post?.seoDescription ?? '');
   const [bodyMarkdown, setBodyMarkdown] = useState(post?.bodyMarkdown ?? '');
   const [tagsInput, setTagsInput] = useState(post?.tags.join(', ') ?? '');
   const [status, setStatus] = useState<'draft' | 'published'>((post?.status as 'draft' | 'published') ?? 'draft');
@@ -158,8 +175,9 @@ function PostForm({
     setIsSaving(true);
     setError(null);
     try {
+      const seoFields = { seoTitle: seoTitle.trim() || null, seoDescription: seoDescription.trim() || null };
       if (isEditing) {
-        await updateBlogPost({ id: post.id, title, slug, excerpt, bodyMarkdown, tags, status, coverImageKey });
+        await updateBlogPost({ id: post.id, title, slug, excerpt, bodyMarkdown, tags, status, coverImageKey, ...seoFields });
       } else {
         await createBlogPost({
           title,
@@ -169,6 +187,7 @@ function PostForm({
           tags,
           status,
           coverImageKey,
+          ...seoFields,
         });
       }
       onSaved();
@@ -244,8 +263,37 @@ function PostForm({
       </div>
 
       <div>
-        <Label className='text-xs text-muted-foreground'>Excerpt (used for meta description + card preview) *</Label>
+        <Label className='text-xs text-muted-foreground'>Excerpt (the /blog card summary — also the meta description fallback) *</Label>
         <Textarea className='mt-1' rows={2} value={excerpt} onChange={(e) => setExcerpt(e.currentTarget.value)} />
+      </div>
+
+      <div className='rounded-xl border border-border bg-muted/20 p-4'>
+        <p className='text-xs font-semibold text-foreground'>Search & social overrides (optional)</p>
+        <p className='mt-0.5 text-[11px] text-muted-foreground'>
+          Leave blank to use the title/excerpt above. Set these when you want a shorter, search-optimized version
+          without changing the on-page heading or card summary.
+        </p>
+        <div className='mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2'>
+          <div>
+            <div className='flex items-baseline justify-between'>
+              <Label className='text-xs text-muted-foreground'>SEO title</Label>
+              <LengthHint length={seoTitle.length} min={30} max={60} emptyOk />
+            </div>
+            <Input className='mt-1' value={seoTitle} onChange={(e) => setSeoTitle(e.currentTarget.value)} placeholder={title || 'Falls back to Title'} />
+          </div>
+          <div>
+            <div className='flex items-baseline justify-between'>
+              <Label className='text-xs text-muted-foreground'>Meta description</Label>
+              <LengthHint length={seoDescription.length} min={120} max={160} emptyOk />
+            </div>
+            <Input
+              className='mt-1'
+              value={seoDescription}
+              onChange={(e) => setSeoDescription(e.currentTarget.value)}
+              placeholder={excerpt || 'Falls back to Excerpt'}
+            />
+          </div>
+        </div>
       </div>
 
       <div>

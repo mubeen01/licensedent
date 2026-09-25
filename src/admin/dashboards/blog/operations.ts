@@ -87,6 +87,10 @@ const createInputSchema = z.object({
   tags: z.array(z.string().trim().min(1)).max(20).default([]),
   status: z.enum(['draft', 'published']).default('draft'),
   coverImageKey: z.string().nonempty().nullable().optional(),
+  // Optional overrides for the <title>/meta description -- null/omitted falls
+  // back to title/excerpt in SeoHead (BlogPostPage.tsx), so this is never required.
+  seoTitle: z.string().trim().max(70).nullable().optional(),
+  seoDescription: z.string().trim().max(170).nullable().optional(),
 });
 type CreateInput = z.infer<typeof createInputSchema>;
 
@@ -104,6 +108,8 @@ export const createBlogPost: CreateBlogPost<CreateInput, BlogPostWithCoverImage>
       status: args.status,
       publishedAt: args.status === 'published' ? new Date() : null,
       coverImageKey: args.coverImageKey ?? null,
+      seoTitle: args.seoTitle || null,
+      seoDescription: args.seoDescription || null,
     },
   });
 
@@ -126,6 +132,8 @@ const updateInputSchema = z.object({
   tags: z.array(z.string().trim().min(1)).max(20),
   status: z.enum(['draft', 'published']),
   coverImageKey: z.string().nonempty().nullable().optional(),
+  seoTitle: z.string().trim().max(70).nullable().optional(),
+  seoDescription: z.string().trim().max(170).nullable().optional(),
 });
 type UpdateInput = z.infer<typeof updateInputSchema>;
 
@@ -152,6 +160,8 @@ export const updateBlogPost: UpdateBlogPost<UpdateInput, BlogPostWithCoverImage>
       status: args.status,
       publishedAt,
       coverImageKey: args.coverImageKey ?? null,
+      seoTitle: args.seoTitle || null,
+      seoDescription: args.seoDescription || null,
     },
   });
 

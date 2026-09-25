@@ -808,6 +808,14 @@ model BlogPost {
   status                    BlogPostStatus  @default(draft)
   authorName                String          @default("LicenseDent")
 
+  // Optional overrides for the <title>/meta description search engines and social
+  // previews actually see -- falls back to title/excerpt when null (see SeoHead
+  // usage in BlogPostPage.tsx). Kept separate from title/excerpt because those
+  // serve a different purpose (the on-page H1 and the /blog card summary) and
+  // don't need to fit search-safe lengths (~60/~155 chars) the way these do.
+  seoTitle                  String?
+  seoDescription            String?
+
   // S3 object key (e.g. "blog-images/<uuid>.jpg"), not a URL -- unlike
   // Question.imageUrl's private-bucket signed-URL pattern, blog cover images
   // are served from a public bucket/prefix (they need a stable URL for
