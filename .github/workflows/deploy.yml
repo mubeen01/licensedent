@@ -52,12 +52,28 @@ jobs:
       # `wasp/entities`, `wasp/client/operations`, etc. (imported all over
       # src/) only exist once Wasp generates .wasp/out/sdk -- node_modules/wasp
       # is a symlink into it, created by the Wasp CLI, not by `npm install`.
-      # Confirmed missing here 2026-09-25: this job had no Wasp CLI step at
-      # all and would have failed "Cannot find module 'wasp/...'" on a clean
-      # runner (no .wasp/ dir -- it's gitignored) despite passing locally,
-      # where a leftover .wasp/out/sdk from a prior `wasp start` masked it.
+      # This job had no Wasp CLI step at all before 2026-09-25.
       - name: Install Wasp
         run: npm i -g @wasp.sh/wasp-cli@$WASP_VERSION
+
+      # `wasp build` alone, as the very first Wasp command in a fresh
+      # checkout, fails with "Cannot find module '.wasp/spec/dist/src/run.js'"
+      # -- that bundle (Wasp's own *.wasp.ts analyzer) is only bootstrapped by
+      # `wasp install`, confirmed 2026-09-25 across three fresh-clone
+      # rehearsals (a leftover .wasp/spec from local dev had been masking
+      # this every time it was tested against the existing WSL working copy).
+      - name: Bootstrap Wasp project
+        run: wasp install
+
+      # Separately, `wasp build`'s own spec-analysis step type-checks
+      # src/blog/blogBuildTimeData.ts, which imports `@prisma/client` --
+      # but wasp build only generates that client *after* spec analysis
+      # succeeds, a chicken-and-egg gap on a fresh checkout (no prior
+      # `wasp start`/`prisma generate` to have already produced it).
+      # Confirmed 2026-09-25: `wasp build` fails on this every time without
+      # an explicit prior generate, succeeds every time with one.
+      - name: Generate Prisma client
+        run: npx prisma generate --schema=schema.prisma
 
       - name: Generate Wasp SDK
         run: wasp build
