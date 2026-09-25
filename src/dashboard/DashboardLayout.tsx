@@ -5,6 +5,7 @@ import { Link as WaspRouterLink, routes } from 'wasp/client/router';
 import { useQuery, getMyDashboardScope } from 'wasp/client/operations';
 import { cn } from '../lib/utils';
 import DarkModeSwitcher from '../client/components/DarkModeSwitcher';
+import NotificationBell from '../notifications/NotificationBell';
 import DashboardSidebar from './DashboardSidebar';
 
 interface DashboardLayoutProps {
@@ -70,7 +71,10 @@ export default function DashboardLayout({ user, pageTitle, children }: Dashboard
                 </p>
               </div>
             </div>
-            <DarkModeSwitcher />
+            <div className='flex items-center gap-2'>
+              <NotificationBell />
+              <DarkModeSwitcher />
+            </div>
           </div>
         </header>
 

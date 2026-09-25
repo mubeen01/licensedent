@@ -25,8 +25,11 @@ import { logAdminAction } from '../../../server/adminAudit';
 import { ensureArgsSchemaOrThrowHttpError } from '../../../server/validation';
 import { PaymentPlanId, paymentPlans } from '../../../payment/plans';
 
-// Matches the fromField declared inline for email auth in main.wasp.
-const EMAIL_FROM_FIELD = { name: 'LicenseDent', email: 'help@licensedent.com' };
+// Matches the fromField declared inline for email auth in main.wasp.ts (hello@licensedent.com) --
+// these are auth-flow emails (invite, password reset), same category as Wasp's own verification/
+// reset emails, so they should share the same sender identity. Previously drifted to support@/help@
+// (fixed 2026-09-25, see docs/09-work-changelog.md).
+const EMAIL_FROM_FIELD = { name: 'LicenseDent', email: 'hello@licensedent.com' };
 
 function ensureAdmin(user: { isAdmin: boolean } | undefined) {
   if (!user) {

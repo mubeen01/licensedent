@@ -18,6 +18,7 @@ import { runDailyEmailAutomations } from './src/email/automations' with { type: 
 import { sendEmailCampaignJob } from './src/email/campaignSend' with { type: 'ref' }
 import { verifyEmailAutomations } from './src/server/scripts/verifyEmailAutomations' with { type: 'ref' }
 import { verifyEmailCampaigns } from './src/server/scripts/verifyEmailCampaigns' with { type: 'ref' }
+import { verifyNotifications } from './src/server/scripts/verifyNotifications' with { type: 'ref' }
 import AdminEmails from './src/admin/dashboards/emails/EmailsManagementPage' with { type: 'ref' }
 import {
   getEmailCampaigns,
@@ -44,6 +45,12 @@ import {
   resendWebhook,
   resendWebhookMiddlewareConfigFn,
 } from './src/email/operations' with { type: 'ref' }
+import {
+  getMyNotifications,
+  getMyUnreadNotificationCount,
+  markNotificationRead,
+  markAllNotificationsRead,
+} from './src/notifications/operations' with { type: 'ref' }
 import App from './src/client/App' with { type: 'ref' }
 import { serverMiddlewareFn } from './src/server/serverSetup' with { type: 'ref' }
 
@@ -305,6 +312,7 @@ import {
   createFastTrackApplication,
   getMyFastTrackApplication,
   getFastTrackApplications,
+  getFastTrackPendingCount,
   approveFastTrackApplication,
   rejectFastTrackApplication,
 } from './src/fast-track/operations' with { type: 'ref' }
@@ -442,6 +450,9 @@ export default app({
       // PRD-008 Phase 4: exercises the campaign audience resolver + send job
       // + admin test-send against the dev DB. Safe to rerun.
       verifyEmailCampaigns,
+      // Notification system: exercises createNotification() + all 4 query/action
+      // operations against a real launch account. Safe to rerun.
+      verifyNotifications,
       // PRD-007: one-time migration of the 2 posts that existed as markdown
       // files in the now-retired blog/ Astro site into the BlogPost table.
       // Run with `wasp db seed migrateBlogPostsFromMarkdown`. Safe to rerun
@@ -585,6 +596,12 @@ export default app({
     action(updateEmailPreferencesByToken, { entities: ['EmailPreference'], auth: false }),
     query(getMyEmailPreferences, { entities: ['EmailPreference'] }),
     action(updateMyEmailPreferences, { entities: ['EmailPreference'] }),
+
+    // In-app notifications (student dashboard bell)
+    query(getMyNotifications, { entities: ['Notification'] }),
+    query(getMyUnreadNotificationCount, { entities: ['Notification'] }),
+    action(markNotificationRead, { entities: ['Notification'] }),
+    action(markAllNotificationsRead, { entities: ['Notification'] }),
     api('POST', '/email/unsubscribe', emailUnsubscribeOneClick, {
       entities: ['EmailPreference'],
       auth: false,
@@ -603,7 +620,7 @@ export default app({
     // below are only for this job's own read queries.
     job(runDailyEmailAutomations, {
       executor: 'PgBoss',
-      entities: ['User', 'Subscription', 'UserAttempt', 'MockExamAttempt', 'ReviewSchedule'],
+      entities: ['User', 'Subscription', 'UserAttempt', 'MockExamAttempt', 'ReviewSchedule', 'Notification'],
       schedule: { cron: '0 3 * * *' },
     }),
     // PRD-008 Phase 4: submitted on demand by sendEmailCampaignNow (immediate)
@@ -822,7 +839,7 @@ export default app({
     action(createContactFormMessage, { entities: ['ContactFormMessage'] }),
     query(getContactFormMessages, { entities: ['ContactFormMessage', 'User'] }),
     action(markMessageRead, { entities: ['ContactFormMessage'] }),
-    action(markMessageReplied, { entities: ['ContactFormMessage'] }),
+    action(markMessageReplied, { entities: ['ContactFormMessage', 'Notification'] }),
     query(getUnreadMessageCount, { entities: ['ContactFormMessage'] }),
 
     // Fast Track pilot applications
@@ -835,7 +852,8 @@ export default app({
     action(createFastTrackApplication, { entities: ['FastTrackApplication', 'Exam'] }),
     query(getMyFastTrackApplication, { entities: ['FastTrackApplication'] }),
     query(getFastTrackApplications, { entities: ['FastTrackApplication'] }),
-    action(approveFastTrackApplication, { entities: ['FastTrackApplication', 'Subscription', 'Exam', 'User'] }),
-    action(rejectFastTrackApplication, { entities: ['FastTrackApplication', 'User'] }),
+    query(getFastTrackPendingCount, { entities: ['FastTrackApplication'] }),
+    action(approveFastTrackApplication, { entities: ['FastTrackApplication', 'Subscription', 'Exam', 'User', 'Notification'] }),
+    action(rejectFastTrackApplication, { entities: ['FastTrackApplication', 'User', 'Notification'] }),
   ],
 })

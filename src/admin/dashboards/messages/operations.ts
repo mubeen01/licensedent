@@ -8,6 +8,7 @@ import {
   type MarkMessageReplied,
 } from 'wasp/server/operations';
 import * as z from 'zod';
+import { createNotification } from '../../../notifications/operations';
 import { logAdminAction } from '../../../server/adminAudit';
 import { ensureArgsSchemaOrThrowHttpError } from '../../../server/validation';
 
@@ -102,6 +103,22 @@ export const markMessageReplied: MarkMessageReplied<MessageIdInput, void> = asyn
     entityId: args.id,
     details: { userId: message.userId, content: message.content.slice(0, 200) },
   });
+  // The actual reply goes out by email (this app has no in-app thread view yet) -- this is just
+  // the "someone got back to you" signal for whoever's looking at the dashboard right now.
+  try {
+    await createNotification(
+      { Notification: context.entities.Notification },
+      {
+        userId: message.userId,
+        type: 'message_replied',
+        title: 'We replied to your message',
+        body: 'Check your email for our reply -- reach out again anytime from Contact.',
+        link: '/account',
+      }
+    );
+  } catch (err) {
+    console.error('[messages] reply notification row failed:', err);
+  }
 };
 
 export const getUnreadMessageCount: GetUnreadMessageCount<void, number> = async (_args, context) => {

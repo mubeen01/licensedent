@@ -4,6 +4,7 @@ import {
   type ApproveFastTrackApplication,
   type CreateFastTrackApplication,
   type GetFastTrackApplications,
+  type GetFastTrackPendingCount,
   type GetMyFastTrackApplication,
   type RejectFastTrackApplication,
 } from 'wasp/server/operations';
@@ -11,6 +12,7 @@ import * as z from 'zod';
 import { grantUserSubscription } from '../admin/dashboards/users/operations';
 import { sendEmail } from '../email/send';
 import { fastTrackDecisionTemplate } from '../email/templates';
+import { createNotification } from '../notifications/operations';
 import { PaymentPlanId } from '../payment/plans';
 import { logAdminAction } from '../server/adminAudit';
 import { ensureArgsSchemaOrThrowHttpError } from '../server/validation';
@@ -120,6 +122,13 @@ export const getFastTrackApplications: GetFastTrackApplications<ListInput, FastT
   });
 };
 
+// Sidebar badge -- same "things needing admin attention" pattern as
+// getUnreadMessageCount (admin/dashboards/messages/operations.ts).
+export const getFastTrackPendingCount: GetFastTrackPendingCount<void, number> = async (_args, context) => {
+  ensureAdmin(context.user);
+  return context.entities.FastTrackApplication.count({ where: { status: 'pending' } });
+};
+
 const applicationIdInputSchema = z.object({ applicationId: z.string().nonempty() });
 type ApplicationIdInput = z.infer<typeof applicationIdInputSchema>;
 
@@ -133,23 +142,46 @@ type ApplicationIdInput = z.infer<typeof applicationIdInputSchema>;
 // must never undo or block the decision, which is already saved and visible
 // on /fast-track/apply.
 async function notifyApplicant(
-  userEntity: {
-    findUnique: (args: {
-      where: { id: string };
-      select: { email: true; username: true; profile: { select: { fullName: true } } };
-    }) => Promise<{ email: string | null; username: string | null; profile: { fullName: string | null } | null } | null>;
+  entities: {
+    User: {
+      findUnique: (args: {
+        where: { id: string };
+        select: { email: true; username: true; profile: { select: { fullName: true } } };
+      }) => Promise<{ email: string | null; username: string | null; profile: { fullName: string | null } | null } | null>;
+    };
+    Notification: Parameters<typeof createNotification>[0]['Notification'];
   },
   applicationId: string,
   userId: string,
   decision: 'approved' | 'rejected'
 ) {
+  const approved = decision === 'approved';
+
+  // In-app bell notification -- independent of the email below, so a Resend outage never hides
+  // the decision from someone who's actually looking at the dashboard right now.
   try {
-    const applicant = await userEntity.findUnique({
+    await createNotification(
+      { Notification: entities.Notification },
+      {
+        userId,
+        type: 'fast_track_decision',
+        title: approved ? 'Fast Track application approved' : 'Fast Track application update',
+        body: approved
+          ? "You're in! Your Fast Track access is live -- check your dashboard."
+          : "Your Fast Track application wasn't approved this round. Check your email for details.",
+        link: '/fast-track/apply',
+      }
+    );
+  } catch (err) {
+    console.error('[fast-track] applicant notification row failed:', err);
+  }
+
+  try {
+    const applicant = await entities.User.findUnique({
       where: { id: userId },
       select: { email: true, username: true, profile: { select: { fullName: true } } },
     });
     if (!applicant?.email) return;
-    const approved = decision === 'approved';
     await sendEmail({
       to: applicant.email,
       userId,
@@ -200,7 +232,7 @@ export const approveFastTrackApplication: ApproveFastTrackApplication<Applicatio
     details: { userId: application.userId, examId: application.examId },
   });
 
-  await notifyApplicant(context.entities.User, applicationId, application.userId, 'approved');
+  await notifyApplicant(context.entities, applicationId, application.userId, 'approved');
 
   return updated;
 };
@@ -231,7 +263,7 @@ export const rejectFastTrackApplication: RejectFastTrackApplication<ApplicationI
     entityId: applicationId,
   });
 
-  await notifyApplicant(context.entities.User, applicationId, application.userId, 'rejected');
+  await notifyApplicant(context.entities, applicationId, application.userId, 'rejected');
 
   return updated;
 };

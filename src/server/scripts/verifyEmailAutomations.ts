@@ -19,6 +19,7 @@ export async function verifyEmailAutomations(prisma: PrismaClient) {
     UserAttempt: prisma.userAttempt,
     MockExamAttempt: prisma.mockExamAttempt,
     ReviewSchedule: prisma.reviewSchedule,
+    Notification: prisma.notification,
   };
 
   const before = await prisma.emailLog.count();

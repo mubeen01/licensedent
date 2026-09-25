@@ -54,6 +54,7 @@ model User {
   emailPreference           EmailPreference?
   emailLogs                 EmailLog[]
   emailCampaigns            EmailCampaign[]
+  notifications             Notification[]
 }
 
 model GptResponse {
@@ -137,6 +138,26 @@ model ContactFormMessage {
   content                   String
   isRead                    Boolean         @default(false)
   repliedAt                 DateTime?
+}
+
+// In-app notification bell (student dashboard). Separate from EmailLog/EmailPreference --
+// this is what the app shows the user while they're signed in, not what gets emailed.
+// `type` is a free-form key (e.g. 'message_replied', 'fast_track_decision', 'plan_activated',
+// 'plan_expiring') used client-side to pick an icon; `link` is an in-app route to navigate to.
+model Notification {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+
+  user                      User            @relation(fields: [userId], references: [id])
+  userId                    String
+
+  type                      String
+  title                     String
+  body                      String
+  link                      String?
+  isRead                    Boolean         @default(false)
+
+  @@index([userId, isRead])
 }
 
 // ---- General Dentist exam-prep models (Phase 1) ----

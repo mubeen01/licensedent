@@ -16,6 +16,7 @@ import {
 import { useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { routes } from 'wasp/client/router';
+import { getFastTrackPendingCount, getUnreadMessageCount, useQuery } from 'wasp/client/operations';
 import { cn } from '../../lib/utils';
 
 interface SidebarProps {
@@ -23,42 +24,53 @@ interface SidebarProps {
   setSidebarOpen: (arg: boolean) => void;
 }
 
-type NavItem = { to: string; end: boolean; label: string; icon: typeof LayoutDashboard };
+type NavItem = { to: string; end: boolean; label: string; icon: typeof LayoutDashboard; badgeCount?: number };
 
-const navGroups: { label: string; items: NavItem[] }[] = [
-  {
-    label: 'Overview',
-    items: [{ to: routes.AdminRoute.to, end: true, label: 'Dashboard', icon: LayoutDashboard }],
-  },
-  {
-    label: 'Content',
-    items: [
-      { to: routes.AdminQuestionsRoute.to, end: true, label: 'Question Review', icon: ClipboardCheck },
-      { to: routes.AdminImportQuestionsRoute.to, end: true, label: 'Import Questions', icon: Upload },
-      { to: routes.AdminExamsRoute.to, end: true, label: 'Exams', icon: GraduationCap },
-      { to: routes.AdminLessonsRoute.to, end: true, label: 'Lessons', icon: BookOpen },
-      { to: routes.AdminBlogRoute.to, end: true, label: 'Blog', icon: FileText },
-      { to: routes.AdminTestimonialsRoute.to, end: true, label: 'Testimonials', icon: MessageSquareQuote },
-    ],
-  },
-  {
-    label: 'People',
-    items: [
-      { to: routes.AdminUsersRoute.to, end: true, label: 'Users', icon: UsersIcon },
-      { to: routes.AdminMessagesRoute.to, end: true, label: 'Messages', icon: MessageCircleMore },
-      { to: routes.AdminFastTrackApplicationsRoute.to, end: true, label: 'Fast Track Applications', icon: Rocket },
-      { to: routes.AdminEmailsRoute.to, end: true, label: 'Emails', icon: Mail },
-    ],
-  },
-  {
-    label: 'System',
-    items: [{ to: routes.AdminAuditLogRoute.to, end: true, label: 'Audit Log', icon: History }],
-  },
-];
+function buildNavGroups(unreadMessages: number, pendingFastTrack: number): { label: string; items: NavItem[] }[] {
+  return [
+    {
+      label: 'Overview',
+      items: [{ to: routes.AdminRoute.to, end: true, label: 'Dashboard', icon: LayoutDashboard }],
+    },
+    {
+      label: 'Content',
+      items: [
+        { to: routes.AdminQuestionsRoute.to, end: true, label: 'Question Review', icon: ClipboardCheck },
+        { to: routes.AdminImportQuestionsRoute.to, end: true, label: 'Import Questions', icon: Upload },
+        { to: routes.AdminExamsRoute.to, end: true, label: 'Exams', icon: GraduationCap },
+        { to: routes.AdminLessonsRoute.to, end: true, label: 'Lessons', icon: BookOpen },
+        { to: routes.AdminBlogRoute.to, end: true, label: 'Blog', icon: FileText },
+        { to: routes.AdminTestimonialsRoute.to, end: true, label: 'Testimonials', icon: MessageSquareQuote },
+      ],
+    },
+    {
+      label: 'People',
+      items: [
+        { to: routes.AdminUsersRoute.to, end: true, label: 'Users', icon: UsersIcon },
+        { to: routes.AdminMessagesRoute.to, end: true, label: 'Messages', icon: MessageCircleMore, badgeCount: unreadMessages },
+        {
+          to: routes.AdminFastTrackApplicationsRoute.to,
+          end: true,
+          label: 'Fast Track Applications',
+          icon: Rocket,
+          badgeCount: pendingFastTrack,
+        },
+        { to: routes.AdminEmailsRoute.to, end: true, label: 'Emails', icon: Mail },
+      ],
+    },
+    {
+      label: 'System',
+      items: [{ to: routes.AdminAuditLogRoute.to, end: true, label: 'Audit Log', icon: History }],
+    },
+  ];
+}
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const location = useLocation();
   const { pathname } = location;
+  const { data: unreadMessages } = useQuery(getUnreadMessageCount);
+  const { data: pendingFastTrack } = useQuery(getFastTrackPendingCount);
+  const navGroups = buildNavGroups(unreadMessages ?? 0, pendingFastTrack ?? 0);
 
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
@@ -139,7 +151,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         )}
                       >
                         <item.icon className={cn('h-4 w-4 transition-transform duration-200', active && '-rotate-3')} />
-                        {item.label}
+                        <span className='flex-1'>{item.label}</span>
+                        {!!item.badgeCount && (
+                          <span
+                            className={cn(
+                              'flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold',
+                              active ? 'bg-white/20 text-white' : 'bg-destructive text-destructive-foreground'
+                            )}
+                          >
+                            {item.badgeCount > 99 ? '99+' : item.badgeCount}
+                          </span>
+                        )}
                       </NavLink>
                     </li>
                   );

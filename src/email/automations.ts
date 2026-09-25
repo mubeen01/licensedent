@@ -17,6 +17,7 @@
 //    subscription gets its own key.
 import type { PrismaClient } from '@prisma/client';
 import { sendEmail } from './send';
+import { createNotification } from '../notifications/operations';
 import {
   freeToPaidTemplate,
   inactivityTemplate,
@@ -34,6 +35,7 @@ type JobEntities = {
   UserAttempt: PrismaClient['userAttempt'];
   MockExamAttempt: PrismaClient['mockExamAttempt'];
   ReviewSchedule: PrismaClient['reviewSchedule'];
+  Notification: PrismaClient['notification'];
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -222,7 +224,19 @@ async function runPlanExpiry(entities: JobEntities, now: Date, counters: Counter
           dedupeKey: `plan-expiring-7d:${live.id}`,
           render: () => planExpiringTemplate({ email: u.email!, name, planName, daysLeft, expiresOn: live.effectiveExpiresAt }),
         });
-        if (res.status === 'sent') counters.planExpiring7d += 1;
+        if (res.status === 'sent') {
+          counters.planExpiring7d += 1;
+          await createNotification(
+            { Notification: entities.Notification },
+            {
+              userId: u.id,
+              type: 'plan_expiring',
+              title: `${planName} expires in ${daysLeft} days`,
+              body: 'Renew from Billing to keep uninterrupted access.',
+              link: '/billing',
+            }
+          ).catch((err) => console.error('[automations] plan-expiring-7d notification row failed:', err));
+        }
       }
 
       if (daysLeft >= 0 && daysLeft <= 1) {
@@ -234,7 +248,19 @@ async function runPlanExpiry(entities: JobEntities, now: Date, counters: Counter
           dedupeKey: `plan-expiring-1d:${live.id}`,
           render: () => planExpiringTemplate({ email: u.email!, name, planName, daysLeft, expiresOn: live.effectiveExpiresAt }),
         });
-        if (res.status === 'sent') counters.planExpiring1d += 1;
+        if (res.status === 'sent') {
+          counters.planExpiring1d += 1;
+          await createNotification(
+            { Notification: entities.Notification },
+            {
+              userId: u.id,
+              type: 'plan_expiring',
+              title: daysLeft <= 0 ? `${planName} expires today` : `${planName} expires tomorrow`,
+              body: 'Renew from Billing to keep uninterrupted access.',
+              link: '/billing',
+            }
+          ).catch((err) => console.error('[automations] plan-expiring-1d notification row failed:', err));
+        }
       }
       continue;
     }

@@ -11,6 +11,7 @@ import { requireNodeEnvVar } from '../../server/utils';
 import { effectiveExpiryOf } from '../access';
 import { sendEmail } from '../../email/send';
 import { planActivatedTemplate } from '../../email/templates';
+import { createNotification } from '../../notifications/operations';
 import {
   parseWebhookPayload,
   type InvoicePaidData,
@@ -153,12 +154,28 @@ async function notifyPlanActivated(
   subscription: { id: string; createdAt: Date; durationDays: number; expiresAt: Date | null; allExamsAccess: boolean; examAccessId: string | null },
   planId: PaymentPlanId
 ) {
-  if (!user.email) return;
   const examLabel = subscription.allExamsAccess
     ? 'all exams'
     : subscription.examAccessId
       ? ((await prisma.exam.findUnique({ where: { id: subscription.examAccessId }, select: { name: true } }))?.name ?? 'your exam')
       : 'your exam';
+
+  try {
+    await createNotification(
+      { Notification: prisma.notification },
+      {
+        userId: user.id,
+        type: 'plan_activated',
+        title: `${prettyPaymentPlanName(planId)} is active`,
+        body: `You now have access to ${examLabel}. Good luck with your prep!`,
+        link: '/dashboard',
+      }
+    );
+  } catch (err) {
+    console.error('[stripe] plan-activated notification row failed:', err);
+  }
+
+  if (!user.email) return;
   await sendEmail({
     to: user.email,
     userId: user.id,
