@@ -30,11 +30,14 @@ export const EMAIL_BRAND = {
 export type EmailCategory = 'transactional' | 'lifecycle' | 'marketing';
 
 // E-D3. Marketing gets its own subdomain so newsletter complaints can never hurt
-// the reputation of password-reset and verification emails.
+// the reputation of password-reset and verification emails. Both domains are
+// verified in Resend (DKIM + SPF on send.*, checked 2026-09-25). The current
+// RESEND_API_KEY is send-only and scoped to licensedent.com, so marketing sends
+// need a key that covers email.licensedent.com (RESEND_MARKETING_API_KEY, Phase 2).
 export const EMAIL_SENDERS: Record<EmailCategory, { name: string; email: string }> = {
   transactional: { name: 'LicenseDent', email: 'hello@licensedent.com' },
   lifecycle: { name: 'LicenseDent', email: 'hello@licensedent.com' },
-  marketing: { name: 'LicenseDent', email: 'news@news.licensedent.com' },
+  marketing: { name: 'LicenseDent', email: 'news@email.licensedent.com' },
 };
 export const EMAIL_REPLY_TO = 'support@licensedent.com';
 
