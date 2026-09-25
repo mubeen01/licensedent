@@ -1,5 +1,5 @@
-import { CheckCircle2, ExternalLink, FileText, ImagePlus, Plus, Trash2, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { CheckCircle2, ExternalLink, Eye, FileText, ImagePlus, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { type AuthUser } from 'wasp/auth';
 import {
@@ -16,6 +16,9 @@ import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { Textarea } from '../../../components/ui/textarea';
+import { cn } from '../../../lib/utils';
+import MarkdownContent from '../../../blog/MarkdownContent';
+import { estimateReadingTime } from '../../../blog/blogUtils';
 import Breadcrumb from '../../layout/Breadcrumb';
 import DefaultLayout from '../../layout/DefaultLayout';
 import LoadingSpinner from '../../layout/LoadingSpinner';
@@ -101,6 +104,8 @@ function PostForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isEditing = !!post;
+  const wordCount = useMemo(() => bodyMarkdown.trim().split(/\s+/).filter(Boolean).length, [bodyMarkdown]);
+  const readingTime = useMemo(() => estimateReadingTime(bodyMarkdown), [bodyMarkdown]);
 
   async function handleImageSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -244,14 +249,37 @@ function PostForm({
       </div>
 
       <div>
-        <Label className='text-xs text-muted-foreground'>Body (Markdown) *</Label>
-        <Textarea
-          className='mt-1 font-mono text-sm'
-          rows={16}
-          value={bodyMarkdown}
-          onChange={(e) => setBodyMarkdown(e.currentTarget.value)}
-          placeholder={'## A heading\n\nRegular paragraph text, **bold**, lists, links — standard Markdown.'}
-        />
+        <div className='flex items-baseline justify-between'>
+          <Label className='text-xs text-muted-foreground'>Body (Markdown) *</Label>
+          <span className='text-[11px] text-muted-foreground'>
+            {wordCount} word{wordCount === 1 ? '' : 's'} · {readingTime} min read
+          </span>
+        </div>
+        <div className='mt-1 grid grid-cols-1 gap-3 lg:grid-cols-2'>
+          <div>
+            <div className='mb-1 flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground'>
+              <Pencil className='h-3 w-3' /> Write
+            </div>
+            <Textarea
+              className='h-105 font-mono text-sm'
+              value={bodyMarkdown}
+              onChange={(e) => setBodyMarkdown(e.currentTarget.value)}
+              placeholder={'## A heading\n\nRegular paragraph text, **bold**, lists, links, tables — standard Markdown.'}
+            />
+          </div>
+          <div>
+            <div className='mb-1 flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground'>
+              <Eye className='h-3 w-3' /> Live preview — exactly what /blog/{slug || '…'} will render
+            </div>
+            <div className='h-105 overflow-y-auto rounded-md border border-input bg-background px-4 py-3'>
+              {bodyMarkdown.trim() ? (
+                <MarkdownContent markdown={bodyMarkdown} />
+              ) : (
+                <p className='text-sm text-muted-foreground/70'>Start writing to see the preview…</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>

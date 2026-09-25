@@ -1,8 +1,6 @@
 import { ArrowRight, CalendarDays, Check, ChevronRight, Clock, Link2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { Link, useParams } from 'react-router';
-import remarkGfm from 'remark-gfm';
 import { getPublishedBlogPostBySlug, getPublishedBlogPosts, useQuery } from 'wasp/client/operations';
 import SeoHead, { DEFAULT_OG_IMAGE, SITE_ORIGIN } from '../client/components/SeoHead';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
@@ -10,6 +8,7 @@ import Reveal from '../landing-page/components/Reveal';
 import BlogPostCard from './components/BlogPostCard';
 import { estimateReadingTime, formatBlogDate, formatTagLabel } from './blogUtils';
 import { getSnapshotPost, getSnapshotPostList } from './blogSnapshot';
+import MarkdownContent from './MarkdownContent';
 
 function CopyLinkButton({ url }: { url: string }) {
   const [copied, setCopied] = useState(false);
@@ -204,9 +203,7 @@ export default function BlogPostPage() {
         )}
 
         <Reveal delay={100}>
-          <div className='prose prose-neutral dark:prose-invert mt-10 max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-h2:mt-10 prose-h2:text-2xl prose-a:font-semibold prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-foreground prose-img:rounded-xl prose-table:text-sm prose-th:text-left'>
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.bodyMarkdown}</ReactMarkdown>
-          </div>
+          <MarkdownContent markdown={post.bodyMarkdown} className='mt-10' />
         </Reveal>
 
         <Reveal delay={140}>
