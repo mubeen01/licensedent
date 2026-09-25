@@ -411,7 +411,7 @@ const PricingPage = () => {
                         Coming soon
                       </Button>
                       <p className='text-center text-xs text-muted-foreground'>
-                        Email <a href='mailto:support@licensedent.com' className='underline underline-offset-2 hover:text-primary'>support@licensedent.com</a> and we'll get you set up.
+                        Email <a href='mailto:help@licensedent.com' className='underline underline-offset-2 hover:text-primary'>help@licensedent.com</a> and we'll get you set up.
                       </p>
                     </div>
                   ) : isUserSubscribed ? (

@@ -67,7 +67,7 @@ const sections = [
       'Retention: we keep your account and practice data for as long as your account is active, and for a reasonable period afterward for backup, fraud-prevention and legal purposes. You can ask us to delete your account and associated data at any time — contact us as described below.',
       'Sharing: we do not sell your personal data. It is shared only with the service providers named above, to the extent needed to run the platform, and where required by law.',
       'Your choices: you can update your account details from your Account page, manage cookie preferences from the cookie banner, and contact us to request a copy or deletion of your data.',
-      'Questions or requests about your data: email us at support@licensedent.com.',
+      'Questions or requests about your data: email us at help@licensedent.com.',
     ],
   },
   {
@@ -97,8 +97,8 @@ export default function LegalPage() {
         <h1 className='text-3xl font-bold tracking-tight sm:text-4xl'>Terms, Privacy, Refunds &amp; Disclaimers</h1>
         <p className='mt-3 text-sm text-muted-foreground'>
           Last updated: 23 September 2026 · Questions? Message us at{' '}
-          <a href='mailto:support@licensedent.com' className='text-primary underline-offset-2 hover:underline'>
-            support@licensedent.com
+          <a href='mailto:help@licensedent.com' className='text-primary underline-offset-2 hover:underline'>
+            help@licensedent.com
           </a>
           .
         </p>

@@ -63,7 +63,7 @@ export default function EmailPreferencesPage() {
           {!token || error ? (
             <p className='mt-3 text-sm leading-6 text-ink-2'>
               This link is not valid anymore. Log in and open <strong className='font-medium text-foreground'>Account</strong> to manage your
-              emails, or write to <a className='text-brand-11 underline underline-offset-4' href='mailto:support@licensedent.com'>support@licensedent.com</a>.
+              emails, or write to <a className='text-brand-11 underline underline-offset-4' href='mailto:help@licensedent.com'>help@licensedent.com</a>.
             </p>
           ) : isLoading || !prefs ? (
             <div className='mt-4 space-y-3'>
@@ -109,7 +109,7 @@ export default function EmailPreferencesPage() {
 
               {prefs.suppressed && (
                 <p className='mt-4 text-[13px] leading-5 text-ink-3'>
-                  Emails to this address are paused because a recent email bounced or was marked as spam. Write to support@licensedent.com to turn them back on.
+                  Emails to this address are paused because a recent email bounced or was marked as spam. Write to help@licensedent.com to turn them back on.
                 </p>
               )}
             </>

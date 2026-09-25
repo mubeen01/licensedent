@@ -42,10 +42,10 @@ export default function Footer({
             </p>
 
             <a
-              href='mailto:support@licensedent.com'
+              href='mailto:help@licensedent.com'
               className='mt-5 inline-flex items-center gap-2 py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-primary'
             >
-              <Mail className='h-4 w-4' /> support@licensedent.com
+              <Mail className='h-4 w-4' /> help@licensedent.com
             </a>
           </div>
 
@@ -154,4 +154,4 @@ export default function Footer({
       </div>
     </footer>
   );
-}
+}

@@ -24,7 +24,7 @@ import SectionTitle from '../landing-page/components/SectionTitle';
  * silently fail for the majority of visitors who land here signed out, a
  * logged-in visitor's message goes straight into that inbox (identical
  * path to the "Contact support" card on /account), and a signed-out
- * visitor's message opens a prefilled mailto: to support@licensedent.com --
+ * visitor's message opens a prefilled mailto: to help@licensedent.com --
  * still a real, working send, just through their own mail client instead
  * of our database.
  */
@@ -49,8 +49,8 @@ const infoCards = [
   {
     icon: Mail,
     title: 'Email us directly',
-    description: 'support@licensedent.com — the fastest way to reach a real person.',
-    action: { label: 'support@licensedent.com', href: 'mailto:support@licensedent.com' },
+    description: 'help@licensedent.com — the fastest way to reach a real person.',
+    action: { label: 'help@licensedent.com', href: 'mailto:help@licensedent.com' },
   },
   {
     icon: MessageCircleMore,
@@ -114,7 +114,7 @@ export default function ContactPage() {
     // Signed out: no ContactFormMessage row can be written, so hand the
     // same composed message to the visitor's own mail client instead.
     const mailBody = email.trim() ? `${composed}\n\nReply to: ${email.trim()}` : composed;
-    const mailto = `mailto:support@licensedent.com?subject=${encodeURIComponent(
+    const mailto = `mailto:help@licensedent.com?subject=${encodeURIComponent(
       `LicenseDent contact — ${subjectLabel}`
     )}&body=${encodeURIComponent(mailBody)}`;
     window.location.href = mailto;
@@ -198,7 +198,7 @@ export default function ContactPage() {
               description={
                 currentUser
                   ? "Your message goes straight to our support inbox, tracked to your account."
-                  : "Signed out? Submitting opens a prefilled email to support@licensedent.com from your own mail app — nothing is sent without you hitting send there."
+                  : "Signed out? Submitting opens a prefilled email to help@licensedent.com from your own mail app — nothing is sent without you hitting send there."
               }
             />
 
@@ -217,7 +217,7 @@ export default function ContactPage() {
                       <p className='max-w-sm text-sm text-muted-foreground'>
                         {sent === 'submitted'
                           ? "Thanks — our team will get back to you by email."
-                          : "If nothing opened, email us directly at support@licensedent.com."}
+                          : "If nothing opened, email us directly at help@licensedent.com."}
                       </p>
                       <Button variant='outline' size='sm' onClick={() => setSent(null)}>
                         Send another message

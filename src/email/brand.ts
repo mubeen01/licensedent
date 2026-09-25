@@ -8,7 +8,7 @@ export const EMAIL_BRAND = {
   // CAN-SPAM requires a valid postal address in every marketing email. Left blank
   // on purpose (E-D4): while it is empty, sendEmail() refuses marketing sends.
   postalAddress: '',
-  supportEmail: 'support@licensedent.com',
+  supportEmail: 'help@licensedent.com',
   // Social profiles appear in the footer only once real URLs exist (docs/20-social-media-kit.md §11).
   social: [] as { label: string; url: string }[],
   colors: {
@@ -39,7 +39,7 @@ export const EMAIL_SENDERS: Record<EmailCategory, { name: string; email: string 
   lifecycle: { name: 'LicenseDent', email: 'hello@licensedent.com' },
   marketing: { name: 'LicenseDent', email: 'news@email.licensedent.com' },
 };
-export const EMAIL_REPLY_TO = 'support@licensedent.com';
+export const EMAIL_REPLY_TO = 'help@licensedent.com';
 
 export function siteUrl(path = ''): string {
   const base = (process.env.WASP_WEB_CLIENT_URL || 'https://licensedent.com').replace(/\/$/, '');

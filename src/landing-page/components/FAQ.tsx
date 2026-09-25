@@ -31,7 +31,7 @@ export default function FAQ({ faqs }: { faqs: FAQ[] }) {
               Send us a message and we’ll help you pick the right plan before you buy.
             </p>
             <a
-              href='mailto:support@licensedent.com'
+              href='mailto:help@licensedent.com'
               className='group mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-all hover:gap-2.5'
             >
               Email our team <ArrowRight className='h-4 w-4' />
@@ -72,4 +72,4 @@ export default function FAQ({ faqs }: { faqs: FAQ[] }) {
       </div>
     </div>
   );
-}
+}

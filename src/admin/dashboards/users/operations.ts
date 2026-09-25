@@ -26,7 +26,7 @@ import { ensureArgsSchemaOrThrowHttpError } from '../../../server/validation';
 import { PaymentPlanId, paymentPlans } from '../../../payment/plans';
 
 // Matches the fromField declared inline for email auth in main.wasp.
-const EMAIL_FROM_FIELD = { name: 'LicenseDent', email: 'support@licensedent.com' };
+const EMAIL_FROM_FIELD = { name: 'LicenseDent', email: 'help@licensedent.com' };
 
 function ensureAdmin(user: { isAdmin: boolean } | undefined) {
   if (!user) {

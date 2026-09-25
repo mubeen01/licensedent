@@ -11,7 +11,7 @@ import { SITE_ORIGIN } from './SeoHead';
  * and this project's rule is never to invent unverified facts/links. Add it
  * once real social URLs exist.
  *
- * PRD-006 M2: `contactPoint` uses support@licensedent.com, the same real
+ * PRD-006 M2: `contactPoint` uses help@licensedent.com, the same real
  * address already used sitewide (footer, legal page, cookie consent) --
  * no new/invented contact info. A separate `WebSite` node (its own
  * `@type`, per schema.org's own guidance of one type per JSON-LD block
@@ -41,7 +41,7 @@ export default function OrganizationJsonLd() {
       'Practice questions, timed mock tests and subject-wise revision for Gulf and Ireland dental licensing exams. Every question is written or reviewed by a panel of licensed, practicing dentists.',
     contactPoint: {
       '@type': 'ContactPoint',
-      email: 'support@licensedent.com',
+      email: 'help@licensedent.com',
       contactType: 'customer support',
     },
   };
