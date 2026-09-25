@@ -87,15 +87,15 @@ export default function NotificationBell() {
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <button
-          className='relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-muted text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary'
+          className='relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm transition-colors hover:border-primary/40 hover:text-primary hover:bg-accent'
           title={hasUnread ? `${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}` : 'Notifications'}
         >
           {hasUnread && (
-            <span className='absolute -top-0.5 -right-0.5 z-1 h-2 w-2 rounded-full bg-destructive'>
+            <span className='absolute -top-0.5 -right-0.5 z-1 h-2.5 w-2.5 rounded-full border-2 border-background bg-destructive'>
               <span className='absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75' />
             </span>
           )}
-          <Bell className='size-4.5' />
+          <Bell className='size-5' strokeWidth={2.25} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-80 p-2'>
