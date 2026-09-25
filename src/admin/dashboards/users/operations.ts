@@ -236,7 +236,7 @@ export const inviteUser: InviteUser<InviteUserInput, Pick<User, 'id' | 'email'>>
     await sendPasswordResetEmail(email, {
       from: EMAIL_FROM_FIELD,
       to: email,
-      ...getInviteEmailContent({ passwordResetLink }),
+      ...getInviteEmailContent({ passwordResetLink, email }),
     });
   } catch (e) {
     console.error('Failed to send invite email:', e);
