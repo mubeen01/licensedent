@@ -5,6 +5,7 @@ import { getVerificationEmailContent, getPasswordResetEmailContent } from './src
 import { getEmailUserFields } from './src/auth/userSignupFields' with { type: 'ref' }
 import { onBeforeLoginHook, onAfterEmailVerified } from './src/auth/hooks' with { type: 'ref' }
 import { seedMockUsers, migrateBlogPostsFromMarkdown } from './src/server/scripts/dbSeeds' with { type: 'ref' }
+import { createGulfExamBlogPosts } from './src/server/scripts/createGulfExamBlogPosts' with { type: 'ref' }
 import { importLessonFolder } from './src/server/scripts/importLessonFolder' with { type: 'ref' }
 import { importMcqBatches } from './src/server/scripts/importMcqBatches' with { type: 'ref' }
 import { importGulf180Videos } from './src/server/scripts/importGulf180Videos' with { type: 'ref' }
@@ -458,6 +459,11 @@ export default app({
       // Run with `wasp db seed migrateBlogPostsFromMarkdown`. Safe to rerun
       // -- skips any slug that already exists.
       migrateBlogPostsFromMarkdown,
+      // 5 new Gulf-exam blog posts (pillar + 4 cluster posts), all created as
+      // drafts for owner review before publishing. Run with
+      // `wasp db seed createGulfExamBlogPosts`. Safe to rerun -- skips any
+      // slug that already exists.
+      createGulfExamBlogPosts,
     ],
   },
 
