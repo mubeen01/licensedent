@@ -17,7 +17,6 @@ import {
   type UpdateEmailCampaign,
 } from 'wasp/server/operations';
 import * as z from 'zod';
-import { EMAIL_BRAND } from '../../../email/brand';
 import { type CampaignAudienceFilter, resolveCampaignAudience } from '../../../email/campaignSend';
 import { sendTestEmail } from '../../../email/send';
 import { campaignTemplate, templateGallery } from '../../../email/templates';
@@ -296,12 +295,6 @@ export const sendTestCampaignEmail: SendTestCampaignEmail<TestSendInput, { statu
 function ensureCanSend(campaign: EmailCampaign) {
   if (campaign.status !== 'draft') {
     throw new HttpError(400, `This campaign is already ${campaign.status}.`);
-  }
-  if (!EMAIL_BRAND.postalAddress) {
-    throw new HttpError(
-      400,
-      'Marketing sends are blocked until a company postal address is configured (CAN-SPAM, PRD-008 E-D4). Use "Send test" to preview in the meantime.'
-    );
   }
 }
 

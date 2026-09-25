@@ -38,7 +38,7 @@ export async function emailSelfTest(prisma: PrismaClient) {
     check('lifecycle digest', 'sent', await sendEmail({ db: prisma, to, userId: user.id, category: 'lifecycle', template: 'weekly-digest', render: digest, dedupeKey: `${run}:digest` }));
     check('marketing, not opted in', 'skipped', await sendEmail({ db: prisma, to, userId: user.id, category: 'marketing', template: 'campaign', render: campaign }));
     await setPref({ marketingOptIn: true });
-    check('marketing, opted in, no postal address', 'skipped', await sendEmail({ db: prisma, to, userId: user.id, category: 'marketing', template: 'campaign', render: campaign }));
+    check('marketing, opted in', 'sent', await sendEmail({ db: prisma, to, userId: user.id, category: 'marketing', template: 'campaign', render: campaign, dedupeKey: `${run}:campaign` }));
     await setPref({ studyEmails: false });
     check('lifecycle, study emails off', 'skipped', await sendEmail({ db: prisma, to, userId: user.id, category: 'lifecycle', template: 'weekly-digest', render: digest }));
     await setPref({ studyEmails: true, suppressedAt: new Date(), suppressedReason: 'self-test' });

@@ -5,8 +5,11 @@ export const EMAIL_BRAND = {
   name: 'LicenseDent',
   tagline: 'Gulf & Ireland dental licensing exam prep',
   legalName: 'ThreePeak Group LLC', // matches LegalPage.tsx (Wyoming, USA)
-  // CAN-SPAM requires a valid postal address in every marketing email. Left blank
-  // on purpose (E-D4): while it is empty, sendEmail() refuses marketing sends.
+  // CAN-SPAM technically requires a valid postal address in every marketing email;
+  // owner decision 2026-09-25 (supersedes E-D4) is to accept that gap for now and
+  // ship with just the app/legal name in the footer (renderEmail()'s fallback in
+  // layout.ts) instead of blocking marketing sends on it. Revisit if this becomes
+  // a real compliance concern.
   postalAddress: '',
   supportEmail: 'help@licensedent.com',
   // Social profiles appear in the footer only once real URLs exist (docs/20-social-media-kit.md §11).

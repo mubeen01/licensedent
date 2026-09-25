@@ -5,7 +5,7 @@
 import { randomBytes } from 'node:crypto';
 import type { PrismaClient } from '@prisma/client';
 import { prisma as defaultPrisma } from 'wasp/server';
-import { EMAIL_BRAND, EMAIL_REPLY_TO, EMAIL_SENDERS, type EmailCategory, siteUrl } from './brand';
+import { EMAIL_REPLY_TO, EMAIL_SENDERS, type EmailCategory, siteUrl } from './brand';
 import type { RenderedEmail } from './layout';
 
 export type EmailLinks = { preferencesUrl: string | null; unsubscribeUrl: string | null };
@@ -128,10 +128,6 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   } else if (category !== 'transactional') {
     skipReason = 'non-transactional email needs a user (for consent and unsubscribe)';
   }
-  if (!skipReason && category === 'marketing' && !EMAIL_BRAND.postalAddress) {
-    skipReason = 'marketing blocked: no postal address configured (PRD-008 E-D4)';
-  }
-
   const rendered = input.render(links);
   const baseLog = {
     userId: userId ?? null,
