@@ -1,4 +1,4 @@
-import { CheckCircle2, ExternalLink, Eye, FileText, ImagePlus, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Check, CheckCircle2, Circle, ClipboardCopy, ExternalLink, Eye, FileText, ImagePlus, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { type AuthUser } from 'wasp/auth';
@@ -19,6 +19,7 @@ import { Textarea } from '../../../components/ui/textarea';
 import { cn } from '../../../lib/utils';
 import MarkdownContent from '../../../blog/MarkdownContent';
 import { estimateReadingTime } from '../../../blog/blogUtils';
+import { buildBlogArticleJsonLd } from '../../../blog/blogSeo';
 import Breadcrumb from '../../layout/Breadcrumb';
 import DefaultLayout from '../../layout/DefaultLayout';
 import LoadingSpinner from '../../layout/LoadingSpinner';
@@ -47,6 +48,135 @@ function LengthHint({ length, min, max, emptyOk }: { length: number; min: number
     <span className={cn('text-[11px]', inRange ? 'text-success' : 'text-muted-foreground')}>
       {length} / {min}–{max} chars{inRange ? '' : length < min ? ' (short)' : ' (long)'}
     </span>
+  );
+}
+
+interface ReadinessCheck {
+  label: string;
+  ok: boolean;
+}
+
+// Informational only -- this never disables Save/Publish. This project's whole
+// content model is a human deciding when a post is ready, not a score gate (see
+// the plan this Phase was built from). It exists so a real gap -- no cover image,
+// no internal links -- is visible before publishing, not discovered after.
+function buildReadinessChecks(args: {
+  excerpt: string;
+  bodyMarkdown: string;
+  coverImageUrl: string | null;
+  tags: string[];
+}): ReadinessCheck[] {
+  const internalLinkCount = (args.bodyMarkdown.match(/\]\((?:\/|https:\/\/licensedent\.com)/g) ?? []).length;
+  const linksToPillarOrGuide = /\]\(\/(?:blog|exams)\//.test(args.bodyMarkdown);
+  return [
+    { label: 'Excerpt is at least 40 characters', ok: args.excerpt.trim().length >= 40 },
+    { label: 'Body has real content (150+ characters)', ok: args.bodyMarkdown.trim().length >= 150 },
+    { label: 'Cover image set', ok: !!args.coverImageUrl },
+    { label: 'At least 1 tag', ok: args.tags.length >= 1 },
+    { label: '2+ internal links in the body', ok: internalLinkCount >= 2 },
+    { label: 'Links to another blog post or an exam guide', ok: linksToPillarOrGuide },
+  ];
+}
+
+function ReadinessPanel({ checks }: { checks: ReadinessCheck[] }) {
+  const doneCount = checks.filter((c) => c.ok).length;
+  return (
+    <div className='rounded-xl border border-border bg-card p-4'>
+      <div className='flex items-center justify-between'>
+        <p className='text-xs font-semibold text-foreground'>Readiness checklist</p>
+        <span className='text-[11px] text-muted-foreground'>
+          {doneCount}/{checks.length}
+        </span>
+      </div>
+      <p className='mt-0.5 text-[11px] text-muted-foreground'>Guidance only — never blocks saving or publishing.</p>
+      <ul className='mt-3 flex flex-col gap-1.5'>
+        {checks.map((c) => (
+          <li key={c.label} className={cn('flex items-start gap-2 text-xs', c.ok ? 'text-foreground' : 'text-muted-foreground')}>
+            {c.ok ? (
+              <Check className='mt-0.5 h-3.5 w-3.5 flex-none text-success' />
+            ) : (
+              <Circle className='mt-0.5 h-3.5 w-3.5 flex-none text-muted-foreground/50' />
+            )}
+            {c.label}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function SchemaPreviewPanel({
+  slug,
+  title,
+  excerpt,
+  tags,
+  coverImageUrl,
+  existingPublishedAt,
+  existingCreatedAt,
+}: {
+  slug: string;
+  title: string;
+  excerpt: string;
+  tags: string[];
+  coverImageUrl: string | null;
+  existingPublishedAt: Date | null;
+  existingCreatedAt: Date | null;
+}) {
+  const [copied, setCopied] = useState(false);
+  const { articleJsonLd } = buildBlogArticleJsonLd({
+    slug,
+    title: title || '(untitled)',
+    excerpt: excerpt || '(no excerpt yet)',
+    tags,
+    authorName: 'LicenseDent',
+    coverImageUrl,
+    publishedAt: existingPublishedAt,
+    createdAt: existingCreatedAt ?? new Date(),
+    updatedAt: new Date(),
+  });
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(articleJsonLd, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API can be unavailable -- silently no-op.
+    }
+  }
+
+  return (
+    <div className='rounded-xl border border-border bg-card p-4'>
+      <div className='flex items-center justify-between'>
+        <p className='text-xs font-semibold text-foreground'>Schema.org preview</p>
+        <button
+          type='button'
+          onClick={handleCopy}
+          className='flex items-center gap-1 text-[11px] font-medium text-primary hover:underline'
+        >
+          <ClipboardCopy className='h-3 w-3' /> {copied ? 'Copied' : 'Copy JSON'}
+        </button>
+      </div>
+      <p className='mt-0.5 text-[11px] text-muted-foreground'>What search engines and AI crawlers will see, updating as you type.</p>
+      <dl className='mt-3 flex flex-col gap-2 text-xs'>
+        <div>
+          <dt className='text-muted-foreground'>Headline</dt>
+          <dd className='text-foreground'>{articleJsonLd.headline}</dd>
+        </div>
+        <div>
+          <dt className='text-muted-foreground'>Description</dt>
+          <dd className='text-foreground'>{articleJsonLd.description}</dd>
+        </div>
+        <div>
+          <dt className='text-muted-foreground'>Image</dt>
+          <dd className='truncate text-foreground'>{coverImageUrl ? articleJsonLd.image : 'Falls back to the site default'}</dd>
+        </div>
+        <div>
+          <dt className='text-muted-foreground'>Publish date</dt>
+          <dd className='text-foreground'>{existingPublishedAt ? articleJsonLd.datePublished : 'Set automatically at publish time'}</dd>
+        </div>
+      </dl>
+    </div>
   );
 }
 
@@ -123,6 +253,14 @@ function PostForm({
   const isEditing = !!post;
   const wordCount = useMemo(() => bodyMarkdown.trim().split(/\s+/).filter(Boolean).length, [bodyMarkdown]);
   const readingTime = useMemo(() => estimateReadingTime(bodyMarkdown), [bodyMarkdown]);
+  const tagsList = useMemo(
+    () => tagsInput.split(',').map((t) => t.trim()).filter(Boolean),
+    [tagsInput]
+  );
+  const readinessChecks = useMemo(
+    () => buildReadinessChecks({ excerpt, bodyMarkdown, coverImageUrl, tags: tagsList }),
+    [excerpt, bodyMarkdown, coverImageUrl, tagsList]
+  );
 
   async function handleImageSelected(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -167,10 +305,7 @@ function PostForm({
       setError('Title, excerpt and body are all required.');
       return;
     }
-    const tags = tagsInput
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
+    const tags = tagsList;
 
     setIsSaving(true);
     setError(null);
@@ -202,6 +337,8 @@ function PostForm({
     <div className='mb-4 rounded-2xl border border-primary/30 bg-card shadow-xs p-5 md:p-6 flex flex-col gap-4'>
       <p className='font-semibold text-foreground'>{isEditing ? 'Edit post' : 'New post'}</p>
 
+      <div className='grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_280px]'>
+      <div className='flex flex-col gap-4'>
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
         <div>
           <Label className='text-xs text-muted-foreground'>Title *</Label>
@@ -347,6 +484,21 @@ function PostForm({
             </SelectContent>
           </Select>
         </div>
+      </div>
+      </div>
+
+      <div className='flex flex-col gap-4 xl:sticky xl:top-4 xl:self-start'>
+        <ReadinessPanel checks={readinessChecks} />
+        <SchemaPreviewPanel
+          slug={slug}
+          title={title}
+          excerpt={excerpt}
+          tags={tagsList}
+          coverImageUrl={coverImageUrl}
+          existingPublishedAt={post?.publishedAt ?? null}
+          existingCreatedAt={post?.createdAt ?? null}
+        />
+      </div>
       </div>
 
       <div className='flex items-center justify-between gap-4 pt-2 border-t border-border'>

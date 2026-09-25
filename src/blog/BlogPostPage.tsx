@@ -2,13 +2,14 @@ import { ArrowRight, CalendarDays, Check, ChevronRight, Clock, Link2 } from 'luc
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { getPublishedBlogPostBySlug, getPublishedBlogPosts, useQuery } from 'wasp/client/operations';
-import SeoHead, { DEFAULT_OG_IMAGE, SITE_ORIGIN } from '../client/components/SeoHead';
+import SeoHead from '../client/components/SeoHead';
 import LoadingSpinner from '../admin/layout/LoadingSpinner';
 import Reveal from '../landing-page/components/Reveal';
 import BlogPostCard from './components/BlogPostCard';
 import { estimateReadingTime, formatBlogDate, formatTagLabel } from './blogUtils';
 import { getSnapshotPost, getSnapshotPostList } from './blogSnapshot';
 import MarkdownContent from './MarkdownContent';
+import { buildBlogArticleJsonLd } from './blogSeo';
 
 function CopyLinkButton({ url }: { url: string }) {
   const [copied, setCopied] = useState(false);
@@ -80,51 +81,8 @@ export default function BlogPostPage() {
     );
   }
 
-  const canonicalUrl = `${SITE_ORIGIN}/blog/${post.slug}`;
   const readingTime = estimateReadingTime(post.bodyMarkdown);
-
-  // Same shape as ExamGuidePage's Article JSON-LD, with one real
-  // improvement: datePublished/dateModified come from this post's actual
-  // publishedAt/updatedAt DB columns -- exact dates, no git-log lookup
-  // needed (that workaround was only ever necessary for the static
-  // *Content.ts exam pages, which have no per-row timestamp of their own).
-  const articleJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: post.title,
-    description: post.excerpt,
-    url: canonicalUrl,
-    image: post.coverImageUrl ?? DEFAULT_OG_IMAGE,
-    // .toISOString(), not .toString() -- Google's structured-data
-    // guidelines require ISO 8601 for datePublished/dateModified.
-    // .toString() (confirmed live, e.g. "Wed Sep 16 2026 00:00:00 GMT+0000
-    // (Coordinated Universal Time)") is not valid ISO 8601 and would fail
-    // real Rich Results validation.
-    datePublished: (post.publishedAt ?? post.createdAt).toISOString(),
-    dateModified: post.updatedAt.toISOString(),
-    keywords: post.tags.map(formatTagLabel).join(', '),
-    author: { '@type': 'EducationalOrganization', name: post.authorName, url: SITE_ORIGIN },
-    // `publisher.logo` as an ImageObject (not a bare URL string) is what
-    // Google's own Article rich-result guidelines ask for -- the same
-    // PNG/112x112-minimum reasoning as OrganizationJsonLd.tsx's site-wide
-    // `logo` field, reused here rather than picking a different asset.
-    publisher: {
-      '@type': 'EducationalOrganization',
-      name: 'LicenseDent',
-      url: SITE_ORIGIN,
-      logo: { '@type': 'ImageObject', url: `${SITE_ORIGIN}/logo/apple-touch-icon.png` },
-    },
-  };
-
-  const breadcrumbJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_ORIGIN}/` },
-      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_ORIGIN}/blog` },
-      { '@type': 'ListItem', position: 3, name: post.title, item: canonicalUrl },
-    ],
-  };
+  const { articleJsonLd, breadcrumbJsonLd, canonicalUrl } = buildBlogArticleJsonLd(post);
 
   return (
     <div className='bg-background text-foreground'>
