@@ -15,6 +15,7 @@ import { attachIdcVideos } from './src/server/scripts/attachIdcVideos' with { ty
 import EmailPreferencesPage from './src/email/EmailPreferencesPage' with { type: 'ref' }
 import { emailSelfTest } from './src/server/scripts/emailSelfTest' with { type: 'ref' }
 import { runDailyEmailAutomations } from './src/email/automations' with { type: 'ref' }
+import { verifyEmailAutomations } from './src/server/scripts/verifyEmailAutomations' with { type: 'ref' }
 import {
   getEmailPreferencesByToken,
   updateEmailPreferencesByToken,
@@ -416,6 +417,10 @@ export default app({
       attachIdcVideos,
       // PRD-008: send-pipeline self-test (consent, suppression, dedupe, Resend).
       emailSelfTest,
+      // PRD-008 Phase 3: runs the real daily automations job against the dev
+      // DB and reports what it decided to send. Safe to rerun -- see the
+      // script's header comment.
+      verifyEmailAutomations,
       // PRD-007: one-time migration of the 2 posts that existed as markdown
       // files in the now-retired blog/ Astro site into the BlogPost table.
       // Run with `wasp db seed migrateBlogPostsFromMarkdown`. Safe to rerun

@@ -134,7 +134,10 @@ type ApplicationIdInput = z.infer<typeof applicationIdInputSchema>;
 // on /fast-track/apply.
 async function notifyApplicant(
   userEntity: {
-    findUnique: (args: any) => Promise<{ email: string | null; username: string | null; profile: { fullName: string | null } | null } | null>;
+    findUnique: (args: {
+      where: { id: string };
+      select: { email: true; username: true; profile: { select: { fullName: true } } };
+    }) => Promise<{ email: string | null; username: string | null; profile: { fullName: string | null } | null } | null>;
   },
   applicationId: string,
   userId: string,
