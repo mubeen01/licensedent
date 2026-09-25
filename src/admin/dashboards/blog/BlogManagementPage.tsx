@@ -83,7 +83,7 @@ function ReadinessPanel({ checks }: { checks: ReadinessCheck[] }) {
   return (
     <div className='rounded-xl border border-border bg-card p-4'>
       <div className='flex items-center justify-between'>
-        <p className='text-xs font-semibold text-foreground'>Readiness checklist</p>
+        <p className='text-xs font-semibold uppercase tracking-wide text-muted-foreground'>Readiness checklist</p>
         <span className='text-[11px] text-muted-foreground'>
           {doneCount}/{checks.length}
         </span>
@@ -148,7 +148,7 @@ function SchemaPreviewPanel({
   return (
     <div className='rounded-xl border border-border bg-card p-4'>
       <div className='flex items-center justify-between'>
-        <p className='text-xs font-semibold text-foreground'>Schema.org preview</p>
+        <p className='text-xs font-semibold uppercase tracking-wide text-muted-foreground'>Schema.org preview</p>
         <button
           type='button'
           onClick={handleCopy}
@@ -335,10 +335,21 @@ function PostForm({
 
   return (
     <div className='mb-4 rounded-2xl border border-primary/30 bg-card shadow-xs p-5 md:p-6 flex flex-col gap-4'>
-      <p className='font-semibold text-foreground'>{isEditing ? 'Edit post' : 'New post'}</p>
+      <div className='flex items-center gap-2'>
+        <p className='font-semibold text-foreground'>{isEditing ? 'Edit post' : 'New post'}</p>
+        <span
+          className={cn(
+            'rounded-full px-2 py-0.5 text-[11px] font-semibold',
+            status === 'published' ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'
+          )}
+        >
+          {status === 'published' ? 'Published' : 'Draft'}
+        </span>
+      </div>
 
       <div className='grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_280px]'>
       <div className='flex flex-col gap-4'>
+      <p className='text-xs font-semibold uppercase tracking-wide text-muted-foreground'>Content</p>
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
         <div>
           <Label className='text-xs text-muted-foreground'>Title *</Label>
@@ -405,7 +416,7 @@ function PostForm({
       </div>
 
       <div className='rounded-xl border border-border bg-muted/20 p-4'>
-        <p className='text-xs font-semibold text-foreground'>Search & social overrides (optional)</p>
+        <p className='text-xs font-semibold uppercase tracking-wide text-muted-foreground'>SEO & social (optional)</p>
         <p className='mt-0.5 text-[11px] text-muted-foreground'>
           Leave blank to use the title/excerpt above. Set these when you want a shorter, search-optimized version
           without changing the on-page heading or card summary.
@@ -467,6 +478,7 @@ function PostForm({
         </div>
       </div>
 
+      <p className='text-xs font-semibold uppercase tracking-wide text-muted-foreground'>Publish settings</p>
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
         <div>
           <Label className='text-xs text-muted-foreground'>Tags (comma-separated)</Label>
