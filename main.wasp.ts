@@ -6,6 +6,7 @@ import { getEmailUserFields } from './src/auth/userSignupFields' with { type: 'r
 import { onBeforeLoginHook, onAfterEmailVerified } from './src/auth/hooks' with { type: 'ref' }
 import { seedMockUsers, migrateBlogPostsFromMarkdown } from './src/server/scripts/dbSeeds' with { type: 'ref' }
 import { createGulfExamBlogPosts } from './src/server/scripts/createGulfExamBlogPosts' with { type: 'ref' }
+import { verifyBlogEditorOverhaul } from './src/server/scripts/verifyBlogEditorOverhaul' with { type: 'ref' }
 import { importLessonFolder } from './src/server/scripts/importLessonFolder' with { type: 'ref' }
 import { importMcqBatches } from './src/server/scripts/importMcqBatches' with { type: 'ref' }
 import { importGulf180Videos } from './src/server/scripts/importGulf180Videos' with { type: 'ref' }
@@ -464,6 +465,10 @@ export default app({
       // `wasp db seed createGulfExamBlogPosts`. Safe to rerun -- skips any
       // slug that already exists.
       createGulfExamBlogPosts,
+      // Blog editor overhaul (Phases 1-4, 2026-09-25): SEO-field fallback,
+      // buildBlogArticleJsonLd(), and the readiness-checklist regexes. Safe to
+      // rerun -- cleans up its own throwaway row.
+      verifyBlogEditorOverhaul,
     ],
   },
 
