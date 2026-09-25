@@ -1,7 +1,7 @@
 import { type AuthUser } from 'wasp/auth';
 import DarkModeSwitcher from '../../client/components/DarkModeSwitcher';
 import { cn } from '../../lib/utils';
-import MessageButton from '../dashboards/messages/MessageButton';
+import AdminNotificationBell from './AdminNotificationBell';
 import { UserDropdown } from '../../user/UserDropdown';
 
 const Header = (props: {
@@ -74,10 +74,10 @@ const Header = (props: {
           {/* <!-- Hamburger Toggle BTN --> */}
         </div>
 
-        <ul className='flex items-center gap-1 2xsm:gap-2 rounded-full border border-border bg-muted/40 p-1'>
+        <div className='flex items-center gap-2'>
           <DarkModeSwitcher />
-          <MessageButton />
-        </ul>
+          <AdminNotificationBell />
+        </div>
 
         <div className='h-6 w-px bg-border hidden sm:block' />
 
