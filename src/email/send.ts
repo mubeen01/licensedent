@@ -63,6 +63,45 @@ function apiKeyFor(category: EmailCategory): string | undefined {
   return category === 'marketing' ? process.env.RESEND_MARKETING_API_KEY : process.env.RESEND_API_KEY;
 }
 
+// PRD-008 Phase 4: an admin previewing a campaign draft in their own inbox.
+// Deliberately bypasses every gate sendEmail() enforces (consent,
+// suppression, dedupe, dev-mode, postal-address) since none of them apply --
+// there's no recipient consent to check when the "recipient" is the admin
+// who just clicked "send test", and skipping dev-mode is the whole point
+// (seeing the real render before it goes to real students). Never call this
+// for anything a recipient didn't explicitly ask to receive right now.
+export async function sendTestEmail(input: { to: string; category: EmailCategory; render: () => RenderedEmail }): Promise<SendEmailResult> {
+  const apiKey = apiKeyFor(input.category);
+  if (!apiKey) return { status: 'failed', error: `missing Resend API key for ${input.category}` };
+  const rendered = input.render();
+  const sender = EMAIL_SENDERS[input.category];
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: `${sender.name} <${sender.email}>`,
+        to: [input.to],
+        reply_to: EMAIL_REPLY_TO,
+        subject: `[TEST] ${rendered.subject}`,
+        html: rendered.html,
+        text: rendered.text,
+        tags: [
+          { name: 'category', value: input.category },
+          { name: 'test', value: 'true' },
+        ],
+      }),
+    });
+    const body = (await res.json().catch(() => ({}))) as { id?: string; message?: string };
+    if (!res.ok || !body.id) {
+      return { status: 'failed', error: `Resend ${res.status}: ${body.message ?? 'unknown error'}` };
+    }
+    return { status: 'sent', providerId: body.id };
+  } catch (err) {
+    return { status: 'failed', error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
   const db = input.db ?? (defaultPrisma as unknown as Db);
   const { to, userId, category, template } = input;

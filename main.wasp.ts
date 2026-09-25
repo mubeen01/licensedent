@@ -15,7 +15,25 @@ import { attachIdcVideos } from './src/server/scripts/attachIdcVideos' with { ty
 import EmailPreferencesPage from './src/email/EmailPreferencesPage' with { type: 'ref' }
 import { emailSelfTest } from './src/server/scripts/emailSelfTest' with { type: 'ref' }
 import { runDailyEmailAutomations } from './src/email/automations' with { type: 'ref' }
+import { sendEmailCampaignJob } from './src/email/campaignSend' with { type: 'ref' }
 import { verifyEmailAutomations } from './src/server/scripts/verifyEmailAutomations' with { type: 'ref' }
+import { verifyEmailCampaigns } from './src/server/scripts/verifyEmailCampaigns' with { type: 'ref' }
+import AdminEmails from './src/admin/dashboards/emails/EmailsManagementPage' with { type: 'ref' }
+import {
+  getEmailCampaigns,
+  getEmailCampaignById,
+  getEmailCampaignSendLog,
+  getEmailTemplateGallery,
+  previewCampaignEmail,
+  getCampaignAudienceCount,
+  createEmailCampaign,
+  updateEmailCampaign,
+  deleteEmailCampaign,
+  sendTestCampaignEmail,
+  sendEmailCampaignNow,
+  scheduleEmailCampaign,
+  cancelScheduledCampaign,
+} from './src/admin/dashboards/emails/operations' with { type: 'ref' }
 import {
   getEmailPreferencesByToken,
   updateEmailPreferencesByToken,
@@ -421,6 +439,9 @@ export default app({
       // DB and reports what it decided to send. Safe to rerun -- see the
       // script's header comment.
       verifyEmailAutomations,
+      // PRD-008 Phase 4: exercises the campaign audience resolver + send job
+      // + admin test-send against the dev DB. Safe to rerun.
+      verifyEmailCampaigns,
       // PRD-007: one-time migration of the 2 posts that existed as markdown
       // files in the now-retired blog/ Astro site into the BlogPost table.
       // Run with `wasp db seed migrateBlogPostsFromMarkdown`. Safe to rerun
@@ -585,6 +606,29 @@ export default app({
       entities: ['User', 'Subscription', 'UserAttempt', 'MockExamAttempt', 'ReviewSchedule'],
       schedule: { cron: '0 3 * * *' },
     }),
+    // PRD-008 Phase 4: submitted on demand by sendEmailCampaignNow (immediate)
+    // or scheduleEmailCampaign (delayed via pg-boss startAfter) -- no cron
+    // schedule of its own. See src/email/campaignSend.ts.
+    job(sendEmailCampaignJob, {
+      executor: 'PgBoss',
+      entities: ['User', 'EmailCampaign'],
+    }),
+
+    // Email campaigns admin (PRD-008 Phase 4)
+    route('AdminEmailsRoute', '/admin/emails', page(AdminEmails, { authRequired: true })),
+    query(getEmailCampaigns, { entities: ['EmailCampaign', 'EmailLog'] }),
+    query(getEmailCampaignById, { entities: ['EmailCampaign', 'EmailLog'] }),
+    query(getEmailCampaignSendLog, { entities: ['EmailLog'] }),
+    query(getEmailTemplateGallery),
+    query(previewCampaignEmail),
+    query(getCampaignAudienceCount, { entities: ['User'] }),
+    action(createEmailCampaign, { entities: ['EmailCampaign'] }),
+    action(updateEmailCampaign, { entities: ['EmailCampaign'] }),
+    action(deleteEmailCampaign, { entities: ['EmailCampaign'] }),
+    action(sendTestCampaignEmail, { entities: ['EmailCampaign'] }),
+    action(sendEmailCampaignNow, { entities: ['EmailCampaign'] }),
+    action(scheduleEmailCampaign, { entities: ['EmailCampaign'] }),
+    action(cancelScheduledCampaign, { entities: ['EmailCampaign'] }),
 
     // Admin Dashboard
     route('AdminRoute', '/admin', page(AnalyticsDashboardPage, { authRequired: true })),

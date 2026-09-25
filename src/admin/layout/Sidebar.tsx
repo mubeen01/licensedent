@@ -5,6 +5,7 @@ import {
   GraduationCap,
   History,
   LayoutDashboard,
+  Mail,
   MessageCircleMore,
   MessageSquareQuote,
   Rocket,
@@ -46,6 +47,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
       { to: routes.AdminUsersRoute.to, end: true, label: 'Users', icon: UsersIcon },
       { to: routes.AdminMessagesRoute.to, end: true, label: 'Messages', icon: MessageCircleMore },
       { to: routes.AdminFastTrackApplicationsRoute.to, end: true, label: 'Fast Track Applications', icon: Rocket },
+      { to: routes.AdminEmailsRoute.to, end: true, label: 'Emails', icon: Mail },
     ],
   },
   {

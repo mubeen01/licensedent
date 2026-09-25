@@ -53,6 +53,7 @@ model User {
 
   emailPreference           EmailPreference?
   emailLogs                 EmailLog[]
+  emailCampaigns            EmailCampaign[]
 }
 
 model GptResponse {
@@ -202,6 +203,7 @@ model Exam {
   userProfiles              UserProfile[]
   lessons                   Lesson[]
   fastTrackApplications     FastTrackApplication[]
+  emailCampaigns            EmailCampaign[]
 }
 
 model Subject {
@@ -895,4 +897,47 @@ model EmailLog {
   @@index([userId, createdAt])
   @@index([template, createdAt])
   @@index([campaignId])
+}
+
+enum EmailCampaignStatus {
+  draft
+  scheduled
+  sending
+  sent
+  canceled
+}
+
+// PRD-008 Phase 4: a marketing send written and sent from /admin/emails.
+// Delivery reuses the same sendEmail() pipeline as every other email
+// (consent, suppression, dedupe via EmailLog.campaignId) -- this table is
+// only the campaign's own authoring state and audience filter. Per-recipient
+// results and stats are read live from EmailLog (grouped by campaignId),
+// never duplicated here.
+model EmailCampaign {
+  id                        String              @id @default(uuid())
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+
+  subject                   String
+  preheader                 String
+  heading                   String
+  bodyMarkdown              String
+
+  status                    EmailCampaignStatus @default(draft)
+  scheduledAt               DateTime?
+  sentAt                    DateTime?
+
+  // Audience filter, re-evaluated at SEND time (not frozen at creation), so a
+  // campaign scheduled for later always reaches whoever currently matches.
+  // Marketing opt-in + no suppression are enforced by sendEmail() itself on
+  // top of this, not stored here. Every field left null/'any' = the full
+  // opted-in base.
+  audienceExam              Exam?                  @relation(fields: [audienceExamId], references: [id])
+  audienceExamId            String?
+  audiencePlanType          SubscriptionPlanType?
+  audienceAccess            String?             // 'any' | 'active' | 'free' -- see operations.ts
+  audienceCountry           String?
+
+  createdBy                 User?               @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdById               String?
 }
