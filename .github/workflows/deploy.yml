@@ -1,18 +1,13 @@
-name: Wasp Deploy
+name: CI (verify only)
 
-# PRD-01 deploy-infra work (2026-09-16). Redeploys to Railway on every
-# push to main. See docs/22-railway-deployment-runbook.md for the full
-# history/checklist. Status as of 2026-09-25:
-#   1. DONE -- `wasp deploy railway launch licensedent` ran successfully
-#      on the new Railway account (mubeen31m@gmail.com). Project id below
-#      is real. All 3 services (server/client/Postgres) confirmed RUNNING.
-#   2. DONE -- RAILWAY_PROJECT_ID below is the real id.
-#   3. STILL NEEDED -- a RAILWAY_API_TOKEN repo secret (Railway dashboard ->
-#      https://railway.com/account/tokens -> generate without selecting a
-#      workspace, on the NEW account -> GitHub repo -> Settings -> Secrets
-#      and variables -> Actions) -- this is the one remaining blocker for
-#      this job to actually succeed on push.
-#   4. DONE -- GitHub remote is mubeen01/licensedent.
+# Verify-only on purpose (owner decision 2026-09-26, same model as
+# Adverizeo): CI typechecks every push/PR but never deploys. Production
+# deploys are manual from the owner's machine (`wasp deploy railway deploy
+# licensedent` in WSL) -- see docs/22-railway-deployment-runbook.md §4.
+# The old auto-deploy job was removed because it needed an account-wide
+# RAILWAY_API_TOKEN stored in GitHub, would have shipped every push to
+# master straight to production, and built the client without
+# REACT_APP_GOOGLE_ANALYTICS_ID.
 
 on:
   # Both repos use `master` today; `main` is kept so a later rename to
@@ -79,46 +74,3 @@ jobs:
 
       - name: Typecheck
         run: npx tsc --noEmit -p tsconfig.src.json
-
-  deploy:
-    needs: verify
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    runs-on: ubuntu-latest
-    env:
-      WASP_VERSION: '0.25'
-      RAILWAY_PROJECT_NAME: licensedent
-      RAILWAY_PROJECT_ID: 8f5dbeaf-e6ee-4436-98ac-90381a11017f
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24.20.0'
-
-      # This job went straight from checkout to the global Wasp CLI install,
-      # never running `npm install` or `wasp install` in the project itself
-      # -- same class of gap the `verify` job had, just surfaced here as
-      # "Missing or stale dependencies in project: ... Run wasp install to
-      # fix this" instead (confirmed via a real CI run, 2026-09-25) rather
-      # than a raw module-not-found crash. Same fix as `verify` above.
-      - name: Install dependencies
-        run: npm install
-
-      - name: Install Wasp
-        run: npm i -g @wasp.sh/wasp-cli@$WASP_VERSION
-
-      - name: Bootstrap Wasp project
-        run: wasp install
-
-      - name: Generate Prisma client
-        run: npx prisma generate --schema=schema.prisma
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy
-        run: wasp deploy railway deploy $RAILWAY_PROJECT_NAME --existing-project-id $RAILWAY_PROJECT_ID
-        env:
-          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
