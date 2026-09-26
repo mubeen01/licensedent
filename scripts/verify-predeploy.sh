@@ -22,9 +22,13 @@ json() { node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const 
 step "1/8 toolchain"
 node -v | grep -q '^v24\.' || fail "Node $(node -v); run: nvm use 24.20.0"
 wasp version 2>/dev/null | head -1 | grep -q '0\.25' || fail "Wasp is not 0.25.x ($(wasp version 2>/dev/null | head -1))"
-if pgrep -f "wasp start" >/dev/null; then
-  fail "a 'wasp start' is running -- stop it first (building alongside it can crash both)"
-fi
+# Only LicenseDent's own `wasp start` matters; other projects' dev servers
+# (e.g. /mnt/d/Fluenspire) don't share this build's .wasp/out.
+for pid in $(pgrep -f "wasp start"); do
+  case "$(readlink "/proc/$pid/cwd" 2>/dev/null)" in
+    *LicenseDent*) fail "a LicenseDent 'wasp start' is running (pid $pid) -- stop it first (building alongside it can crash both)" ;;
+  esac
+done
 echo "ok: node $(node -v), wasp $(wasp version | head -1)"
 
 step "2/8 Railway account + project"
