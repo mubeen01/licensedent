@@ -344,6 +344,11 @@ export default app({
     "<link rel='icon' href='/logo/favicon-16x16.png' type='image/png' sizes='16x16' />",
     "<link rel='apple-touch-icon' href='/logo/apple-touch-icon.png' sizes='180x180' />",
 
+    // Google Search Console ownership (meta-tag method). Keep it: Google
+    // re-checks periodically. public/google2f07184a30ccde76.html is the
+    // file-method equivalent.
+    "<meta name='google-site-verification' content='Q9vaX6JpNIt_4XsyaRgMOv88pJyr1zJ3AvutFtO8qGE' />",
+
     // PRD-006 C4: `description`/`author`/`keywords` used to be static here
     // (homepage copy only) -- same bug as the OG/Twitter tags described in
     // the comment below, and fixed the same way: a live curl of every
