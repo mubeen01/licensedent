@@ -11,7 +11,10 @@
 # D: while the live app kept serving a stale WSL copy.
 set -euo pipefail
 
-rsync -a --exclude 'node_modules' --exclude '.wasp' \
+# --delete: a file deleted on D: must also disappear here, or the next
+# build ships it (Adverizeo shipped an already-fixed bug this way,
+# 2026-09-07). Excluded dirs (node_modules, .wasp) are left alone.
+rsync -a --delete --exclude 'node_modules' --exclude '.wasp' \
   /mnt/d/Dental/LicenseDent/ ~/LicenseDent/
 
 # Verify, don't assume -- a partial/failed sync should fail loud, not

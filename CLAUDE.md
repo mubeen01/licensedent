@@ -162,5 +162,19 @@ deliverable of the work, not an afterthought:
      done until it's in that file.
 5. Only then move to the next task.
 
+**Releasing to production — definition of done** (full procedure:
+`docs/22-railway-deployment-runbook.md` §4.1):
+- Order, no skipping: local test in the browser → commit (with docs) →
+  push → CI green → `./sync-from-d.sh` → `scripts/verify-predeploy.sh`
+  (`GATE PASSED`) → owner runs `wasp deploy railway deploy …` →
+  `scripts/verify-postdeploy.sh` (`RELEASE COMPLETE`) → recheck on
+  licensedent.com → changelog entry.
+- Local, GitHub and production must all match. Never report "pushed"
+  or "CI green" as "shipped". If production is behind, say so and hand
+  the owner the exact deploy command.
+- CI only typechecks (no auto-deploy, owner decision 2026-09-26).
+- Production data (accounts, content, restores) follows
+  `docs/23-production-data-launch-postmortem.md` §3, not a deploy.
+
 A stale doc costs the next session real time re-deriving what's already
 known — treat an undocumented change as an unfinished one.
