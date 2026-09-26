@@ -32,8 +32,10 @@ CI=$(curl -fsS "https://api.github.com/repos/$REPO/actions/runs?head_sha=$ORIGIN
 [ "$CI" = "completed/success" ] && ok "CI green for ${ORIGIN_SHA:0:7}" || bad "CI for ${ORIGIN_SHA:0:7} is '$CI'"
 
 echo "== production vs local"
-# Last commit that changes what actually ships (docs/CI-only commits don't need a deploy).
-LAST_APP_COMMIT=$($GIT log -1 --format=%cI -- . ':(exclude).github' ':(exclude)*.md' ':(exclude)docs')
+# Last commit that changes what actually ships. Docs, CI and helper
+# scripts don't need a deploy, so only these paths count.
+SHIPPED="src public migrations main.wasp.ts schema.prisma package.json package-lock.json vite.config.ts postcss.config.js tsconfig.json tsconfig.src.json tsconfig.wasp.json components.json"
+LAST_APP_COMMIT=$($GIT log -1 --format=%cI -- $SHIPPED)
 for svc in licensedent-server licensedent-client; do
   DEP=$(railway deployment list --service "$svc" --limit 1 --json 2>/dev/null | json "j[0] ? j[0].status+' '+j[0].createdAt : 'none'")
   STATUS=${DEP%% *}; CREATED=${DEP#* }
@@ -52,7 +54,9 @@ code() { curl -s -o /dev/null -w '%{http_code}' "$1"; }
 
 LOGS=$(railway logs --service licensedent-server 2>/dev/null | tail -300)
 echo "$LOGS" | grep -q "Server listening" && ok "server log: Server listening" || bad "no 'Server listening' in recent server logs"
-echo "$LOGS" | grep -q "cron_on" && warn "pg-boss 'cron_on' error in recent logs -- if it repeats after the latest start, pgboss.version is empty (docs/23 §2.9)"
+# Only errors after the latest start matter; older ones belong to a replaced instance.
+SINCE_START=$(echo "$LOGS" | awk '/Server listening/{buf=""} {buf=buf $0 "\n"} END{printf "%s", buf}')
+echo "$SINCE_START" | grep -q "cron_on" && bad "pg-boss 'cron_on' error since the latest start -- pgboss.version is empty (docs/23 §2.9)"
 
 LIVE_ENTRY=$(curl -s "$CLIENT_URL/" | grep -oE 'client-entry-[A-Za-z0-9_-]+\.js' | head -1)
 LOCAL_ENTRY=$(find .wasp/out/web-app/build -name 'client-entry-*.js' 2>/dev/null | head -1 | xargs -r basename)
