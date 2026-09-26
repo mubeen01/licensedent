@@ -54,11 +54,16 @@ CI=$(curl -fsS "https://api.github.com/repos/$REPO/actions/runs?head_sha=$HEAD_S
 echo "ok: CI completed/success"
 
 step "6/8 production config"
-[ -n "${REACT_APP_GOOGLE_ANALYTICS_ID:-}" ] || fail "export REACT_APP_GOOGLE_ANALYTICS_ID first (value from app/.env.client)"
+GA=${REACT_APP_GOOGLE_ANALYTICS_ID:-}
+if [ -z "$GA" ]; then
+  echo "  note: REACT_APP_GOOGLE_ANALYTICS_ID not set -- analytics off (one harmless console line on cookie Accept)"
+elif ! [[ "$GA" =~ ^G-[A-Z0-9]{6,}$ ]]; then
+  fail "REACT_APP_GOOGLE_ANALYTICS_ID='$GA' is not a real GA4 id -- unset it, or export the real G-XXXXXXXXXX"
+fi
 case "${REACT_APP_API_URL:-}" in *localhost*) fail "REACT_APP_API_URL is localhost in this shell -- unset it (don't source .env.client)";; esac
 SERVER_CLIENT_URL=$(railway variables --service licensedent-server --kv 2>/dev/null | grep '^WASP_WEB_CLIENT_URL=' | cut -d= -f2-)
 [ "$SERVER_CLIENT_URL" = "$CLIENT_URL" ] || fail "server WASP_WEB_CLIENT_URL is '$SERVER_CLIENT_URL', expected $CLIENT_URL (CORS/login will break)"
-echo "ok: GA id set, API URL not localhost, server WASP_WEB_CLIENT_URL=$CLIENT_URL"
+echo "ok: GA id valid or unset, API URL not localhost, server WASP_WEB_CLIENT_URL=$CLIENT_URL"
 
 step "7/8 build + typecheck (same steps as CI)"
 npm install --no-audit --no-fund
